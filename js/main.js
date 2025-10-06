@@ -89,11 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return config?.nombreCompleto || indicatorId.replace(/_/g, ' ');
     }
 
-    function getDimensionIcon(dimId) {
-        const config = state.appConfig[dimId];
-        return config?.icono || 'fa-solid fa-chart-simple';
-    }
-
     // --- MAP INITIALIZATION ---
     function initMaps() {
         const tileLayerUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
@@ -134,14 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const weightLabel = weight ? `(${(weight * 100).toFixed(1)}%)` : '';
             const config = state.appConfig[key] || {};
             const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
-            const iconClass = config.icono || 'fa-solid fa-chart-simple';
+            const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
             const finalLabel = key === 'Indice' ? 'Índice Integrado' : `${displayName} ${weightLabel}`;
 
             return `
                 <div class="radio">
                   <label>
                     <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
-                     <span><span style="width: 25px; display: inline-block;"><i class="${iconClass}"></i></span>${finalLabel}</span>
+                     <span><span style="width: 25px; display: inline-block;">${iconHTML}</span>${finalLabel}</span>
                   </label>
                 </div>
             `;
@@ -320,8 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const dim of dimensions) {
                 const dimVal = deptIndexData[dim] !== null ? deptIndexData[dim].toFixed(1) : "N/A";
                 const dimName = getIndicatorDisplayName(dim);
-                const iconClass = getDimensionIcon(dim);
-                tableHtml += `<tr><td><i class="${iconClass}"></i> ${dimName}</td><td style='text-align:right;'>${dimVal}</td></tr>`;
+                const iconHTML = dim_icons[dim] || '';
+                tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td style='text-align:right;'>${dimVal}</td></tr>`;
             }
             tableHtml += `</table>`;
 
