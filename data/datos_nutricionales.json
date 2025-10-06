@@ -1,0 +1,233 @@
+{
+  "91": {
+    "ENSIN": 0.166,
+    "Cronica": 0.259,
+    "R_Cronica": 0.361,
+    "Aguda": 0.001,
+    "R_Aguda": 0.007
+  },
+  "5": {
+    "ENSIN": 0.11,
+    "Cronica": 0.125,
+    "R_Cronica": 0.289,
+    "Aguda": 0.003,
+    "R_Aguda": 0.058
+  },
+  "81": {
+    "ENSIN": 0.135,
+    "Cronica": 0.177,
+    "R_Cronica": 0.307,
+    "Aguda": 0.006,
+    "R_Aguda": 0.054
+  },
+  "8": {
+    "ENSIN": 0.085,
+    "Cronica": 0.132,
+    "R_Cronica": 0.306,
+    "Aguda": 0.003,
+    "R_Aguda": 0.04
+  },
+  "11": {
+    "ENSIN": 0.13,
+    "Cronica": 0.195,
+    "R_Cronica": 0.361,
+    "Aguda": 0.003,
+    "R_Aguda": 0.059
+  },
+  "13": {
+    "ENSIN": 0.09,
+    "Cronica": 0.114,
+    "R_Cronica": 0.245,
+    "Aguda": 0.003,
+    "R_Aguda": 0.033
+  },
+  "15": {
+    "ENSIN": 0.13,
+    "Cronica": 0.167,
+    "R_Cronica": 0.327,
+    "Aguda": 0.005,
+    "R_Aguda": 0.037
+  },
+  "17": {
+    "ENSIN": 0.069,
+    "Cronica": 0.135,
+    "R_Cronica": 0.326,
+    "Aguda": 0.002,
+    "R_Aguda": 0.053
+  },
+  "18": {
+    "ENSIN": 0.064,
+    "Cronica": 0.1,
+    "R_Cronica": 0.25,
+    "Aguda": 0.001,
+    "R_Aguda": 0.024
+  },
+  "85": {
+    "ENSIN": 0.102,
+    "Cronica": 0.147,
+    "R_Cronica": 0.331,
+    "Aguda": 0.002,
+    "R_Aguda": 0.039
+  },
+  "19": {
+    "ENSIN": 0.133,
+    "Cronica": 0.18,
+    "R_Cronica": 0.288,
+    "Aguda": 0.003,
+    "R_Aguda": 0.027
+  },
+  "20": {
+    "ENSIN": 0.114,
+    "Cronica": 0.157,
+    "R_Cronica": 0.301,
+    "Aguda": 0.004,
+    "R_Aguda": 0.046
+  },
+  "27": {
+    "ENSIN": 0.134,
+    "Cronica": 0.182,
+    "R_Cronica": 0.196,
+    "Aguda": 0.001,
+    "R_Aguda": 0.01
+  },
+  "23": {
+    "ENSIN": 0.11,
+    "Cronica": 0.143,
+    "R_Cronica": 0.246,
+    "Aguda": 0.001,
+    "R_Aguda": 0.021
+  },
+  "25": {
+    "ENSIN": 0.09,
+    "Cronica": 0.172,
+    "R_Cronica": 0.349,
+    "Aguda": 0.002,
+    "R_Aguda": 0.046
+  },
+  "94": {
+    "ENSIN": 0.181,
+    "Cronica": 0.391,
+    "R_Cronica": 0.346,
+    "Aguda": 0.004,
+    "R_Aguda": 0.052
+  },
+  "95": {
+    "ENSIN": 0.051,
+    "Cronica": 0.158,
+    "R_Cronica": 0.317,
+    "Aguda": 0.003,
+    "R_Aguda": 0.04
+  },
+  "41": {
+    "ENSIN": 0.107,
+    "Cronica": 0.106,
+    "R_Cronica": 0.283,
+    "Aguda": 0.002,
+    "R_Aguda": 0.03
+  },
+  "44": {
+    "ENSIN": 0.261,
+    "Cronica": 0.418,
+    "R_Cronica": 0.304,
+    "Aguda": 0.004,
+    "R_Aguda": 0.05
+  },
+  "47": {
+    "ENSIN": 0.129,
+    "Cronica": 0.163,
+    "R_Cronica": 0.302,
+    "Aguda": 0.002,
+    "R_Aguda": 0.041
+  },
+  "50": {
+    "ENSIN": 0.087,
+    "Cronica": 0.135,
+    "R_Cronica": 0.303,
+    "Aguda": 0.002,
+    "R_Aguda": 0.041
+  },
+  "52": {
+    "ENSIN": 0.134,
+    "Cronica": 0.175,
+    "R_Cronica": 0.285,
+    "Aguda": 0.004,
+    "R_Aguda": 0.035
+  },
+  "54": {
+    "ENSIN": 0.065,
+    "Cronica": 0.125,
+    "R_Cronica": 0.303,
+    "Aguda": 0.003,
+    "R_Aguda": 0.047
+  },
+  "86": {
+    "ENSIN": 0.106,
+    "Cronica": 0.16,
+    "R_Cronica": 0.348,
+    "Aguda": 0,
+    "R_Aguda": 0.026
+  },
+  "63": {
+    "ENSIN": 0.065,
+    "Cronica": 0.114,
+    "R_Cronica": 0.317,
+    "Aguda": 0.003,
+    "R_Aguda": 0.054
+  },
+  "66": {
+    "ENSIN": 0.081,
+    "Cronica": 0.207,
+    "R_Cronica": 0.289,
+    "Aguda": 0.002,
+    "R_Aguda": 0.045
+  },
+  "88": {
+    "ENSIN": 0.056,
+    "Cronica": 0.089,
+    "R_Cronica": 0.203,
+    "Aguda": 0.008,
+    "R_Aguda": 0.072
+  },
+  "68": {
+    "ENSIN": 0.105,
+    "Cronica": 0.101,
+    "R_Cronica": 0.276,
+    "Aguda": 0.003,
+    "R_Aguda": 0.051
+  },
+  "70": {
+    "ENSIN": 0.109,
+    "Cronica": 0.138,
+    "R_Cronica": 0.279,
+    "Aguda": 0.002,
+    "R_Aguda": 0.03
+  },
+  "73": {
+    "ENSIN": 0.082,
+    "Cronica": 0.133,
+    "R_Cronica": 0.308,
+    "Aguda": 0.002,
+    "R_Aguda": 0.033
+  },
+  "76": {
+    "ENSIN": 0.064,
+    "Cronica": 0.1,
+    "R_Cronica": 0.244,
+    "Aguda": 0.003,
+    "R_Aguda": 0.043
+  },
+  "97": {
+    "ENSIN": 0.27,
+    "Cronica": 0.412,
+    "R_Cronica": 0.321,
+    "Aguda": 0,
+    "R_Aguda": 0.006
+  },
+  "99": {
+    "ENSIN": 0.119,
+    "Cronica": 0.319,
+    "R_Cronica": 0.357,
+    "Aguda": 0.005,
+    "R_Aguda": 0.063
+  }
+}
