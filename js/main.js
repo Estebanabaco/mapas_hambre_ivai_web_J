@@ -154,9 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return `
                 <div class="radio">
-                  <label>
+                  <label title="${displayName}">
                     <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
-                     <span><span style="width: 25px; display: inline-block;">${iconHTML}</span>${finalLabel}</span>
+                     <span class="radio-span">
+                        <span class="radio-icon">${iconHTML}</span>
+                        <span class="radio-label">${finalLabel}</span>
+                     </span>
                   </label>
                 </div>
             `;
@@ -358,34 +361,45 @@ document.addEventListener('DOMContentLoaded', () => {
         return legend;
     }
 
-    function createPopupContent(deptCode, deptName, indicatorId) {
-        const deptIndexData = state.indexData[deptCode];
-        const isIndice = indicatorId === 'Indice';
+    function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
+        const isNutritionMap = mapKey === 'compareNut';
+        const data = isNutritionMap ? state.nutritionData : state.indexData;
+        const deptData = data[deptCode];
 
-        if (!deptIndexData) return `<strong>${deptName}</strong><br>Datos no disponibles`;
+        if (!deptData) return `<strong>${deptName}</strong><br>Datos no disponibles`;
 
-        if (isIndice) {
-            const idxVal = deptIndexData.Indice !== null ? deptIndexData.Indice.toFixed(1) : "N/A";
-            const rank = deptIndexData.Ranking || "N/A";
-            const classification = deptIndexData.Clasificacion_Indice || "N/A";
+        // Handle Vulnerability Maps (main and compareVul)
+        if (!isNutritionMap) {
+            const isIndice = indicatorId === 'Indice';
+            if (isIndice) {
+                const idxVal = deptData.Indice !== null ? deptData.Indice.toFixed(1) : "N/A";
+                const rank = deptData.Ranking || "N/A";
+                const classification = deptData.Clasificacion_Indice || "N/A";
 
-            let tableHtml = `<br><table style='width:100%;border-collapse:collapse;margin-top:5px;'><tr><th style='border-bottom:1px solid #ccc;text-align:left'>Dimensión</th><th style='border-bottom:1px solid #ccc;text-align:right'>Valor</th></tr>`;
-            
-            const dimensions = Object.keys(deptIndexData).filter(k => k !== 'Indice' && k !== 'Ranking' && k !== 'Clasificacion_Indice');
+                let tableHtml = `<br><table class="popup-table"><tr><th>Dimensión</th><th>Valor</th></tr>`;
+                const dimensions = Object.keys(deptData).filter(k => k !== 'Indice' && k !== 'Ranking' && k !== 'Clasificacion_Indice');
 
-            for (const dim of dimensions) {
-                const dimVal = deptIndexData[dim] !== null ? deptIndexData[dim].toFixed(1) : "N/A";
-                const dimName = getIndicatorDisplayName(dim);
-                const iconHTML = dim_icons[dim] || '';
-                tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td style='text-align:right;'>${dimVal}</td></tr>`;
+                for (const dim of dimensions) {
+                    const dimVal = deptData[dim] !== null ? deptData[dim].toFixed(1) : "N/A";
+                    const dimName = getIndicatorDisplayName(dim);
+                    const iconHTML = dim_icons[dim] || '';
+                    tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td>${dimVal}</td></tr>`;
+                }
+                tableHtml += `</table>`;
+
+                return `<strong>${deptName}</strong><br><b>Índice Integrado:</b> ${idxVal} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
+            } else {
+                const value = deptData[indicatorId];
+                const displayName = getIndicatorDisplayName(indicatorId);
+                const formattedValue = (value !== null && !isNaN(value)) ? value.toFixed(2) : "No disponible";
+                return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
             }
-            tableHtml += `</table>`;
-
-            return `<strong>${deptName}</strong><br><b>Índice Integrado:</b> ${idxVal} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
-        } else {
-            const value = deptIndexData[indicatorId];
-            const displayName = getIndicatorDisplayName(indicatorId);
-            const formattedValue = (value !== null && !isNaN(value)) ? value.toFixed(2) : "No disponible";
+        }
+        // Handle Nutrition Map (compareNut)
+        else {
+            const value = deptData[indicatorId];
+            const displayName = selectCompareNut.options[selectCompareNut.selectedIndex].text;
+            const formattedValue = (value !== null && !isNaN(value)) ? `${(value * 100).toFixed(1)}%` : "No disponible";
             return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
         }
     }
@@ -442,10 +456,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 
                 layer.bindTooltip(deptName);
-                layer.bindPopup(() => createPopupContent(deptCode, deptName, indicatorId));
+                layer.bindPopup(() => createPopupContent(deptCode, deptName, indicatorId, mapKey));
 
                 layer.on({
-                    mouseover: (e) => e.target.setStyle({ weight: 2.5, color: '#2c3e50' }),
+                    mouseover: (e) => {
+                        e.target.setStyle({ weight: 2.5, color: '#2c3e50' });
+                        e.target.bringToFront();
+                    },
                     mouseout: (e) => geoJsonLayer.resetStyle(e.target),
                 });
             }
@@ -484,6 +501,78 @@ document.addEventListener('DOMContentLoaded', () => {
             ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
             ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
         `;
+    }
+
+    function setupTooltips() {
+        const indicatorSelector = document.getElementById('indicator-selector');
+        const sidebar = document.querySelector('.sidebar');
+        let tooltip = null;
+
+        indicatorSelector.addEventListener('mouseover', (e) => {
+            const label = e.target.closest('label');
+            if (!label || !sidebar.classList.contains('collapsed')) {
+                return;
+            }
+
+            const title = label.getAttribute('title');
+            if (!title) return;
+
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                document.body.appendChild(tooltip);
+            }
+
+            tooltip.textContent = title;
+            tooltip.classList.add('visible');
+
+            const labelRect = label.getBoundingClientRect();
+            
+            // Position tooltip
+            tooltip.style.top = `${labelRect.top + (labelRect.height / 2) - (tooltip.offsetHeight / 2)}px`;
+            tooltip.style.left = `${labelRect.right + 10}px`; // 10px to the right
+        });
+
+        indicatorSelector.addEventListener('mouseout', (e) => {
+            const label = e.target.closest('label');
+            if (label && tooltip) {
+                tooltip.classList.remove('visible');
+            }
+        });
+
+        // Hide tooltip on scroll within the sidebar to prevent it from being orphaned
+        const sidebarContent = document.querySelector('.sidebar-content');
+        sidebarContent.addEventListener('scroll', () => {
+            if (tooltip) {
+                tooltip.classList.remove('visible');
+            }
+        });
+    }
+
+    function setupSidebarToggle() {
+        const toggleBtn = document.getElementById('toggle-sidebar-btn');
+        const sidebar = document.querySelector('.sidebar');
+        if (!toggleBtn || !sidebar) return;
+
+        const icon = toggleBtn.querySelector('i');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            if (isCollapsed) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+                toggleBtn.title = "Expandir menú";
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+                toggleBtn.title = "Colapsar menú";
+            }
+            // Invalidate map size after transition to prevent grey areas
+            setTimeout(() => {
+                state.maps.main.invalidateSize();
+            }, 400); // Should match the CSS transition duration
+        });
     }
 
     // --- EVENT LISTENERS ---
@@ -558,6 +647,8 @@ document.addEventListener('DOMContentLoaded', () => {
             populateControls();
             populateFooter();
             setupEventListeners();
+            setupSidebarToggle();
+            setupTooltips();
 
             const initialIndicator = indicatorSelector.querySelector('input:checked');
             if (initialIndicator) {
