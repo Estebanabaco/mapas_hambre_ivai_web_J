@@ -437,8 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             onEachFeature: (feature, layer) => {
                 const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-                const deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || 'Nombre no disponible').trim();
+                let deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || 'Nombre no disponible').trim().toLowerCase();
+                // Convert to Title Case to match the original R app's str_to_title()
+                deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 
+                layer.bindTooltip(deptName);
                 layer.bindPopup(() => createPopupContent(deptCode, deptName, indicatorId));
 
                 layer.on({
