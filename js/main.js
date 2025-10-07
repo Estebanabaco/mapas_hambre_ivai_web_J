@@ -312,12 +312,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function createIndiceLegend(map) {
         const legend = L.control({ position: 'bottomright' });
         legend.onAdd = function () {
-            const div = L.DomUtil.create('div', 'leaflet-control-layers leaflet-control-layers-expanded');
-            div.style.backgroundColor = 'rgba(255,255,255,0.9)';
-            div.style.padding = '8px';
-            div.style.borderRadius = '5px';
-            div.style.boxShadow = '0 1px 5px rgba(0,0,0,0.2)';
-            div.style.minWidth = '350px';
+            // Create the new background div
+            const backgroundDiv = L.DomUtil.create('div', 'legend-wrapper');
+            backgroundDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // More transparent
+            backgroundDiv.style.borderRadius = '8px'; // Slightly larger radius
+            backgroundDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.25)'; // Broader, more diffuse shadow
+            backgroundDiv.style.padding = '5px'; // Padding to make it larger than the foreground
+
+            // Create the original legend div (foreground) and append it to the background
+            const foregroundDiv = L.DomUtil.create('div', 'leaflet-control-layers leaflet-control-layers-expanded', backgroundDiv);
+            
+            // Styles for the original box
+            foregroundDiv.style.backgroundColor = 'rgba(255,255,255,0.9)';
+            foregroundDiv.style.padding = '8px';
+            foregroundDiv.style.borderRadius = '5px';
+            foregroundDiv.style.boxShadow = '0 1px 5px rgba(0,0,0,0.2)'; // Keep original shadow for depth
+            foregroundDiv.style.width = 'auto';
+            foregroundDiv.style.minWidth = '350px';
+            foregroundDiv.style.maxWidth = '90vw';
 
             const categories = [
                 { label: "Mínima", range: "0-14", color: "#2E7D32" },
@@ -325,18 +337,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 { label: "Media", range: "30-49", color: "#F9A825" },
                 { label: "Alta", range: "50-64", color: "#E64519" },
                 { label: "Crítica", range: "65-100", color: "#B30000" }
-            ]; // Reverse to match shiny order
+            ];
 
             const titleHtml = `<h4 style='margin-top:0; margin-bottom:8px; font-size:0.95em; text-align:center; color: #333;'>Nivel de Vulnerabilidad</h4>`;
             const colorBarHtml = categories.map(c => `<div style='flex-grow: 1; background-color:${c.color}; height: 100%;'></div>`).join('');
             const labelsHtml = categories.map(c => `<div style='flex-grow: 1; text-align: center; font-size: 0.75em; line-height: 1.1; padding-top: 2px;'><div style='color: #333;'>${c.label}</div><div style='color: #555; font-size:0.9em;'>${c.range}</div></div>`).join('');
 
-            div.innerHTML = `
+            foregroundDiv.innerHTML = `
                 ${titleHtml}
                 <div style='display: flex; width: 100%; height: 15px; margin-bottom: 3px; border: 1px solid #999;'>${colorBarHtml}</div>
                 <div style='display: flex; width: 100%; justify-content: space-around;'>${labelsHtml}</div>
             `;
-            return div;
+            
+            // Stop propagation to prevent map clicks when interacting with the legend
+            L.DomEvent.on(backgroundDiv, 'mousedown dblclick', L.DomEvent.stopPropagation);
+
+            // Return the new wrapper
+            return backgroundDiv;
         };
         return legend;
     }
