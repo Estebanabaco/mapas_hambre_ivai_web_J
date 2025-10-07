@@ -244,14 +244,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formatLabel = (value) => isPercentage ? `${(value * 100).toFixed(0)}%` : Math.round(value);
 
-            // --- Generate labels at intervals of 10, plus min and max ---
-            let labels = [min, max];
-            const start = Math.ceil(min / 10) * 10;
-            const end = Math.floor(max / 10) * 10;
+            // --- Generate labels with uniform spacing ---
+            let labels = [];
+            if (isPercentage) {
+                const rangePercent = (max - min) * 100;
+                let intervalPercent;
+                if (rangePercent <= 5) {
+                    intervalPercent = 1; // 1% steps
+                } else if (rangePercent <= 10) {
+                    intervalPercent = 2; // 2% steps
+                } else if (rangePercent <= 25) {
+                    intervalPercent = 5; // 5% steps
+                } else {
+                    intervalPercent = 10; // 10% steps
+                }
 
-            for (let i = start; i <= end; i += 10) {
-                labels.push(i);
+                const startPercent = Math.ceil(min * 100 / intervalPercent) * intervalPercent;
+                const endPercent = Math.floor(max * 100 / intervalPercent) * intervalPercent;
+
+                for (let i = startPercent; i <= endPercent; i += intervalPercent) {
+                    labels.push(i / 100);
+                }
+            } else {
+                const interval = 10; // 10-unit steps for vulnerability maps
+                const start = Math.ceil(min / interval) * interval;
+                const end = Math.floor(max / interval) * interval;
+
+                for (let i = start; i <= end; i += interval) {
+                    labels.push(i);
+                }
             }
+
+            // If the range is too small to generate nice intervals, just show min and max.
+            if (labels.length < 2) {
+                labels = [min, max];
+            }
+            
             // Use unique sorted values
             labels = [...new Set(labels)].sort((a,b) => a - b);
 
@@ -259,12 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
             for (const val of labels) {
                 const percentPosition = (max - min) > 0 ? (val - min) / (max - min) * 100 : 0;
 
-                let transform = 'translateY(-50%)';
-                if (percentPosition <= 1) { // Use a small threshold for floating point
-                    transform = 'translateY(0)';
-                } else if (percentPosition >= 99) {
-                    transform = 'translateY(-100%)';
-                }
+                // Center all labels uniformly. This might cause slight clipping at the edges.
+                const transform = 'translateY(-50%)';
 
                 labelsDivs += `<div style="position: absolute; top: ${percentPosition}%; left: 0; width: 100%; transform: ${transform};">
                                  <span style="padding-left: 5px;">&ndash; ${formatLabel(val)}</span>
@@ -301,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { label: "Media", range: "30-49", color: "#F9A825" },
                 { label: "Alta", range: "50-64", color: "#E64519" },
                 { label: "Crítica", range: "65-100", color: "#B30000" }
-            ].reverse(); // Reverse to match shiny order
+            ]; // Reverse to match shiny order
 
             const titleHtml = `<h4 style='margin-top:0; margin-bottom:8px; font-size:0.95em; text-align:center; color: #333;'>Nivel de Vulnerabilidad</h4>`;
             const colorBarHtml = categories.map(c => `<div style='flex-grow: 1; background-color:${c.color}; height: 100%;'></div>`).join('');
