@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
             main: null,
             compareVul: null,
             compareNut: null,
-        }
+        },
+        compareMapsFitted: false
     };
     const COLOMBIA_CENTER = [4.5709, -74.2973];
     const INITIAL_ZOOM = 6;
@@ -96,17 +97,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const createTileLayer = () => L.tileLayer(tileLayerUrl, { attribution });
 
-        state.maps.main = L.map('map-main').setView(COLOMBIA_CENTER, INITIAL_ZOOM);
+        state.maps.main = L.map('map-main');
         createTileLayer().addTo(state.maps.main);
 
-        state.maps.compareVul = L.map('map-compare-vul').setView(COLOMBIA_CENTER, INITIAL_ZOOM);
+        state.maps.compareVul = L.map('map-compare-vul');
         createTileLayer().addTo(state.maps.compareVul);
 
-        state.maps.compareNut = L.map('map-compare-nut').setView(COLOMBIA_CENTER, INITIAL_ZOOM);
+        state.maps.compareNut = L.map('map-compare-nut');
         createTileLayer().addTo(state.maps.compareNut);
-        
-        state.maps.compareVul.sync(state.maps.compareNut);
-        state.maps.compareNut.sync(state.maps.compareVul);
     }
 
     // --- UI POPULATION ---
@@ -396,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStoryBox(indicatorId) {
         const config = state.appConfig[indicatorId];
+        const iconHTML = dim_icons[indicatorId] || '';
 
         if (!config) {
             storyBox.innerHTML = `<p>No hay descripción disponible para este indicador.</p>`;
@@ -413,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const evidenciasTitle = indicatorId === 'Indice' ? 'Leer Más' : 'Ruta de Acciones Sugeridas';
 
         storyBox.innerHTML = `
+            ${iconHTML}
             <h3>${config.nombreCompleto}</h3>
             <p>${config.descripcion}</p>
             ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
@@ -454,6 +454,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setTimeout(() => {
             Object.values(state.maps).forEach(map => map && map.invalidateSize());
+            if (tabKey === 'compare' && !state.compareMapsFitted) {
+                const mainlandGeoData = {
+                    ...state.geoData,
+                    features: state.geoData.features.filter(f => f.properties.DPTO_CCDGO !== '88')
+                };
+                const geoJsonLayer = L.geoJSON(mainlandGeoData);
+                const bounds = geoJsonLayer.getBounds();
+
+                state.maps.compareVul.fitBounds(bounds, { padding: [10, 10] });
+                state.maps.compareNut.fitBounds(bounds, { padding: [10, 10] });
+                
+                state.maps.compareVul.sync(state.maps.compareNut);
+                state.maps.compareNut.sync(state.maps.compareVul);
+
+                state.compareMapsFitted = true;
+            }
         }, 10);
     }
 
@@ -462,6 +478,16 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadData();
         if (state.geoData && state.indexData) {
             initMaps();
+
+            const mainlandGeoData = {
+                ...state.geoData,
+                features: state.geoData.features.filter(f => f.properties.DPTO_CCDGO !== '88')
+            };
+            const geoJsonLayer = L.geoJSON(mainlandGeoData);
+            const bounds = geoJsonLayer.getBounds();
+
+            state.maps.main.fitBounds(bounds, { padding: [10, 10] });
+
             populateControls();
             populateFooter();
             setupEventListeners();
