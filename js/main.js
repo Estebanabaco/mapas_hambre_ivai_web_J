@@ -92,19 +92,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MAP INITIALIZATION ---
     function initMaps() {
-        const tileLayerUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
-        const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-        
-        const createTileLayer = () => L.tileLayer(tileLayerUrl, { attribution });
+        const cartoLightUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
+        const cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-        state.maps.main = L.map('map-main');
-        createTileLayer().addTo(state.maps.main);
+        const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
 
-        state.maps.compareVul = L.map('map-compare-vul');
-        createTileLayer().addTo(state.maps.compareVul);
+        const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: cartoAttribution
+        });
 
-        state.maps.compareNut = L.map('map-compare-nut');
-        createTileLayer().addTo(state.maps.compareNut);
+        const baseLayers = {
+            "Claro": L.tileLayer(cartoLightUrl, { attribution: cartoAttribution }),
+            "Estándar": osm,
+            "Oscuro": cartoDark
+        };
+
+        // Initialize maps
+        // Main map gets the layer control and its own instance of the light layer
+        state.maps.main = L.map('map-main', {
+            fullscreenControl: true,
+            layers: [baseLayers.Claro] // Default layer
+        });
+        L.control.layers(baseLayers, null, { position: 'topright' }).addTo(state.maps.main);
+
+        // Comparison maps get their own instances of the light basemap and no layer control
+        state.maps.compareVul = L.map('map-compare-vul', {
+            fullscreenControl: true,
+            layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
+        });
+
+        state.maps.compareNut = L.map('map-compare-nut', {
+            fullscreenControl: true,
+            layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
+        });
     }
 
     // --- UI POPULATION ---
@@ -470,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 state.compareMapsFitted = true;
             }
-        }, 10);
+        }, 100);
     }
 
     // --- MAIN EXECUTION ---
@@ -487,6 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const bounds = geoJsonLayer.getBounds();
 
             state.maps.main.fitBounds(bounds, { padding: [10, 10] });
+            state.maps.main.invalidateSize();
 
             populateControls();
             populateFooter();
