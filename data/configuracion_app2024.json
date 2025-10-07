@@ -1,6 +1,7 @@
 {
-  "integrated": {
-    "nombreCompleto": "Índice Integrado",
+  "Indice": {
+    "nombreCompleto": "Índice de Vulnerabilidad Alimentaria Infantil (IVAI)",
+    "icono": "fa-solid fa-arrow-trend-up",
     "descripcion": "Identifica y jerarquiza los departamentos de Colombia según su nivel de vulnerabilidad frente al hambre infantil, integrando múltiples dimensiones sociales, económicas y de salud. Sirve para orientar políticas públicas focalizadas y priorizar intervenciones en los territorios más afectados por la inseguridad alimentaria.",
     "variables": [
       {
@@ -49,6 +50,7 @@
   },
   "Pobreza": {
     "nombreCompleto": "Pobreza",
+    "icono": "fa-solid fa-house-chimney-user",
     "descripcion": "Limita el acceso a recursos básicos para una alimentación adecuada. Es un factor estructural que condiciona múltiples dimensiones de la vida y profundiza la inseguridad alimentaria de forma persistente.",
     "variables": [
       {
@@ -89,6 +91,7 @@
   },
   "Desempleo_Ingresos": {
     "nombreCompleto": "Desempleo e ingresos",
+    "icono": "fa-solid fa-hand-holding-dollar",
     "descripcion": "Refleja restricciones económicas que afectan la capacidad de adquirir alimentos. La inestabilidad financiera agrava la inseguridad alimentaria y reduce la posibilidad de mantener una dieta suficiente, segura y nutritiva.",
     "variables": [
       {
@@ -125,6 +128,7 @@
   },
   "Salud_Nutricion": {
     "nombreCompleto": "Salud y nutrición",
+    "icono": "fa-solid fa-heart-pulse",
     "descripcion": "Condiciona el bienestar físico, especialmente en infancia y maternidad. La desnutrición y las enfermedades reflejan y perpetúan la inseguridad alimentaria, generando efectos negativos en el desarrollo humano.",
     "variables": [
       {
@@ -189,6 +193,7 @@
   },
   "Inseguridad_Alimentaria": {
     "nombreCompleto": "Inseguridad alimentaria",
+    "icono": "fa-solid fa-bowl-food",
     "descripcion": "Describe la dificultad para acceder a alimentos adecuados. Impacta la salud y el bienestar, y refleja niveles crecientes de privación alimentaria en los hogares, desde leves hasta extremos.",
     "variables": [
       {
@@ -233,6 +238,7 @@
   },
   "Factores_Demograficos": {
     "nombreCompleto": "Factores demográficos y sociales",
+    "icono": "fa-solid fa-users-line",
     "descripcion": "Inciden en la distribución de oportunidades y recursos. Las características del hogar y la pertenencia social condicionan el acceso equitativo a alimentos y aumentan la vulnerabilidad nutricional.",
     "variables": [
       {
@@ -281,6 +287,7 @@
   },
   "Acceso_Servicios": {
     "nombreCompleto": "Acceso a servicios básicos",
+    "icono": "fa-solid fa-house-signal",
     "descripcion": "El acceso limitado a condiciones sanitarias y servicios esenciales afecta la salud, preparación y conservación de alimentos, incrementando los riesgos asociados a la inseguridad alimentaria.",
     "variables": [
       {
@@ -317,6 +324,7 @@
   },
   "Acceso_Grupos_Alimentos": {
     "nombreCompleto": "Acceso a grupos de alimentos",
+    "icono": "fa-solid fa-basket-shopping",
     "descripcion": "Evalúa la variedad y calidad de la dieta. La baja diversidad alimentaria reduce la ingesta de nutrientes esenciales y eleva el riesgo de malnutrición, especialmente en hogares vulnerables.",
     "variables": [
       {
