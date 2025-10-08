@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- HELPERS ---
     function getIndicatorDisplayName(indicatorId) {
-        const config = state.appConfig[indicatorId];
+        const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
+        const config = state.appConfig[configKey];
         return config?.nombreCompleto || indicatorId.replace(/_/g, ' ');
     }
 
@@ -147,7 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
         indicatorSelector.innerHTML = indicators.map((key, index) => {
             const weight = weightsMap.get(key);
             const weightLabel = weight ? `(${(weight * 100).toFixed(1)}%)` : '';
-            const config = state.appConfig[key] || {};
+            const configKey = key === 'Indice' ? 'integrated' : key;
+            const config = state.appConfig[configKey] || {};
             const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
             const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
             const finalLabel = key === 'Indice' ? 'Índice Integrado' : `${displayName} ${weightLabel}`;
@@ -476,7 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateStoryBox(indicatorId) {
-        const config = state.appConfig[indicatorId];
+        const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
+        const config = state.appConfig[configKey];
         const iconHTML = dim_icons[indicatorId] || '';
 
         if (!config) {
