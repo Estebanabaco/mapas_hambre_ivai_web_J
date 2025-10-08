@@ -60,7 +60,7 @@ export function populateControls() {
 
 export function populateFooter() {
     const year = new Date().getFullYear();
-    appFooter.innerHTML = `Desarrollado con R y Shiny | Última actualización: Octubre ${year}`;
+    appFooter.innerHTML = `Última actualización: Octubre ${year}`;
 }
 
 export function updateStoryBox(indicatorId) {

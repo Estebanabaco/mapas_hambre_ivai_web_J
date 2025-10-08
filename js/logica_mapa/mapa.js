@@ -121,6 +121,27 @@ export function updateMap(mapKey, indicatorId) {
                         }
                     }
                 },
+                click: (e) => {
+                    const clickedDeptCode = parseInt(e.target.feature.properties.DPTO_CCDGO);
+
+                    // Only sync popups for comparison maps
+                    if (mapKey === 'compareVul' || mapKey === 'compareNut') {
+                        const otherMapKey = mapKey === 'compareVul' ? 'compareNut' : 'compareVul';
+                        const otherMapLayer = state.layers[otherMapKey];
+
+                        if (otherMapLayer) {
+                            otherMapLayer.eachLayer(otherLayer => {
+                                const otherDeptCode = parseInt(otherLayer.feature.properties.DPTO_CCDGO);
+                                if (otherDeptCode === clickedDeptCode) {
+                                    // Ensure the popup is opened on the next tick to avoid race conditions
+                                    setTimeout(() => {
+                                        otherLayer.openPopup();
+                                    }, 0);
+                                }
+                            });
+                        }
+                    }
+                }
             });
         }
     });
