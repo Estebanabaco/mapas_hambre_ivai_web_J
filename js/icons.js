@@ -1,5 +1,4 @@
-
-const dim_icons = {
+export const dim_icons = {
   Indice: '<i class="fa fa-layer-group" style="color:#0056b3;"></i>',
   Pobreza: '<i class="fa fa-coins" style="color:#dc3545;"></i>',
   Desempleo_Ingresos: '<i class="fa fa-briefcase" style="color:#fd7e14;"></i>',

@@ -1,0 +1,217 @@
+import { state, indicatorSelector, selectCompareVul, selectCompareNut, appFooter, storyBox, aboutBtn, aboutModal, closeModalBtn, tabs, tabButtons } from './configuracion.js';
+import { getIndicatorDisplayName, updateMap } from './logica_mapa.js';
+import { dim_icons } from './icons.js';
+
+// --- UI POPULATION ---
+export function populateControls() {
+    const weightsMap = new Map(state.weights.Pesos_Dimensiones.map(d => [d.Dimension, d.Peso_Dimension]));
+    const firstDeptKey = Object.keys(state.indexData)[0];
+    if (!firstDeptKey) return;
+    const firstDeptData = state.indexData[firstDeptKey];
+    
+    let indicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
+    
+    indicators.sort((a, b) => {
+        if (a === 'Indice') return -1;
+        if (b === 'Indice') return 1;
+        return (weightsMap.get(b) || 0) - (weightsMap.get(a) || 0);
+    });
+
+    indicatorSelector.innerHTML = indicators.map((key, index) => {
+        const weight = weightsMap.get(key);
+        const weightLabel = weight ? `(${(weight * 100).toFixed(1)}%)` : '';
+        const configKey = key === 'Indice' ? 'integrated' : key;
+        const config = state.appConfig[configKey] || {};
+        const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
+        const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
+        const finalLabel = key === 'Indice' ? 'Índice Integrado' : `${displayName} ${weightLabel}`;
+
+        return `
+            <div class="radio">
+              <label title="${displayName}">
+                <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
+                 <span class="radio-span">
+                    <span class="radio-icon">${iconHTML}</span>
+                    <span class="radio-label">${finalLabel}</span>
+                 </span>
+              </label>
+            </div>
+        `;
+    }).join('');
+
+    const unsortedIndicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
+    selectCompareVul.innerHTML = unsortedIndicators.map(key => {
+        const displayName = getIndicatorDisplayName(key);
+        return `<option value="${key}">${displayName}</option>`;
+    }).join('');
+
+    const nutIndicators = [
+        ["ENSIN", "Desnutrición Crónica (ENSIN)"],
+        ["Cronica", "Desnutrición Crónica (ICBF)"],
+        ["R_Cronica", "Riesgo Desnutrición Crónica (ICBF)"],
+        ["Aguda", "Desnutrición Aguda (ICBF)"],
+        ["R_Aguda", "Riesgo Desnutrición Aguda (ICBF)"]
+    ];
+    selectCompareNut.innerHTML = nutIndicators.map(([key, name]) =>
+        `<option value="${key}">${name}</option>`
+    ).join('');
+}
+
+export function populateFooter() {
+    const year = new Date().getFullYear();
+    appFooter.innerHTML = `Desarrollado con R y Shiny | Última actualización: Octubre ${year}`;
+}
+
+export function updateStoryBox(indicatorId) {
+    const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
+    const config = state.appConfig[configKey];
+    const iconHTML = dim_icons[indicatorId] || '';
+
+    if (!config) {
+        storyBox.innerHTML = `<p>No hay descripción disponible para este indicador.</p>`;
+        return;
+    }
+
+    const variablesHtml = config.variables.map(v =>
+        `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`
+    ).join('');
+
+    const evidenciasHtml = config.evidencias.map(e =>
+        `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
+    ).join('');
+
+    const evidenciasTitle = indicatorId === 'Indice' ? 'Leer Más' : 'Ruta de Acciones Sugeridas';
+
+    storyBox.innerHTML = `
+        ${iconHTML}
+        <h3>${config.nombreCompleto}</h3>
+        <p>${config.descripcion}</p>
+        ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
+        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
+    `;
+}
+
+export function setupTooltips() {
+    const indicatorSelector = document.getElementById('indicator-selector');
+    const sidebar = document.querySelector('.sidebar');
+    let tooltip = null;
+
+    indicatorSelector.addEventListener('mouseover', (e) => {
+        const label = e.target.closest('label');
+        if (!label || !sidebar.classList.contains('collapsed')) {
+            return;
+        }
+
+        const title = label.getAttribute('title');
+        if (!title) return;
+
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            document.body.appendChild(tooltip);
+        }
+
+        tooltip.textContent = title;
+        tooltip.classList.add('visible');
+
+        const labelRect = label.getBoundingClientRect();
+        
+        // Position tooltip
+        tooltip.style.top = `${labelRect.top + (labelRect.height / 2) - (tooltip.offsetHeight / 2)}px`;
+        tooltip.style.left = `${labelRect.right + 10}px`; // 10px to the right
+    });
+
+    indicatorSelector.addEventListener('mouseout', (e) => {
+        const label = e.target.closest('label');
+        if (label && tooltip) {
+            tooltip.classList.remove('visible');
+        }
+    });
+
+    // Hide tooltip on scroll within the sidebar to prevent it from being orphaned
+    const sidebarContent = document.querySelector('.sidebar-content');
+    sidebarContent.addEventListener('scroll', () => {
+        if (tooltip) {
+            tooltip.classList.remove('visible');
+        }
+    });
+}
+
+export function setupSidebarToggle() {
+    const toggleBtn = document.getElementById('toggle-sidebar-btn');
+    const sidebar = document.querySelector('.sidebar');
+    if (!toggleBtn || !sidebar) return;
+
+    const icon = toggleBtn.querySelector('i');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        if (isCollapsed) {
+            icon.classList.remove('fa-chevron-left');
+            icon.classList.add('fa-chevron-right');
+            toggleBtn.title = "Expandir menú";
+        } else {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-left');
+            toggleBtn.title = "Colapsar menú";
+        }
+        // Invalidate map size after transition to prevent grey areas
+        setTimeout(() => {
+            state.maps.main.invalidateSize();
+        }, 400); // Should match the CSS transition duration
+    });
+}
+
+// --- EVENT LISTENERS ---
+export function setupEventListeners() {
+    indicatorSelector.addEventListener('change', (e) => {
+        if (e.target.name === 'indicator') {
+            updateMap('main', e.target.value);
+            updateStoryBox(e.target.value);
+        }
+    });
+
+    selectCompareVul.addEventListener('change', (e) => updateMap('compareVul', e.target.value));
+    selectCompareNut.addEventListener('change', (e) => updateMap('compareNut', e.target.value));
+
+    tabButtons.vulnerability.addEventListener('click', () => switchTab('vulnerability'));
+    tabButtons.compare.addEventListener('click', () => switchTab('compare'));
+
+    // Modal listeners
+    aboutBtn.addEventListener('click', () => aboutModal.style.display = 'block');
+    closeModalBtn.addEventListener('click', () => aboutModal.style.display = 'none');
+    window.addEventListener('click', (event) => {
+        if (event.target == aboutModal) {
+            aboutModal.style.display = 'none';
+        }
+    });
+}
+
+function switchTab(tabKey) {
+    Object.values(tabs).forEach(tab => tab.classList.remove('active'));
+    Object.values(tabButtons).forEach(btn => btn.classList.remove('active'));
+    
+    tabs[tabKey].classList.add('active');
+    tabButtons[tabKey]?.classList.add('active');
+    
+    setTimeout(() => {
+        Object.values(state.maps).forEach(map => map && map.invalidateSize());
+        if (tabKey === 'compare' && !state.compareMapsFitted) {
+            const mainlandGeoData = {
+                ...state.geoData,
+                features: state.geoData.features.filter(f => f.properties.DPTO_CCDGO !== '88')
+            };
+            const geoJsonLayer = L.geoJSON(mainlandGeoData);
+            const bounds = geoJsonLayer.getBounds();
+
+            state.maps.compareVul.fitBounds(bounds, { padding: [10, 10] });
+            state.maps.compareNut.fitBounds(bounds, { padding: [10, 10] });
+            
+            state.maps.compareVul.sync(state.maps.compareNut);
+            state.maps.compareNut.sync(state.maps.compareVul);
+
+            state.compareMapsFitted = true;
+        }
+    }, 100);
+}
