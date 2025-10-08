@@ -1,7 +1,7 @@
 import { state, selectCompareNut, selectCompareVul } from '../configuracion.js';
 import { getIndicatorDisplayName } from './ayudantes.js';
 import { createColorPalette } from './utilidades_color.js';
-import { createLegend, createIndiceLegend, createPopupContent } from './componentes.js';
+import { createLegend, createIndiceLegend, createPopupContent, createLegendToggleControl } from './componentes.js';
 
 export function initMaps() {
     const cartoLightUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
@@ -28,17 +28,20 @@ export function initMaps() {
         layers: [baseLayers.Claro] // Default layer
     });
     L.control.layers(baseLayers, null, { position: 'topright' }).addTo(state.maps.main);
+    createLegendToggleControl(state.maps.main, 'main').addTo(state.maps.main);
 
     // Comparison maps get their own instances of the light basemap and no layer control
     state.maps.compareVul = L.map('map-compare-vul', {
         fullscreenControl: true,
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
     });
+    createLegendToggleControl(state.maps.compareVul, 'compareVul').addTo(state.maps.compareVul);
 
     state.maps.compareNut = L.map('map-compare-nut', {
         fullscreenControl: true,
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
     });
+    createLegendToggleControl(state.maps.compareNut, 'compareNut').addTo(state.maps.compareNut);
 }
 
 export function updateMap(mapKey, indicatorId) {

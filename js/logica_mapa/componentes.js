@@ -214,3 +214,34 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
         return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
     }
 }
+
+export function createLegendToggleControl(map, mapKey) {
+    const control = L.control({ position: 'topright' });
+    control.onAdd = function() {
+        const button = L.DomUtil.create('a', 'leaflet-control leaflet-control-custom');
+        button.innerHTML = '<i class="fa-solid fa-list-ul" style="font-size: 1.2rem;"></i>';
+        button.href = '#';
+        button.role = 'button';
+        button.title = 'Mostrar/Ocultar leyenda';
+
+        L.DomEvent.disableClickPropagation(button);
+
+        L.DomEvent.on(button, 'click', function(e) {
+            L.DomEvent.stop(e);
+            const legend = state.legends[mapKey];
+            if (legend) {
+                const container = legend.getContainer();
+                if (container) {
+                    if (container.style.display === 'none') {
+                        container.style.display = '';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        return button;
+    };
+    return control;
+}
