@@ -134,7 +134,8 @@ export function createIndiceLegend(map, geoJsonLayer) {
         const highlightMapFeatures = (classification) => {
             if (!geoJsonLayer) return;
             geoJsonLayer.eachLayer(layer => {
-                const deptData = state.indexData[layer.feature.properties.DPTO_CCDGO];
+                const deptCode = parseInt(layer.feature.properties.DPTO_CCDGO, 10);
+                const deptData = state.indexData[deptCode];
                 if (deptData && deptData.Clasificacion_Indice === classification) {
                     layer.setStyle({ weight: 2.5, color: '#2c3e50' });
                     layer.bringToFront();
