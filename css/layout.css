@@ -1,0 +1,68 @@
+/* --- Contenedor Principal y Tabs --- */
+#app-container {
+    padding: 1rem;
+    flex-grow: 1;
+    overflow: hidden; /* Para que el sidebar no desborde */
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  height: 100%;
+}
+
+/* --- Estructura de Fila y Columna --- */
+.row-container {
+    display: flex;
+    flex-wrap: nowrap; /* Prevent wrapping */
+    height: 100%;
+}
+
+.col-sm-4 {
+    width: 33.33%;
+    padding: 0 15px;
+    box-sizing: border-box;
+    height: 100%;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.col-sm-8 {
+    width: 66.66%;
+    padding: 0 15px;
+    box-sizing: border-box;
+    height: 100%;
+    flex-grow: 1; /* Allow main panel to grow */
+    transition: width 0.3s ease;
+}
+
+/* --- Panel Principal y Mapas --- */
+.main-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* --- Pestaña de Mapas Comparativos --- */
+.compare-container {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    height: 100%;
+}
+
+.compare-map-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}

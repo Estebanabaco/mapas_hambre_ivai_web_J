@@ -1,0 +1,35 @@
+/* --- Estilos Generales y Variables --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+  --primary-color: #0056b3; /* Tono de azul más similar al de Shiny */
+  --secondary-color: #09ACAC;
+  --accent-color: #ffc107;
+  --background-color: #f8f9fa;
+  --text-color: #343a40;
+  --light-gray: #e9ecef;
+  --border-color: #dee2e6;
+  --white: #ffffff;
+  --font-family: 'Roboto', sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* --- Pie de Página --- */
+.app-footer {
+    text-align: center;
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 10px;
+    padding: 10px;
+    border-top: 1px solid var(--light-gray);
+    flex-shrink: 0;
+}
