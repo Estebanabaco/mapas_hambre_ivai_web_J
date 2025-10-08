@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateMap('main', initialIndicator.value);
                 updateStoryBox(initialIndicator.value);
             }
-            if (selectCompareVul.value) {
-                updateMap('compareVul', selectCompareVul.value);
+            const selectedVul = state.slimSelects.compareVul.getSelected();
+            if (selectedVul && selectedVul.length > 0) {
+                updateMap('compareVul', selectedVul[0]);
             }
             if (selectCompareNut.value) {
                 updateMap('compareNut', selectCompareNut.value);

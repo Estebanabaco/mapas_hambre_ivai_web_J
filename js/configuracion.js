@@ -20,7 +20,10 @@ export const state = {
         compareVul: null,
         compareNut: null,
     },
-    compareMapsFitted: false
+    compareMapsFitted: false,
+    slimSelects: {
+        compareVul: null,
+    }
 };
 export const COLOMBIA_CENTER = [4.5709, -74.2973];
 export const INITIAL_ZOOM = 6;

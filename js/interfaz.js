@@ -41,10 +41,34 @@ export function populateControls() {
     }).join('');
 
     const unsortedIndicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
-    selectCompareVul.innerHTML = unsortedIndicators.map(key => {
+    const selectData = unsortedIndicators.map(key => {
         const displayName = getIndicatorDisplayName(key);
-        return `<option value="${key}">${displayName}</option>`;
-    }).join('');
+        const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
+        return {
+            value: key,
+            text: displayName, // for searching
+            html: `${iconHTML}&nbsp;&nbsp;${displayName}`
+        };
+    });
+
+    if (state.slimSelects.compareVul) {
+        state.slimSelects.compareVul.destroy();
+    }
+    selectCompareVul.innerHTML = ''; // Clear previous options
+    state.slimSelects.compareVul = new SlimSelect({
+        select: '#select-compare-vul',
+        settings: {
+            showSearch: false,
+        },
+        events: {
+            afterChange: (newVal) => {
+                if (newVal && newVal.length > 0) {
+                    updateMap('compareVul', newVal[0].value);
+                }
+            }
+        }
+    });
+    state.slimSelects.compareVul.setData(selectData);
 
     const nutIndicators = [
         ["ENSIN", "Desnutrición Crónica (ENSIN)"],
@@ -173,7 +197,6 @@ export function setupEventListeners() {
         }
     });
 
-    selectCompareVul.addEventListener('change', (e) => updateMap('compareVul', e.target.value));
     selectCompareNut.addEventListener('change', (e) => updateMap('compareNut', e.target.value));
 
     tabButtons.vulnerability.addEventListener('click', () => switchTab('vulnerability'));
