@@ -85,7 +85,7 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
     return legend;
 }
 
-export function createIndiceLegend(map) {
+export function createIndiceLegend(map, geoJsonLayer) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
         // Create the new background div
@@ -116,14 +116,51 @@ export function createIndiceLegend(map) {
         ];
 
         const titleHtml = `<h4 style='margin-top:0; margin-bottom:8px; font-size:0.95em; text-align:center; color: #333;'>Nivel de Vulnerabilidad</h4>`;
-        const colorBarHtml = categories.map(c => `<div style='flex-grow: 1; background-color:${c.color}; height: 100%;'></div>`).join('');
-        const labelsHtml = categories.map(c => `<div style='flex-grow: 1; text-align: center; font-size: 0.75em; line-height: 1.1; padding-top: 2px;'><div style='color: #333;'>${c.label}</div><div style='color: #555; font-size:0.9em;'>${c.range}</div></div>`).join('');
+        
+        const legendItemsHtml = categories.map(c => `
+            <div class="legend-item" data-classification="${c.label}" style="flex-grow: 1; text-align: center; font-size: 0.75em; line-height: 1.1; padding: 4px 2px; border-radius: 3px;">
+                <div style="background-color:${c.color}; height: 15px; border: 1px solid #999; margin-bottom: 3px;"></div>
+                <div style='color: #333;'>${c.label}</div>
+                <div style='color: #555; font-size:0.9em;'>${c.range}</div>
+            </div>
+        `).join('');
 
         foregroundDiv.innerHTML = `
             ${titleHtml}
-            <div style='display: flex; width: 100%; height: 15px; margin-bottom: 3px; border: 1px solid #999;'>${colorBarHtml}</div>
-            <div style='display: flex; width: 100%; justify-content: space-around;'>${labelsHtml}</div>
+            <div style='display: flex; width: 100%; justify-content: space-around;'>${legendItemsHtml}</div>
         `;
+
+        // --- Event Listeners for Highlighting ---
+        const highlightMapFeatures = (classification) => {
+            if (!geoJsonLayer) return;
+            geoJsonLayer.eachLayer(layer => {
+                const deptData = state.indexData[layer.feature.properties.DPTO_CCDGO];
+                if (deptData && deptData.Clasificacion_Indice === classification) {
+                    layer.setStyle({ weight: 2.5, color: '#2c3e50' });
+                    layer.bringToFront();
+                }
+            });
+        };
+
+        const clearMapHighlight = () => {
+            if (geoJsonLayer) {
+                geoJsonLayer.eachLayer(layer => {
+                    // Avoid resetting the style of the layer that is currently being hovered
+                    if (!layer.isHovered) {
+                        geoJsonLayer.resetStyle(layer);
+                    }
+                });
+            }
+        };
+
+        foregroundDiv.querySelectorAll('.legend-item').forEach(item => {
+            item.addEventListener('mouseover', () => {
+                highlightMapFeatures(item.dataset.classification);
+            });
+            item.addEventListener('mouseout', () => {
+                clearMapHighlight();
+            });
+        });
         
         // Stop propagation to prevent map clicks when interacting with the legend
         L.DomEvent.on(backgroundDiv, 'mousedown dblclick', L.DomEvent.stopPropagation);

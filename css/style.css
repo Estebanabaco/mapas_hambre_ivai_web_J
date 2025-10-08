@@ -560,3 +560,17 @@ body {
     border-style: solid;
     border-color: transparent var(--text-color) transparent transparent;
 }
+
+/* --- Estilos de Resaltado Interactivo --- */
+.legend-item.highlighted,
+.legend-item:hover {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+    border-radius: 3px; /* Para que el outline se vea mejor */
+    cursor: pointer;
+}
+
+.map-feature-highlight {
+    weight: 2.5;
+    color: '#2c3e50';
+}

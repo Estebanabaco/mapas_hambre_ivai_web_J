@@ -54,7 +54,8 @@ export function updateMap(mapKey, indicatorId) {
     let palette, legend;
     const isIndice = indicatorId === 'Indice';
 
-    if (isIndice && mapKey === 'main') { 
+    // Define palette first
+    if (isIndice && mapKey === 'main') {
         palette = (value) => {
             const classification = Object.values(state.indexData).find(d => d.Indice === value)?.Clasificacion_Indice;
             if (classification === 'Crítica') return '#B30000';
@@ -64,15 +65,9 @@ export function updateMap(mapKey, indicatorId) {
             if (classification === 'Mínima') return '#2E7D32';
             return '#d9d9d9';
         };
-        legend = createIndiceLegend(map);
     } else {
-        const legendTitle = isNutritionMap
-            ? selectCompareNut.options[selectCompareNut.selectedIndex].text
-            : getIndicatorDisplayName(indicatorId);
-        const isPercentage = isNutritionMap;
         const values = Object.values(data).map(d => d[indicatorId]).filter(v => v != null);
-        palette = createColorPalette(values, isPercentage);
-        legend = createLegend(map, palette, values, legendTitle, isPercentage);
+        palette = createColorPalette(values, isNutritionMap);
     }
 
     const geoJsonLayer = L.geoJSON(state.geoData, {
@@ -89,7 +84,6 @@ export function updateMap(mapKey, indicatorId) {
         onEachFeature: (feature, layer) => {
             const deptCode = parseInt(feature.properties.DPTO_CCDGO);
             let deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || 'Nombre no disponible').trim().toLowerCase();
-            // Convert to Title Case to match the original R app's str_to_title()
             deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
             
             layer.bindTooltip(deptName);
@@ -97,13 +91,51 @@ export function updateMap(mapKey, indicatorId) {
 
             layer.on({
                 mouseover: (e) => {
+                    e.target.isHovered = true;
                     e.target.setStyle({ weight: 2.5, color: '#2c3e50' });
                     e.target.bringToFront();
+
+                    if (isIndice && mapKey === 'main') {
+                        const classification = state.indexData[deptCode]?.Clasificacion_Indice;
+                        if (classification) {
+                            const legendContainer = state.legends.main.getContainer();
+                            if (legendContainer) {
+                                const legendItem = legendContainer.querySelector(`.legend-item[data-classification="${classification}"]`);
+                                if (legendItem) legendItem.classList.add('highlighted');
+                            }
+                        }
+                    }
                 },
-                mouseout: (e) => geoJsonLayer.resetStyle(e.target),
+                mouseout: (e) => {
+                    e.target.isHovered = false;
+                    geoJsonLayer.resetStyle(e.target);
+
+                    if (isIndice && mapKey === 'main') {
+                        const classification = state.indexData[deptCode]?.Clasificacion_Indice;
+                        if (classification) {
+                            const legendContainer = state.legends.main.getContainer();
+                            if (legendContainer) {
+                                const legendItem = legendContainer.querySelector(`.legend-item[data-classification="${classification}"]`);
+                                if (legendItem) legendItem.classList.remove('highlighted');
+                            }
+                        }
+                    }
+                },
             });
         }
     });
+
+    // Now create legend, passing the layer if needed
+    if (isIndice && mapKey === 'main') { 
+        legend = createIndiceLegend(map, geoJsonLayer);
+    } else {
+        const legendTitle = isNutritionMap
+            ? selectCompareNut.options[selectCompareNut.selectedIndex].text
+            : getIndicatorDisplayName(indicatorId);
+        const isPercentage = isNutritionMap;
+        const values = Object.values(data).map(d => d[indicatorId]).filter(v => v != null);
+        legend = createLegend(map, palette, values, legendTitle, isPercentage);
+    }
     
     geoJsonLayer.addTo(map);
     state.layers[mapKey] = geoJsonLayer;
