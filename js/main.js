@@ -1,6 +1,6 @@
 import { state, indicatorSelector, selectCompareVul, selectCompareNut } from './configuracion.js';
 import { loadData } from './manejo_datos.js';
-import { initMaps, updateMap } from './logica_mapa.js';
+import { initMaps, updateMap } from './logica_mapa/mapa.js';
 import { populateControls, populateFooter, setupEventListeners, setupSidebarToggle, setupTooltips, updateStoryBox } from './interfaz.js';
 
 document.addEventListener('DOMContentLoaded', () => {

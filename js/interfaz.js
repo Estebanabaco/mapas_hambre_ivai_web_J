@@ -1,5 +1,6 @@
 import { state, indicatorSelector, selectCompareVul, selectCompareNut, appFooter, storyBox, aboutBtn, aboutModal, closeModalBtn, tabs, tabButtons } from './configuracion.js';
-import { getIndicatorDisplayName, updateMap } from './logica_mapa.js';
+import { getIndicatorDisplayName } from './logica_mapa/ayudantes.js';
+import { updateMap } from './logica_mapa/mapa.js';
 import { dim_icons } from './icons.js';
 
 // --- UI POPULATION ---

@@ -1,92 +1,8 @@
-import { state, selectCompareNut } from './configuracion.js';
-import { dim_icons } from './icons.js';
+import { state, selectCompareNut } from '../configuracion.js';
+import { getIndicatorDisplayName } from './ayudantes.js';
+import { dim_icons } from '../icons.js';
 
-// --- HELPERS ---
-export function getIndicatorDisplayName(indicatorId) {
-    const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
-    const config = state.appConfig[configKey];
-    return config?.nombreCompleto || indicatorId.replace(/_/g, ' ');
-}
-
-// --- MAP INITIALIZATION ---
-export function initMaps() {
-    const cartoLightUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
-    const cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-
-    const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-        attribution: cartoAttribution
-    });
-
-    const baseLayers = {
-        "Claro": L.tileLayer(cartoLightUrl, { attribution: cartoAttribution }),
-        "Estándar": osm,
-        "Oscuro": cartoDark
-    };
-
-    // Initialize maps
-    // Main map gets the layer control and its own instance of the light layer
-    state.maps.main = L.map('map-main', {
-        fullscreenControl: true,
-        layers: [baseLayers.Claro] // Default layer
-    });
-    L.control.layers(baseLayers, null, { position: 'topright' }).addTo(state.maps.main);
-
-    // Comparison maps get their own instances of the light basemap and no layer control
-    state.maps.compareVul = L.map('map-compare-vul', {
-        fullscreenControl: true,
-        layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
-    });
-
-    state.maps.compareNut = L.map('map-compare-nut', {
-        fullscreenControl: true,
-        layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })]
-    });
-}
-
-// --- MAP DRAWING LOGIC ---
-// Helper functions for continuous color interpolation
-const lerp = (a, b, t) => a + (b - a) * t;
-const hexToRgb = (hex) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
-};
-const rgbToHex = (r, g, b) => "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1).padStart(6, '0');
-
-function createColorPalette(values, isPercentage = false) {
-    const domain = values.filter(v => v !== null && !isNaN(v));
-    if (domain.length === 0) return () => '#d9d9d9';
-
-    const min = Math.min(...domain);
-    const max = Math.max(...domain);
-
-    const colorStrings = ["#fee5d9", "#fcae91", "#fb6a4a", "#de2d26", "#a50f15"];
-    const colorRGBs = colorStrings.map(hexToRgb);
-    const numColors = colorRGBs.length;
-
-    return (value) => {
-        if (value === null || isNaN(value)) return '#d9d9d9';
-
-        const clampedValue = Math.max(min, Math.min(value, max));
-        const t = (max - min) > 0 ? (clampedValue - min) / (max - min) : 0;
-
-        const colorIndex = t * (numColors - 1);
-        const i = Math.floor(colorIndex);
-        const j = Math.min(i + 1, numColors - 1);
-        const localT = colorIndex - i;
-
-        const r = lerp(colorRGBs[i][0], colorRGBs[j][0], localT);
-        const g = lerp(colorRGBs[i][1], colorRGBs[j][1], localT);
-        const b = lerp(colorRGBs[i][2], colorRGBs[j][2], localT);
-
-        return rgbToHex(r, g, b);
-    };
-}
-
-function createLegend(map, palette, values, title, isPercentage = false) {
+export function createLegend(map, palette, values, title, isPercentage = false) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
         const div = L.DomUtil.create('div', 'info legend leaflet-legend');
@@ -169,7 +85,7 @@ function createLegend(map, palette, values, title, isPercentage = false) {
     return legend;
 }
 
-function createIndiceLegend(map) {
+export function createIndiceLegend(map) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
         // Create the new background div
@@ -218,7 +134,7 @@ function createIndiceLegend(map) {
     return legend;
 }
 
-function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
+export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
     const isNutritionMap = mapKey === 'compareNut';
     const data = isNutritionMap ? state.nutritionData : state.indexData;
     const deptData = data[deptCode];
@@ -259,75 +175,4 @@ function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
         const formattedValue = (value !== null && !isNaN(value)) ? `${(value * 100).toFixed(1)}%` : "No disponible";
         return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
     }
-}
-
-export function updateMap(mapKey, indicatorId) {
-    const map = state.maps[mapKey];
-    if (!map) return;
-
-    if (state.layers[mapKey]) map.removeLayer(state.layers[mapKey]);
-    if (state.legends[mapKey]) map.removeControl(state.legends[mapKey]);
-
-    const isNutritionMap = mapKey === 'compareNut';
-    const data = isNutritionMap ? state.nutritionData : state.indexData;
-    
-    let palette, legend;
-    const isIndice = indicatorId === 'Indice';
-
-    if (isIndice && mapKey === 'main') { 
-        palette = (value) => {
-            const classification = Object.values(state.indexData).find(d => d.Indice === value)?.Clasificacion_Indice;
-            if (classification === 'Crítica') return '#B30000';
-            if (classification === 'Alta') return '#E64519';
-            if (classification === 'Media') return '#F9A825';
-            if (classification === 'Baja') return '#8BC34A';
-            if (classification === 'Mínima') return '#2E7D32';
-            return '#d9d9d9';
-        };
-        legend = createIndiceLegend(map);
-    } else {
-        const legendTitle = isNutritionMap
-            ? selectCompareNut.options[selectCompareNut.selectedIndex].text
-            : getIndicatorDisplayName(indicatorId);
-        const isPercentage = isNutritionMap;
-        const values = Object.values(data).map(d => d[indicatorId]).filter(v => v != null);
-        palette = createColorPalette(values, isPercentage);
-        legend = createLegend(map, palette, values, legendTitle, isPercentage);
-    }
-
-    const geoJsonLayer = L.geoJSON(state.geoData, {
-        style: (feature) => {
-            const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-            const value = data[deptCode] ? data[deptCode][indicatorId] : null;
-            return {
-                fillColor: palette(value),
-                weight: 0.8,
-                color: '#ffffff',
-                fillOpacity: 0.85
-            };
-        },
-        onEachFeature: (feature, layer) => {
-            const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-            let deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || 'Nombre no disponible').trim().toLowerCase();
-            // Convert to Title Case to match the original R app's str_to_title()
-            deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-            
-            layer.bindTooltip(deptName);
-            layer.bindPopup(() => createPopupContent(deptCode, deptName, indicatorId, mapKey));
-
-            layer.on({
-                mouseover: (e) => {
-                    e.target.setStyle({ weight: 2.5, color: '#2c3e50' });
-                    e.target.bringToFront();
-                },
-                mouseout: (e) => geoJsonLayer.resetStyle(e.target),
-            });
-        }
-    });
-    
-    geoJsonLayer.addTo(map);
-    state.layers[mapKey] = geoJsonLayer;
-
-    legend.addTo(map);
-    state.legends[mapKey] = legend;
 }
