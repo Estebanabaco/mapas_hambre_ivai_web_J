@@ -105,14 +105,14 @@ export function updateStoryBox(indicatorId) {
         `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
     ).join('');
 
-    const evidenciasTitle = indicatorId === 'Indice' ? 'Leer Más' : 'Ruta de Acciones Sugeridas';
+    const evidenciasTitle = 'Ruta de Acciones Sugeridas';
 
     storyBox.innerHTML = `
         ${iconHTML}
         <h3>${config.nombreCompleto}</h3>
+        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
         <p>${config.descripcion}</p>
         ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
-        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
     `;
 }
 

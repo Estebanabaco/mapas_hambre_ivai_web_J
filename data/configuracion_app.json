@@ -34,16 +34,8 @@
     ],
     "evidencias": [
       {
-        "nombre": "Informe Completo",
-        "url": "https://example.com/evidencia16"
-      },
-      {
-        "nombre": "Nota Metodológica",
-        "url": "https://estadisticas.abaco.org.co/ivai-metodologia/"
-      },
-      {
-        "nombre": "Visita Nuestro Observatorio",
-        "url": "https://observatorio.abaco.org.co/"
+        "nombre": "En cada dimencion encontraras acciones especificas para la problematica",
+        "url": "https://estadisticas.abaco.org.co/ivai-acciones/"
       }
     ]
   },
