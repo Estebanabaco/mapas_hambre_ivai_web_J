@@ -5,6 +5,10 @@
     margin-bottom: 20px;
 }
 
+.tab-header nav {
+    display: flex;
+}
+
 .tab-button {
     background-color: transparent;
     border: 1px solid transparent;
@@ -85,19 +89,20 @@
 
 /* --- Botón 'Acerca de' --- */
 .about-button {
-    margin-top: auto; /* Empuja el botón al fondo */
-    background-color: #6c757d;
-    color: white;
-    border: none;
+    margin-left: auto; /* Empuja el botón a la derecha */
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--primary-color);
     padding: 10px 15px;
-    border-radius: 5px;
+    border-radius: 5px 5px 0 0;
     cursor: pointer;
-    text-align: center;
-    font-size: 0.9em;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .about-button:hover {
-    background-color: #5a6268;
+    background-color: var(--light-gray);
 }
 
 .about-button i {
