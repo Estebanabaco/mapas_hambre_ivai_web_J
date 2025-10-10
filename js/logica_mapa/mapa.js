@@ -25,25 +25,40 @@ export function initMaps() {
     // Main map gets the layer control and its own instance of the light layer
     state.maps.main = L.map('map-main', {
         fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topright'
+        },
         layers: [baseLayers.Claro], // Default layer
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        zoomControl: false
     });
+    L.control.zoom({ position: 'topright' }).addTo(state.maps.main);
     L.control.layers(baseLayers, null, { position: 'topright' }).addTo(state.maps.main);
     createLegendToggleControl(state.maps.main, 'main').addTo(state.maps.main);
 
     // Comparison maps get their own instances of the light basemap and no layer control
     state.maps.compareVul = L.map('map-compare-vul', {
         fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topright'
+        },
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        zoomControl: false
     });
+    L.control.zoom({ position: 'topright' }).addTo(state.maps.compareVul);
     createLegendToggleControl(state.maps.compareVul, 'compareVul').addTo(state.maps.compareVul);
 
     state.maps.compareNut = L.map('map-compare-nut', {
         fullscreenControl: true,
+        fullscreenControlOptions: {
+            position: 'topright'
+        },
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        zoomControl: false
     });
+    L.control.zoom({ position: 'topright' }).addTo(state.maps.compareNut);
     createLegendToggleControl(state.maps.compareNut, 'compareNut').addTo(state.maps.compareNut);
 }
 

@@ -80,7 +80,7 @@
     ]
   },
   "Desempleo_Ingresos": {
-    "nombreCompleto": "Desempleo e ingresos",
+    "nombreCompleto": "Desigualdad",
     "descripcion": "Refleja restricciones económicas que afectan la capacidad de adquirir alimentos. La inestabilidad financiera agrava la inseguridad alimentaria y reduce la posibilidad de mantener una dieta suficiente, segura y nutritiva.",
     "variables": [
       {

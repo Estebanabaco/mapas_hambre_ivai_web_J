@@ -130,3 +130,69 @@
     weight: 2.5;
     color: '#2c3e50';
 }
+
+/* --- Estilo Unificado para Controles del Mapa (Opción 1) --- */
+
+/* 1. Contenedor de controles para espaciado */
+/* Se eliminan los estilos de flexbox para usar el posicionamiento por defecto de Leaflet */
+.leaflet-top.leaflet-right .leaflet-control {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+/* 2. Estilo y tamaño para los botones individuales y de barra */
+.leaflet-control-zoom a,
+.leaflet-control-layers-toggle,
+.leaflet-control-custom {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    background-color: white;
+    color: #333;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-control-layers-toggle:hover,
+.leaflet-control-custom:hover {
+    background-color: #f4f4f4;
+}
+
+/* 3. Contenedores de Leaflet (unificar sombras y bordes) */
+.leaflet-control-zoom,
+.leaflet-control-layers,
+.leaflet-control-custom {
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4) !important;
+    border-radius: 5px !important;
+    border: none !important;
+}
+
+/* 4. Ajustes específicos */
+
+/* Control de Zoom (+/-) */
+.leaflet-control-zoom {
+    overflow: hidden;
+}
+.leaflet-control-zoom a {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+.leaflet-control-zoom-in {
+    border-bottom: 1px solid #ccc !important;
+}
+
+/* Control de Capas */
+.leaflet-control-layers-toggle {
+    background-size: 22px 22px !important;
+    background-position: center !important;
+}
+
+
+
+/* Control Custom (Leyenda) */
+.leaflet-control-custom i {
+    font-size: 1.3rem;
+    vertical-align: middle;
+}
