@@ -5,12 +5,27 @@ import { dim_icons } from '../icons.js';
 export function createLegend(map, palette, values, title, isPercentage = false) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
-        const div = L.DomUtil.create('div', 'info legend leaflet-legend');
+        const backgroundDiv = L.DomUtil.create('div', 'legend-wrapper');
+        backgroundDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        backgroundDiv.style.borderRadius = '8px';
+        backgroundDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.25)';
+        backgroundDiv.style.padding = '5px';
+
+        const foregroundDiv = L.DomUtil.create('div', 'info legend leaflet-legend leaflet-control-layers leaflet-control-layers-expanded', backgroundDiv);
+        foregroundDiv.style.backgroundColor = 'rgba(255,255,255,0.9)';
+        foregroundDiv.style.padding = '8px';
+        foregroundDiv.style.borderRadius = '5px';
+        foregroundDiv.style.boxShadow = '0 1px 5px rgba(0,0,0,0.2)';
+        foregroundDiv.style.width = 'auto';
+        foregroundDiv.style.minWidth = '100px';
+        foregroundDiv.style.maxWidth = '90vw';
+
+
         const domain = values.filter(v => v !== null && !isNaN(v)).sort((a, b) => a - b);
 
         if (domain.length === 0) {
-            div.innerHTML = `<h4>${title}</h4>No data`;
-            return div;
+            foregroundDiv.innerHTML = `<h4>${title}</h4>No data`;
+            return backgroundDiv;
         }
 
         const min = domain[0];
@@ -71,16 +86,35 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             labelsDivs += `<div style="position: absolute; top: ${percentPosition}%; left: 0; width: 100%; transform: ${transform};"><span style="padding-left: 5px;">&ndash; ${formatLabel(val)}</span></div>`;
         }
 
-        div.innerHTML = `
-            <h4>${title}</h4>
-            <div style="display: flex; align-items: stretch; height: ${legendHeight}px;">
+        foregroundDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; font-size: 0.95em; color: #333;">${title}</h4>
+                <button class="legend-info-btn" id="legend-info-btn-${map.getContainer().id}"><i class="fas fa-info-circle"></i></button>
+            </div>
+            <div style="display: flex; align-items: stretch; height: ${legendHeight}px; margin-top: 8px;">
                 <div style="width: 20px; background: ${gradient};"></div>
                 <div style="position: relative; width: 60px; font-size: 0.9em; margin-left: 5px;">
                     ${labelsDivs}
                 </div>
             </div>
         `;
-        return div;
+
+        const infoButton = foregroundDiv.querySelector(`#legend-info-btn-${map.getContainer().id}`);
+        if (infoButton) {
+            infoButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const indicatorId = state.currentIndicator;
+                const popupContent = createMoreInfoPopup(indicatorId);
+                L.popup({ maxWidth: 400 })
+                    .setLatLng(map.getCenter())
+                    .setContent(popupContent)
+                    .openOn(map);
+            });
+        }
+
+        L.DomEvent.on(backgroundDiv, 'mousedown dblclick', L.DomEvent.stopPropagation);
+
+        return backgroundDiv;
     };
     return legend;
 }
@@ -115,7 +149,12 @@ export function createIndiceLegend(map, geoJsonLayer) {
             { label: "Crítica", range: "65-100", color: "#B30000" }
         ];
 
-        const titleHtml = `<h4 style='margin-top:0; margin-bottom:8px; font-size:0.95em; text-align:center; color: #333;'>Nivel de Vulnerabilidad</h4>`;
+        const titleHtml = `
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 8px;">
+                <h4 style='margin:0; font-size:0.95em; color: #333;'>Nivel de Vulnerabilidad</h4>
+                <button class="legend-info-btn" id="legend-info-btn-main" style="margin-left: 10px;"><i class="fas fa-info-circle"></i></button>
+            </div>
+        `;
         
         const legendItemsHtml = categories.map(c => `
             <div class="legend-item" data-classification="${c.label}" style="flex-grow: 1; text-align: center; font-size: 0.75em; line-height: 1.1; padding: 4px 2px; border-radius: 3px;">
@@ -129,6 +168,19 @@ export function createIndiceLegend(map, geoJsonLayer) {
             ${titleHtml}
             <div style='display: flex; width: 100%; justify-content: space-around;'>${legendItemsHtml}</div>
         `;
+
+        const infoButton = foregroundDiv.querySelector('#legend-info-btn-main');
+        if (infoButton) {
+            infoButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const indicatorId = state.currentIndicator;
+                const popupContent = createMoreInfoPopup(indicatorId);
+                L.popup({ maxWidth: 400 })
+                    .setLatLng(map.getCenter())
+                    .setContent(popupContent)
+                    .openOn(map);
+            });
+        }
 
         // --- Event Listeners for Highlighting ---
         const highlightMapFeatures = (classification) => {
@@ -244,4 +296,30 @@ export function createLegendToggleControl(map, mapKey) {
         return button;
     };
     return control;
+}
+
+export function createMoreInfoPopup(indicatorId) {
+    const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
+    const config = state.appConfig[configKey];
+
+    if (!config) {
+        return `<p>No hay descripción disponible para este indicador.</p>`;
+    }
+
+    const variablesHtml = config.variables.map(v =>
+        `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`
+    ).join('');
+
+    const evidenciasHtml = config.evidencias.map(e =>
+        `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
+    ).join('');
+
+    const evidenciasTitle = 'Ruta de Acciones Sugeridas';
+
+    return `
+        <h3>${config.nombreCompleto}</h3>
+        <p>${config.descripcion}</p>
+        ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
+        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
+    `;
 }

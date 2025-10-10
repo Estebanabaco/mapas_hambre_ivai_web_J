@@ -23,7 +23,8 @@ export const state = {
     compareMapsFitted: false,
     slimSelects: {
         compareVul: null,
-    }
+    },
+    currentIndicator: 'Indice'
 };
 export const COLOMBIA_CENTER = [4.5709, -74.2973];
 export const INITIAL_ZOOM = 6;

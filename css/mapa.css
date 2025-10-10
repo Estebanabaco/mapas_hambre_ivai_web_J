@@ -19,7 +19,6 @@
     float: left;
     margin-right: 8px;
     opacity: 0.85;
-    border: 1px solid #999;
 }
 
 .leaflet-legend .legend-label {
@@ -195,4 +194,74 @@
 .leaflet-control-custom i {
     font-size: 1.3rem;
     vertical-align: middle;
+}
+
+.legend-info-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+}
+
+.legend-info-btn:hover {
+    color: var(--text-color);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+}
+
+.leaflet-popup-content {
+    margin: 15px;
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.leaflet-popup-content h3 {
+    color: var(--primary-color);
+    font-size: 1.1em;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.leaflet-popup-content .section-title {
+    font-weight: 700;
+    color: #004085;
+    margin-top: 1rem;
+    font-size: 1em;
+    margin-bottom: 0.5rem;
+}
+
+.leaflet-popup-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.leaflet-popup-content li {
+    padding: 0.25rem 0;
+}
+
+.leaflet-popup-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.leaflet-popup-content a:hover {
+    text-decoration: underline;
+}
+
+.leaflet-legend .legend-info-btn i {
+    background-color: transparent !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 18px !important; /* to vertically center the icon */
 }

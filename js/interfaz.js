@@ -192,6 +192,7 @@ export function setupSidebarToggle() {
 export function setupEventListeners() {
     indicatorSelector.addEventListener('change', (e) => {
         if (e.target.name === 'indicator') {
+            state.currentIndicator = e.target.value;
             updateMap('main', e.target.value);
             updateStoryBox(e.target.value);
         }
