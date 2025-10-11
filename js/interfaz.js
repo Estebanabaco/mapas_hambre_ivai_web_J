@@ -1,5 +1,6 @@
 import { state, indicatorSelector, selectCompareVul, selectCompareNut, appFooter, storyBox, aboutBtn, aboutModal, closeModalBtn, tabs, tabButtons } from './configuracion.js';
 import { getIndicatorDisplayName } from './logica_mapa/ayudantes.js';
+import { createMoreInfoPopup } from './logica_mapa/componentes.js';
 import { updateMap } from './logica_mapa/mapa.js';
 import { dim_icons } from './icons.js';
 
@@ -27,6 +28,8 @@ export function populateControls() {
         const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
         const finalLabel = key === 'Indice' ? 'Índice Integrado' : `${displayName} ${weightLabel}`;
 
+        const infoIconHtml = `<i class="fas fa-info-circle dimension-info-btn" data-indicator-id="${key}" title="Más información sobre ${displayName}"></i>`;
+
         return `
             <div class="radio">
               <label title="${displayName}">
@@ -36,6 +39,7 @@ export function populateControls() {
                     <span class="radio-label">${finalLabel}</span>
                  </span>
               </label>
+              ${infoIconHtml}
             </div>
         `;
     }).join('');
@@ -191,6 +195,24 @@ export function setupEventListeners() {
             updateMap('main', e.target.value);
             updateStoryBox(e.target.value);
             closeLegendInfoModal();
+        }
+    });
+
+    indicatorSelector.addEventListener('click', (e) => {
+        if (e.target.classList.contains('dimension-info-btn')) {
+            const indicatorId = e.target.dataset.indicatorId;
+            if (indicatorId) {
+                const modal = document.getElementById('legend-info-modal');
+                const modalBody = document.getElementById('legend-info-body');
+                const modalTitle = document.getElementById('legend-info-title');
+
+                const popupContent = createMoreInfoPopup(indicatorId);
+                const displayName = getIndicatorDisplayName(indicatorId);
+
+                modalTitle.innerHTML = `${dim_icons[indicatorId] || ''} ${displayName}`;
+                modalBody.innerHTML = popupContent;
+                modal.style.display = 'block';
+            }
         }
     });
 
