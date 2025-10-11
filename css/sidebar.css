@@ -93,6 +93,11 @@
     margin-bottom: 1.5rem;
 }
 
+.radio {
+    display: flex;
+    align-items: center;
+}
+
 .radio label {
     display: flex;
     margin-bottom: 3px; /* Reducido de 5px */
@@ -100,6 +105,19 @@
     transition: background-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
     overflow: hidden;
+    flex-grow: 1; /* Make label take up available space */
+}
+
+.dimension-info-btn {
+    color: #6c757d;
+    margin-left: 8px;
+    padding: 5px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.dimension-info-btn:hover {
+    color: #333;
 }
 
 .radio label > input[type='radio'] {
