@@ -103,7 +103,7 @@ export function updateStoryBox(indicatorId) {
     }
 
     const evidenciasHtml = config.evidencias.map(e =>
-        `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
+        `<a href="${e.url}" target="_blank" class="accion-btn">${e.nombre}</a>`
     ).join('');
 
     const evidenciasTitle = 'Ruta de Acciones Sugeridas';
@@ -111,7 +111,7 @@ export function updateStoryBox(indicatorId) {
     storyBox.innerHTML = `
         ${iconHTML}
         <h3>${config.nombreCompleto}</h3>
-        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
+        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><div class="acciones-container">${evidenciasHtml}</div>` : ''}
     `;
 }
 
