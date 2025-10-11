@@ -3,18 +3,20 @@ import { state, storyBox } from './configuracion.js';
 // --- DATA FETCHING ---
 export async function loadData() {
     try {
-        const [geoData, indexData, nutritionData, appConfig, weights] = await Promise.all([
+        const [geoData, indexData, nutritionData, appConfig, weights, siteConfig] = await Promise.all([
             fetch('mapa/ColDepSNVlite.geojson').then(res => res.json()),
             fetch('data/datos_indice.json').then(res => res.json()),
             fetch('data/datos_nutricionales.json').then(res => res.json()),
             fetch('data/configuracion_app.json').then(res => res.json()),
-            fetch('data/002_Pesos_AHP_Hambre.json').then(res => res.json())
+            fetch('data/002_Pesos_AHP_Hambre.json').then(res => res.json()),
+            fetch('config/site_config.json').then(res => res.json())
         ]);
         state.geoData = geoData;
         state.indexData = indexData;
         state.nutritionData = nutritionData;
         state.appConfig = appConfig;
         state.weights = weights;
+        state.siteConfig = siteConfig;
 
         // Dynamically add Clasificacion_Indice based on Indice
         for (const deptoCode in state.indexData) {

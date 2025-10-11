@@ -88,8 +88,15 @@ export function populateControls() {
 }
 
 export function populateFooter() {
-    const year = new Date().getFullYear();
+    const year = state.siteConfig.year;
     appFooter.innerHTML = `Última actualización: Octubre ${year}`;
+}
+
+export function populateModal() {
+    const modalYear = document.getElementById('modal-year');
+    if (modalYear) {
+        modalYear.textContent = state.siteConfig.year;
+    }
 }
 
 export function updateStoryBox(indicatorId) {
