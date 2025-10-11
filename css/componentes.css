@@ -130,20 +130,42 @@
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: absolute;
-    top: 10px;
-    right: 20px;
+    top: 15%; /* Initial position */
+    left: 20%; /* Initial position */
+
+    /* For resizing and layout */
+    resize: both;
+    overflow: hidden; /* Hide overflow from resize */
+    display: flex;
+    flex-direction: column;
+    min-width: 350px; /* Prevent it from becoming too small */
+    min-height: 250px;
 }
 
-.close-button:hover,
-.close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+.modal-header {
+    padding: 10px 20px;
+    cursor: move;
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom: 1px solid #ddd;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .modal-title {
-    color: var(--primary-color);
-    margin-top: 0;
+    color: white;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* Allow vertical scroll */
+    flex-grow: 1; /* Take available space */
 }
 
 .modal-body p, .modal-body ul {
@@ -153,6 +175,19 @@
 
 .modal-body ul {
     padding-left: 20px;
+}
+
+.close-button {
+    color: #eee;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 /* --- Estilos para Slim Select --- */

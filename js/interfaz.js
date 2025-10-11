@@ -209,6 +209,123 @@ export function setupEventListeners() {
             aboutModal.style.display = 'none';
         }
     });
+
+    makeModalDraggable();
+}
+
+function makeModalDraggable() {
+    const modal = document.getElementById('about-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    const header = modal.querySelector('.modal-header');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    header.addEventListener('mousedown', (e) => {
+        // Prevent dragging from starting on the close button
+        if (e.target.classList.contains('close-button')) {
+            return;
+        }
+        isDragging = true;
+
+        // Calculate the offset from the top-left of the modal content
+        offsetX = e.clientX - modalContent.offsetLeft;
+        offsetY = e.clientY - modalContent.offsetTop;
+
+        // Add a class to disable text selection and indicate dragging
+        document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        // Calculate new position
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+
+        // Boundary checks to keep the modal within the viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const modalWidth = modalContent.offsetWidth;
+        const modalHeight = modalContent.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, viewportWidth - modalWidth));
+        newY = Math.max(0, Math.min(newY, viewportHeight - modalHeight));
+
+        modalContent.style.left = `${newX}px`;
+        modalContent.style.top = `${newY}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            // Re-enable text selection
+            document.body.style.userSelect = '';
+        }
+    });
+}
+
+export function makeLegendInfoModalDraggable() {
+    const modal = document.getElementById('legend-info-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    const header = modal.querySelector('.modal-header');
+    const closeBtn = document.getElementById('close-legend-info-modal');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('close-button')) {
+            return;
+        }
+        isDragging = true;
+
+        // Ensure the modal content has a position style set
+        if (!modalContent.style.left) modalContent.style.left = '50%';
+        if (!modalContent.style.top) modalContent.style.top = '50%';
+
+
+        offsetX = e.clientX - modalContent.getBoundingClientRect().left;
+        offsetY = e.clientY - modalContent.getBoundingClientRect().top;
+
+        document.body.style.userSelect = 'none';
+        modalContent.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const modalWidth = modalContent.offsetWidth;
+        const modalHeight = modalContent.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, viewportWidth - modalWidth));
+        newY = Math.max(0, Math.min(newY, viewportHeight - modalHeight));
+
+        modalContent.style.left = `${newX}px`;
+        modalContent.style.top = `${newY}px`;
+        modalContent.style.transform = 'translate(0, 0)'; // Override transform
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            document.body.style.userSelect = '';
+            modalContent.style.cursor = 'grab';
+        }
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 }
 
 function switchTab(tabKey) {
