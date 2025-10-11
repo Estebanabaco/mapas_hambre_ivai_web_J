@@ -211,6 +211,7 @@ export function setupEventListeners() {
     });
 
     makeModalDraggable();
+    makeLegendInfoModalDraggable();
 }
 
 function makeModalDraggable() {
@@ -260,6 +261,70 @@ function makeModalDraggable() {
             isDragging = false;
             // Re-enable text selection
             document.body.style.userSelect = '';
+        }
+    });
+}
+
+export function makeLegendInfoModalDraggable() {
+    const modal = document.getElementById('legend-info-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    const header = modal.querySelector('.modal-header');
+    const closeBtn = document.getElementById('close-legend-info-modal');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    header.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('close-button')) {
+            return;
+        }
+        isDragging = true;
+
+        // Ensure the modal content has a position style set
+        if (!modalContent.style.left) modalContent.style.left = '50%';
+        if (!modalContent.style.top) modalContent.style.top = '50%';
+
+
+        offsetX = e.clientX - modalContent.getBoundingClientRect().left;
+        offsetY = e.clientY - modalContent.getBoundingClientRect().top;
+
+        document.body.style.userSelect = 'none';
+        modalContent.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const modalWidth = modalContent.offsetWidth;
+        const modalHeight = modalContent.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, viewportWidth - modalWidth));
+        newY = Math.max(0, Math.min(newY, viewportHeight - modalHeight));
+
+        modalContent.style.left = `${newX}px`;
+        modalContent.style.top = `${newY}px`;
+        modalContent.style.transform = 'translate(0, 0)'; // Override transform
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            document.body.style.userSelect = '';
+            modalContent.style.cursor = 'grab';
+        }
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
         }
     });
 }
