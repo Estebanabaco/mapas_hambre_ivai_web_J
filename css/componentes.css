@@ -130,42 +130,20 @@
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: absolute;
-    top: 15%; /* Initial position */
-    left: 20%; /* Initial position */
-
-    /* For resizing and layout */
-    resize: both;
-    overflow: hidden; /* Hide overflow from resize */
-    display: flex;
-    flex-direction: column;
-    min-width: 350px; /* Prevent it from becoming too small */
-    min-height: 250px;
+    top: 10px;
+    right: 20px;
 }
 
-.modal-header {
-    padding: 10px 20px;
-    cursor: move;
-    background-color: var(--primary-color);
-    color: white;
-    border-bottom: 1px solid #ddd;
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0; /* Prevent header from shrinking */
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .modal-title {
-    color: white;
-    margin: 0;
-    font-size: 1.1rem;
-}
-
-.modal-body {
-    padding: 20px;
-    overflow-y: auto; /* Allow vertical scroll */
-    flex-grow: 1; /* Take available space */
+    color: var(--primary-color);
+    margin-top: 0;
 }
 
 .modal-body p, .modal-body ul {
@@ -175,19 +153,6 @@
 
 .modal-body ul {
     padding-left: 20px;
-}
-
-.close-button {
-    color: #eee;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: white;
-    text-decoration: none;
-    cursor: pointer;
 }
 
 /* --- Estilos para Slim Select --- */
@@ -225,4 +190,49 @@
 .leaflet-control-custom i {
     vertical-align: middle;
     font-size: 1.3rem;
+}
+
+/* --- Legend Info Modal --- */
+#legend-info-modal .modal-content {
+    width: 450px; /* Ancho fijo */
+    max-width: 90vw;
+    height: auto; /* Altura automática basada en el contenido */
+    min-height: 200px; /* Altura mínima */
+    max-height: 80vh; /* Altura máxima */
+    resize: none; /* No permitir redimensionar */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrar por defecto */
+}
+
+#legend-info-modal .modal-header {
+    cursor: grab;
+}
+
+#legend-info-modal .modal-header:active {
+    cursor: grabbing;
+}
+
+#legend-info-modal .modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#legend-info-modal .modal-body .section-title {
+    font-weight: bold;
+    margin-top: 1rem;
+    font-size: 0.9em;
+    margin-bottom: 0.5rem;
+}
+
+#legend-info-modal .modal-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#legend-info-modal .modal-body li {
+    font-size: 0.9em;
+    padding: 0.2rem 0;
 }

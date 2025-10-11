@@ -94,12 +94,31 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
         if (infoButton) {
             infoButton.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const indicatorId = state.currentIndicator;
+
+                // Get the correct indicator ID for the specific map
+                const mapId = map.getContainer().id;
+                let indicatorId;
+                if (mapId === 'map-main') {
+                    indicatorId = state.currentIndicator;
+                } else if (mapId === 'map-compare-vul') {
+                    const select = document.getElementById('select-compare-vul');
+                    indicatorId = select.value;
+                } else if (mapId === 'map-compare-nut') {
+                    const select = document.getElementById('select-compare-nut');
+                    indicatorId = select.value;
+                }
+
+                const modal = document.getElementById('legend-info-modal');
+                const modalBody = document.getElementById('legend-info-body');
+                const modalTitle = document.getElementById('legend-info-title');
+
                 const popupContent = createMoreInfoPopup(indicatorId);
-                L.popup({ maxWidth: 400 })
-                    .setLatLng(map.getCenter())
-                    .setContent(popupContent)
-                    .openOn(map);
+                const config = state.appConfig[indicatorId === 'Indice' ? 'integrated' : indicatorId] || {};
+                const displayName = getIndicatorDisplayName(indicatorId);
+
+                modalTitle.innerHTML = `${dim_icons[indicatorId] || ''} ${displayName}`;
+                modalBody.innerHTML = popupContent;
+                modal.style.display = 'block';
             });
         }
 
@@ -164,12 +183,18 @@ export function createIndiceLegend(map, geoJsonLayer) {
         if (infoButton) {
             infoButton.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const indicatorId = state.currentIndicator;
+                const indicatorId = 'Indice'; // This legend is only for the main index
+
+                const modal = document.getElementById('legend-info-modal');
+                const modalBody = document.getElementById('legend-info-body');
+                const modalTitle = document.getElementById('legend-info-title');
+
                 const popupContent = createMoreInfoPopup(indicatorId);
-                L.popup({ maxWidth: 400 })
-                    .setLatLng(map.getCenter())
-                    .setContent(popupContent)
-                    .openOn(map);
+                const displayName = getIndicatorDisplayName(indicatorId);
+
+                modalTitle.innerHTML = `${dim_icons[indicatorId] || ''} ${displayName}`;
+                modalBody.innerHTML = popupContent;
+                modal.style.display = 'block';
             });
         }
 
@@ -297,11 +322,9 @@ export function createMoreInfoPopup(indicatorId) {
         return `<p>No hay descripción disponible para este indicador.</p>`;
     }
 
-    const iconHTML = dim_icons[indicatorId] || '';
     const variablesHtml = config.variables.map(v => `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`).join('');
 
     return `
-        <h3>${iconHTML} ${config.nombreCompleto}</h3>
         <p>${config.descripcion}</p>
         ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
     `;
