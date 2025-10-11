@@ -97,10 +97,6 @@ export function updateStoryBox(indicatorId) {
         return;
     }
 
-    const variablesHtml = config.variables.map(v =>
-        `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`
-    ).join('');
-
     const evidenciasHtml = config.evidencias.map(e =>
         `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
     ).join('');
@@ -111,8 +107,6 @@ export function updateStoryBox(indicatorId) {
         ${iconHTML}
         <h3>${config.nombreCompleto}</h3>
         ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
-        <p>${config.descripcion}</p>
-        ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
     `;
 }
 

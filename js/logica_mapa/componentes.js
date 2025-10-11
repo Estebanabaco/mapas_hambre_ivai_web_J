@@ -5,27 +5,18 @@ import { dim_icons } from '../icons.js';
 export function createLegend(map, palette, values, title, isPercentage = false) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
-        const backgroundDiv = L.DomUtil.create('div', 'legend-wrapper');
-        backgroundDiv.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-        backgroundDiv.style.borderRadius = '8px';
-        backgroundDiv.style.boxShadow = '0 4px 15px rgba(0,0,0,0.25)';
-        backgroundDiv.style.padding = '5px';
-
-        const foregroundDiv = L.DomUtil.create('div', 'info legend leaflet-legend leaflet-control-layers leaflet-control-layers-expanded', backgroundDiv);
-        foregroundDiv.style.backgroundColor = 'rgba(255,255,255,0.9)';
-        foregroundDiv.style.padding = '8px';
-        foregroundDiv.style.borderRadius = '5px';
-        foregroundDiv.style.boxShadow = '0 1px 5px rgba(0,0,0,0.2)';
-        foregroundDiv.style.width = 'auto';
-        foregroundDiv.style.minWidth = '100px';
-        foregroundDiv.style.maxWidth = '90vw';
+        const div = L.DomUtil.create('div', 'info legend leaflet-legend leaflet-control-layers leaflet-control-layers-expanded');
+        div.style.backgroundColor = 'rgba(255,255,255,0.9)';
+        div.style.padding = '10px';
+        div.style.borderRadius = '5px';
+        div.style.boxShadow = '0 1px 5px rgba(0,0,0,0.4)';
 
 
         const domain = values.filter(v => v !== null && !isNaN(v)).sort((a, b) => a - b);
 
         if (domain.length === 0) {
-            foregroundDiv.innerHTML = `<h4>${title}</h4>No data`;
-            return backgroundDiv;
+            div.innerHTML = `<h4>${title}</h4>No data`;
+            return div;
         }
 
         const min = domain[0];
@@ -86,7 +77,7 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             labelsDivs += `<div style="position: absolute; top: ${percentPosition}%; left: 0; width: 100%; transform: ${transform};"><span style="padding-left: 5px;">&ndash; ${formatLabel(val)}</span></div>`;
         }
 
-        foregroundDiv.innerHTML = `
+        div.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h4 style="margin: 0; font-size: 0.95em; color: #333;">${title}</h4>
                 <button class="legend-info-btn" id="legend-info-btn-${map.getContainer().id}"><i class="fas fa-info-circle"></i></button>
@@ -99,7 +90,7 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             </div>
         `;
 
-        const infoButton = foregroundDiv.querySelector(`#legend-info-btn-${map.getContainer().id}`);
+        const infoButton = div.querySelector(`#legend-info-btn-${map.getContainer().id}`);
         if (infoButton) {
             infoButton.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -112,9 +103,9 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             });
         }
 
-        L.DomEvent.on(backgroundDiv, 'mousedown dblclick', L.DomEvent.stopPropagation);
+        L.DomEvent.on(div, 'mousedown dblclick', L.DomEvent.stopPropagation);
 
-        return backgroundDiv;
+        return div;
     };
     return legend;
 }
@@ -306,20 +297,12 @@ export function createMoreInfoPopup(indicatorId) {
         return `<p>No hay descripción disponible para este indicador.</p>`;
     }
 
-    const variablesHtml = config.variables.map(v =>
-        `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`
-    ).join('');
-
-    const evidenciasHtml = config.evidencias.map(e =>
-        `<li><a href="${e.url}" target="_blank">${e.nombre}</a></li>`
-    ).join('');
-
-    const evidenciasTitle = 'Ruta de Acciones Sugeridas';
+    const iconHTML = dim_icons[indicatorId] || '';
+    const variablesHtml = config.variables.map(v => `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`).join('');
 
     return `
-        <h3>${config.nombreCompleto}</h3>
+        <h3>${iconHTML} ${config.nombreCompleto}</h3>
         <p>${config.descripcion}</p>
         ${variablesHtml ? `<div class="section-title">${indicatorId === 'Indice' ? 'Dimensiones Incluidas (y sus pesos)' : 'Variables Incluidas'}:</div><ul>${variablesHtml}</ul>` : ''}
-        ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><ul>${evidenciasHtml}</ul>` : ''}
     `;
 }
