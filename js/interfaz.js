@@ -211,6 +211,7 @@ export function setupEventListeners() {
     });
 
     makeModalDraggable();
+    makeLegendInfoModalDraggable();
 }
 
 function makeModalDraggable() {

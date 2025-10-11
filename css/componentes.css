@@ -145,8 +145,8 @@
 .modal-header {
     padding: 10px 20px;
     cursor: move;
-    background-color: var(--primary-color);
-    color: white;
+    background-color: #ffffff;
+    color: var(--text-color);
     border-bottom: 1px solid #ddd;
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
@@ -157,7 +157,7 @@
 }
 
 .modal-title {
-    color: white;
+    color: var(--text-color);
     margin: 0;
     font-size: 1.1rem;
 }
@@ -178,14 +178,14 @@
 }
 
 .close-button {
-    color: #eee;
+    color: #888;
     font-size: 28px;
     font-weight: bold;
 }
 
 .close-button:hover,
 .close-button:focus {
-    color: white;
+    color: #000;
     text-decoration: none;
     cursor: pointer;
 }
