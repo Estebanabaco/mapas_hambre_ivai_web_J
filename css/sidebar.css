@@ -95,8 +95,8 @@
 
 .radio label {
     display: flex;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    margin-bottom: 3px; /* Reducido de 5px */
+    font-size: 0.85em; /* Reducido de 0.9em */
     transition: background-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
     overflow: hidden;
@@ -110,7 +110,7 @@
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px; /* Reducido de 8px 12px */
     border-radius: 5px;
     border: 1px solid #e0e0e0;
     background-color: #fff;
