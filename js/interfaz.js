@@ -64,6 +64,7 @@ export function populateControls() {
             afterChange: (newVal) => {
                 if (newVal && newVal.length > 0) {
                     updateMap('compareVul', newVal[0].value);
+                    closeLegendInfoModal();
                 }
             }
         }
@@ -189,10 +190,14 @@ export function setupEventListeners() {
             state.currentIndicator = e.target.value;
             updateMap('main', e.target.value);
             updateStoryBox(e.target.value);
+            closeLegendInfoModal();
         }
     });
 
-    selectCompareNut.addEventListener('change', (e) => updateMap('compareNut', e.target.value));
+    selectCompareNut.addEventListener('change', (e) => {
+        updateMap('compareNut', e.target.value);
+        closeLegendInfoModal();
+    });
 
     tabButtons.vulnerability.addEventListener('click', () => switchTab('vulnerability'));
     tabButtons.compare.addEventListener('click', () => switchTab('compare'));
@@ -201,10 +206,11 @@ export function setupEventListeners() {
     aboutBtn.addEventListener('click', () => {
         aboutModal.style.display = 'block';
     });
-    closeModalBtn.addEventListener('click', () => {
+    // Use a more robust selector for the close button within the 'about' modal
+    aboutModal.querySelector('.close-button').addEventListener('click', () => {
         aboutModal.style.display = 'none';
     });
-    window.addEventListener('click', (event) => {
+    aboutModal.addEventListener('click', (event) => {
         if (event.target === aboutModal) {
             aboutModal.style.display = 'none';
         }
@@ -212,6 +218,13 @@ export function setupEventListeners() {
 
     makeModalDraggable();
     makeLegendInfoModalDraggable();
+}
+
+function closeLegendInfoModal() {
+    const modal = document.getElementById('legend-info-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function makeModalDraggable() {
@@ -330,6 +343,8 @@ export function makeLegendInfoModalDraggable() {
 }
 
 function switchTab(tabKey) {
+    closeLegendInfoModal();
+
     Object.values(tabs).forEach(tab => tab.classList.remove('active'));
     Object.values(tabButtons).forEach(btn => btn.classList.remove('active'));
     

@@ -77,10 +77,14 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             labelsDivs += `<div style="position: absolute; top: ${percentPosition}%; left: 0; width: 100%; transform: ${transform};"><span style="padding-left: 5px;">&ndash; ${formatLabel(val)}</span></div>`;
         }
 
+        const mapId = map.getContainer().id;
+        const isCompareMap = mapId === 'map-compare-vul' || mapId === 'map-compare-nut';
+        const infoButtonHtml = isCompareMap ? '' : `<button class="legend-info-btn" id="legend-info-btn-${mapId}"><i class="fas fa-info-circle"></i></button>`;
+
         div.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h4 style="margin: 0; font-size: 0.95em; color: #333;">${title}</h4>
-                <button class="legend-info-btn" id="legend-info-btn-${map.getContainer().id}"><i class="fas fa-info-circle"></i></button>
+                ${infoButtonHtml}
             </div>
             <div style="display: flex; align-items: stretch; height: ${legendHeight}px; margin-top: 8px;">
                 <div style="width: 20px; background: ${gradient};"></div>
@@ -90,13 +94,12 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
             </div>
         `;
 
-        const infoButton = div.querySelector(`#legend-info-btn-${map.getContainer().id}`);
+        const infoButton = div.querySelector(`#legend-info-btn-${mapId}`);
         if (infoButton) {
             infoButton.addEventListener('click', (e) => {
                 e.stopPropagation();
 
                 // Get the correct indicator ID for the specific map
-                const mapId = map.getContainer().id;
                 let indicatorId;
                 if (mapId === 'map-main') {
                     indicatorId = state.currentIndicator;
