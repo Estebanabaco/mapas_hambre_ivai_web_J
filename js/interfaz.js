@@ -97,6 +97,10 @@ export function populateModal() {
     if (modalYear) {
         modalYear.textContent = state.siteConfig.year;
     }
+    const modalSources = document.getElementById('modal-sources-content');
+    if (modalSources) {
+        modalSources.textContent = state.siteConfig.fuentes;
+    }
 }
 
 export function updateStoryBox(indicatorId) {
