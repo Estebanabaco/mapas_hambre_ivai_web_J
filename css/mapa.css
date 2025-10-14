@@ -266,3 +266,8 @@
     justify-content: center !important;
     line-height: 18px !important; /* to vertically center the icon */
 }
+
+/* Elimina el contorno azul al hacer clic en un polígono del mapa */
+.leaflet-interactive:focus {
+  outline: none;
+}
