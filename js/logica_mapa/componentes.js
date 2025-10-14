@@ -261,6 +261,8 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
             let tableHtml = `<br><table class="popup-table"><tr><th>Dimensión</th><th>Valor</th></tr>`;
             const dimensions = Object.keys(deptData).filter(k => k !== 'Indice' && k !== 'Ranking' && k !== 'Clasificacion_Indice');
 
+            dimensions.sort((a, b) => (deptData[b] || 0) - (deptData[a] || 0));
+
             for (const dim of dimensions) {
                 const dimVal = deptData[dim] !== null ? deptData[dim].toFixed(1) : "N/A";
                 const dimName = getIndicatorDisplayName(dim);
@@ -325,7 +327,10 @@ export function createMoreInfoPopup(indicatorId) {
         return `<p>No hay descripción disponible para este indicador.</p>`;
     }
 
-    const variablesHtml = config.variables.map(v => `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`).join('');
+    if (config.variables) {
+        config.variables.sort((a, b) => (b.peso || 0) - (a.peso || 0));
+    }
+    const variablesHtml = config.variables ? config.variables.map(v => `<li>${v.nombre} ${v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : ''}</li>`).join('') : '';
 
     return `
         <p>${config.descripcion}</p>
