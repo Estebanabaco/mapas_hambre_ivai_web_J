@@ -26,7 +26,7 @@ export function populateControls() {
         const config = state.appConfig[configKey] || {};
         const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
         const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
-        const finalLabel = key === 'Indice' ? 'Índice Integrado' : `${displayName} ${weightLabel}`;
+        const finalLabel = key === 'Indice' ? displayName : `${displayName} ${weightLabel}`;
 
         const infoIconHtml = `<i class="fas fa-info-circle dimension-info-btn" data-indicator-id="${key}" title="Más información sobre ${displayName}"></i>`;
 
