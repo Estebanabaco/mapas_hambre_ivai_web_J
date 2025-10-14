@@ -82,9 +82,30 @@ export function populateControls() {
         ["Aguda", "Desnutrición Aguda (ICBF)"],
         ["R_Aguda", "Riesgo Desnutrición Aguda (ICBF)"]
     ];
-    selectCompareNut.innerHTML = nutIndicators.map(([key, name]) =>
-        `<option value="${key}">${name}</option>`
-    ).join('');
+    const nutSelectData = nutIndicators.map(([key, name]) => ({
+        value: key,
+        text: name
+    }));
+
+    if (state.slimSelects.compareNut) {
+        state.slimSelects.compareNut.destroy();
+    }
+    selectCompareNut.innerHTML = ''; // Clear previous options
+    state.slimSelects.compareNut = new SlimSelect({
+        select: '#select-compare-nut',
+        settings: {
+            showSearch: false,
+        },
+        events: {
+            afterChange: (newVal) => {
+                if (newVal && newVal.length > 0) {
+                    updateMap('compareNut', newVal[0].value);
+                    closeLegendInfoModal();
+                }
+            }
+        }
+    });
+    state.slimSelects.compareNut.setData(nutSelectData);
 }
 
 export function populateFooter() {
@@ -227,10 +248,7 @@ export function setupEventListeners() {
         }
     });
 
-    selectCompareNut.addEventListener('change', (e) => {
-        updateMap('compareNut', e.target.value);
-        closeLegendInfoModal();
-    });
+
 
     tabButtons.vulnerability.addEventListener('click', () => switchTab('vulnerability'));
     tabButtons.compare.addEventListener('click', () => switchTab('compare'));

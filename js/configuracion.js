@@ -23,6 +23,7 @@ export const state = {
     compareMapsFitted: false,
     slimSelects: {
         compareVul: null,
+        compareNut: null,
     },
     currentIndicator: 'Indice'
 };
