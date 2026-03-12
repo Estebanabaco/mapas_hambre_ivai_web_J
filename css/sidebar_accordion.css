@@ -98,7 +98,11 @@
     font-weight: 600;
 }
 .accordion-content .radio-icon {
-    display: none; /* Hide icons for sub-items to save space */
+    display: inline-block;
+    font-size: 0.85em; /* Un poco más pequeño que el icono del padre */
+    margin-right: 6px;
+    width: 20px;
+    opacity: 0.85; /* Sutil transparencia para jerarquía visual */
 }
 
 /* Fix collapse behaviors */

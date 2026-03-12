@@ -2,7 +2,7 @@ import { state, indicatorSelector, selectCompareVul, selectCompareNut, appFooter
 import { getIndicatorDisplayName } from './logica_mapa/ayudantes.js';
 import { createMoreInfoPopup } from './logica_mapa/componentes.js';
 import { updateMap } from './logica_mapa/mapa.js';
-import { dim_icons } from './icons.js';
+import { dim_icons, sub_icons } from './icons.js';
 
 // --- UI POPULATION ---
 export function populateControls() {
@@ -56,12 +56,24 @@ export function populateControls() {
                 // (e.g. "Tasa de desempleo" instead of "desmp"), we no longer need reverse mapping.
                 // We use the variable name directly as the value for the radio button.
                 let valueForRadio = v.nombre;
+                
+                // Extraer el color (hex o rgb) del iconHTML del padre para inyectárselo al hijo
+                let parentColor = '';
+                const colorMatch = iconHTML.match(/style="color:\s*([^;]+);"/);
+                if (colorMatch && colorMatch[1]) {
+                    parentColor = colorMatch[1];
+                }
+                
+                // Buscar la clase de icono única para este subindicador. Si no existe, usar un círculo por defecto
+                const uniqueIconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
+                const subIconHtml = `<i class="${uniqueIconClass}" style="color: ${parentColor};"></i>`;
 
                 return `
                     <div class="radio">
                         <label title="${v.nombre}">
                             <input type="radio" name="indicator" value="${valueForRadio}">
                             <span class="radio-span">
+                                <span class="radio-icon">${subIconHtml}</span>
                                 <span class="radio-label">${v.nombre}</span>
                             </span>
                         </label>
