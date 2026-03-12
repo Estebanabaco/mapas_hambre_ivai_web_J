@@ -35,7 +35,7 @@ export function populateControls() {
         // If it's Indice, it's just a regular radio button, no accordion
         if (key === 'Indice') {
             return `
-                <div class="radio" style="margin-bottom: 10px;">
+                <div class="radio main-index-radio" style="margin-bottom: 15px;">
                   <label title="${displayName}">
                     <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
                      <span class="radio-span">

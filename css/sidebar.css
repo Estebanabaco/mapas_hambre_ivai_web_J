@@ -172,7 +172,35 @@
 
 .radio label i {
     color: inherit;
-    transition: color 0.2s ease;
+/* --- Estilo Destacado para el Índice Principal --- */
+.main-index-radio .radio-span {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-left: 4px solid transparent; 
+    padding: 8px 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04); /* Sutil elevación para separarlo de los acordeones */
+}
+
+.main-index-radio label:hover > .radio-span {
+    background-color: #e9ecef;
+}
+
+.main-index-radio label > input[type='radio']:checked + .radio-span {
+    background-color: #e9f5ff;
+    border-color: #e0e0e0;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+}
+
+.main-index-radio .radio-label {
+    font-size: 0.95em; /* Ligeramente más grande que las dimensiones normales (0.85em) */
+}
+
+.main-index-radio label > input[type='radio']:checked + .radio-span .radio-label,
+.main-index-radio label > input[type='radio']:checked + .radio-span .radio-icon {
+    font-weight: 700;
+    color: var(--primary-color);
 }
 
 /* --- Controles de comparación en el sidebar --- */
@@ -191,4 +219,4 @@
     padding: 0.5rem;
     border-radius: 5px;
     border: 1px solid var(--border-color);
-}
+}
