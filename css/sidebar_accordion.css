@@ -19,10 +19,23 @@
     cursor: pointer;
     background-color: #f8f9fa;
     user-select: none;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, border-left 0.2s ease;
+    border-left: 4px solid transparent; /* Fixed border to prevent jumping */
 }
 .accordion-header:hover {
     background-color: #e9ecef;
+}
+/* Estilo activo para la dimensión seleccionada en el header del acordeón */
+.accordion-header:has(input[type="radio"]:checked) {
+    background-color: #e9f5ff;
+    border-left: 4px solid var(--primary-color);
+}
+.accordion-header:has(input[type="radio"]:checked) .accordion-title {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.accordion-header:has(input[type="radio"]:checked) .radio-icon {
+    color: var(--primary-color);
 }
 .accordion-header .radio-icon {
     margin-right: 10px;

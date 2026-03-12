@@ -128,21 +128,6 @@ export function populateControls() {
         });
     });
 
-    // Add Sub-indicators (Variables)
-    let rawDataMap = {};
-    if (state.subIndicatorData && firstDeptKey && state.subIndicatorData[firstDeptKey]) {
-        rawDataMap = state.subIndicatorData[firstDeptKey];
-    }
-    const rawDataFields = Object.keys(rawDataMap);
-    rawDataFields.forEach(rawKey => {
-         // Ya no necesitamos llamar getIndicatorDisplayName porque rawKey YA es el nombre amigable
-         allSelectData.push({
-             value: rawKey,
-             text: `- ${rawKey}`,
-             html: `&nbsp;&nbsp;&nbsp;&nbsp;- ${rawKey}`
-         });
-    });
-
     if (state.slimSelects.compareVul) {
         state.slimSelects.compareVul.destroy();
     }
