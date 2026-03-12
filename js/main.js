@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error("Critical error in main execution:", error);
-            alert("Error crítico en la UI: " + error.message + "\nRevisa la consola interactiva.");
         }
     }
 

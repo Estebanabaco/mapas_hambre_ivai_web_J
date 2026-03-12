@@ -6,9 +6,6 @@ import { dim_icons } from './icons.js';
 
 // --- UI POPULATION ---
 export function populateControls() {
-    console.log("Iniciando populateControls...");
-    console.log("Datos Indice [0]:", Object.keys(state.indexData)[0]);
-
     const weightsMap = new Map(state.weights.Pesos_Dimensiones.map(d => [d.Dimension, d.Peso_Dimension]));
     const firstDeptKey = Object.keys(state.indexData)[0];
     if (!firstDeptKey) {

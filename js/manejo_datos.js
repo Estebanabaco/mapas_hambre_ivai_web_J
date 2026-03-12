@@ -20,13 +20,6 @@ export async function loadData() {
         state.weights = weights;
         state.siteConfig = siteConfig;
 
-        console.log("Datos cargados. Subindicadores recibidos para", Object.keys(state.subIndicatorData).length, "departamentos.");
-
-        // Validar si subIndicatorData tiene datos
-        if (Object.keys(state.subIndicatorData).length === 0) {
-            console.error("ALERTA: subIndicatorData está vacío o no se cargó correctamente.");
-        }
-
         // Dynamically add Clasificacion_Indice based on Indice
         for (const deptoCode in state.indexData) {
             const deptoData = state.indexData[deptoCode];
