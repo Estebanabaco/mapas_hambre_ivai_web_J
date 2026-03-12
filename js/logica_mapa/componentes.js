@@ -1,5 +1,5 @@
 import { state, selectCompareNut } from '../configuracion.js';
-import { getIndicatorDisplayName } from './ayudantes.js';
+import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
 import { dim_icons } from '../icons.js';
 
 export function createLegend(map, palette, values, title, isPercentage = false) {
@@ -273,9 +273,10 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
 
             return `<strong>${deptName}</strong><br><b>Índice Integrado:</b> ${idxVal} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
         } else {
-            const value = deptData[indicatorId];
+            const value = getIndicatorValue(deptCode, indicatorId);
             const displayName = getIndicatorDisplayName(indicatorId);
-            const formattedValue = (value !== null && !isNaN(value)) ? value.toFixed(2) : "No disponible";
+            // Redondear a un par de decimales para mostrar, pero si es 0, mostrar "No disponible" solo si es nulo
+            const formattedValue = (value !== null && !isNaN(value)) ? (value % 1 !== 0 ? value.toFixed(2) : value) : "No disponible";
             return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
         }
     }

@@ -1,3 +1,4 @@
 # Ignorar datos y configuraciones locales
 config/site_config.json
 data/
+datos/temp/

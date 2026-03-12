@@ -1,8 +1,10 @@
 // --- STATE AND CONSTANTS ---
 export const state = {
+    indexData: {},
+    nutritionData: {},
     geoData: null,
-    indexData: null,
-    nutritionData: null,
+    subIndicatorData: {},
+    currentIndicator: 'Indice',
     appConfig: null,
     weights: null,
     maps: {

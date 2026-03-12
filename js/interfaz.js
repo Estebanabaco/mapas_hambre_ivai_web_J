@@ -6,9 +6,15 @@ import { dim_icons } from './icons.js';
 
 // --- UI POPULATION ---
 export function populateControls() {
+    console.log("Iniciando populateControls...");
+    console.log("Datos Indice [0]:", Object.keys(state.indexData)[0]);
+
     const weightsMap = new Map(state.weights.Pesos_Dimensiones.map(d => [d.Dimension, d.Peso_Dimension]));
     const firstDeptKey = Object.keys(state.indexData)[0];
-    if (!firstDeptKey) return;
+    if (!firstDeptKey) {
+        console.error("No se encontró ningún departamento en indexData");
+        return;
+    }
     const firstDeptData = state.indexData[firstDeptKey];
     
     let indicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
@@ -27,32 +33,117 @@ export function populateControls() {
         const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
         const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
         const finalLabel = key === 'Indice' ? displayName : `${displayName} ${weightLabel}`;
-
         const infoIconHtml = `<i class="fas fa-info-circle dimension-info-btn" data-indicator-id="${key}" title="Más información sobre ${displayName}"></i>`;
 
+        // If it's Indice, it's just a regular radio button, no accordion
+        if (key === 'Indice') {
+            return `
+                <div class="radio" style="margin-bottom: 10px;">
+                  <label title="${displayName}">
+                    <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
+                     <span class="radio-span">
+                        <span class="radio-icon">${iconHTML}</span>
+                        <span class="radio-label">${finalLabel}</span>
+                     </span>
+                  </label>
+                  ${infoIconHtml}
+                </div>
+            `;
+        }
+
+        // For dimensions, create an accordion group
+        let subIndicatorsHtml = '';
+        if (config.variables && config.variables.length > 0) {
+            subIndicatorsHtml = config.variables.map(v => {
+                // Now that the backend Python script outputs the exact names from config
+                // (e.g. "Tasa de desempleo" instead of "desmp"), we no longer need reverse mapping.
+                // We use the variable name directly as the value for the radio button.
+                let valueForRadio = v.nombre;
+
+                return `
+                    <div class="radio">
+                        <label title="${v.nombre}">
+                            <input type="radio" name="indicator" value="${valueForRadio}">
+                            <span class="radio-span">
+                                <span class="radio-label">${v.nombre}</span>
+                            </span>
+                        </label>
+                    </div>
+                `;
+            }).join('');
+        }
+
         return `
-            <div class="radio">
-              <label title="${displayName}">
-                <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
-                 <span class="radio-span">
-                    <span class="radio-icon">${iconHTML}</span>
-                    <span class="radio-label">${finalLabel}</span>
-                 </span>
-              </label>
-              ${infoIconHtml}
+            <div class="accordion-group">
+                <div class="accordion-header">
+                    <label style="display: flex; align-items: center; margin: 0; width: 100%; cursor: pointer;" title="${displayName}">
+                        <input type="radio" name="indicator" value="${key}" style="display:none;" ${index === 0 ? 'checked' : ''}>
+                        <span class="radio-icon">${iconHTML}</span>
+                        <div class="accordion-title-wrapper">
+                            <span class="accordion-title">${finalLabel}</span>
+                        </div>
+                    </label>
+                    <div style="display:flex; align-items:center;">
+                        ${infoIconHtml}
+                        <i class="fa-solid fa-chevron-down accordion-toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="accordion-content">
+                    ${subIndicatorsHtml}
+                </div>
             </div>
         `;
     }).join('');
 
-    const unsortedIndicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
-    const selectData = unsortedIndicators.map(key => {
-        const displayName = getIndicatorDisplayName(key);
-        const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
-        return {
+    // Accordion Toggle Logic
+    setTimeout(() => {
+        document.querySelectorAll('.accordion-header .accordion-toggle-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering the radio button on toggle click
+                const group = e.target.closest('.accordion-group');
+                const content = group.querySelector('.accordion-content');
+                if (group.classList.contains('open')) {
+                    group.classList.remove('open');
+                    content.style.maxHeight = null;
+                } else {
+                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                         openGroup.classList.remove('open');
+                         openGroup.querySelector('.accordion-content').style.maxHeight = null;
+                    });
+                    group.classList.add('open');
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+        
+        // Auto-expand the selected one if needed on load, or just keep closed.
+    }, 100);
+
+    // Populate SlimSelect (Comparisons) with all indicators + subindicators
+    let allSelectData = [];
+    
+    // Add Main Dimensions
+    indicators.forEach(key => {
+        allSelectData.push({
             value: key,
-            text: displayName, // for searching
-            html: `${iconHTML}&nbsp;&nbsp;${displayName}`
-        };
+            text: getIndicatorDisplayName(key),
+            html: `<b>${dim_icons[key] || ''} ${getIndicatorDisplayName(key)}</b>`
+        });
+    });
+
+    // Add Sub-indicators (Variables)
+    let rawDataMap = {};
+    if (state.subIndicatorData && firstDeptKey && state.subIndicatorData[firstDeptKey]) {
+        rawDataMap = state.subIndicatorData[firstDeptKey];
+    }
+    const rawDataFields = Object.keys(rawDataMap);
+    rawDataFields.forEach(rawKey => {
+         // Ya no necesitamos llamar getIndicatorDisplayName porque rawKey YA es el nombre amigable
+         allSelectData.push({
+             value: rawKey,
+             text: `- ${rawKey}`,
+             html: `&nbsp;&nbsp;&nbsp;&nbsp;- ${rawKey}`
+         });
     });
 
     if (state.slimSelects.compareVul) {
@@ -73,7 +164,7 @@ export function populateControls() {
             }
         }
     });
-    state.slimSelects.compareVul.setData(selectData);
+    state.slimSelects.compareVul.setData(allSelectData);
 
     const nutIndicators = [
         ["ENSIN", "Desnutrición Crónica (ENSIN)"],
@@ -127,22 +218,31 @@ export function populateModal() {
 export function updateStoryBox(indicatorId) {
     const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
     const config = state.appConfig[configKey];
+    
+    // Fallback info for raw CSV indicators
+    const fallbackName = indicatorId.replace(/_/g, ' ');
     const iconHTML = dim_icons[indicatorId] || '';
 
     if (!config) {
-        storyBox.innerHTML = `<p>No hay descripción disponible para este indicador.</p>`;
+        // En vez de mostrar un mensaje de "no disponible", mostraremos al menos el nombre de la variable seleccionada.
+        storyBox.innerHTML = `
+            ${iconHTML}
+            <h3>${fallbackName}</h3>
+            <p>Datos específicos obtenidos del archivo de indicadores 2024.</p>
+        `;
         return;
     }
 
-    const evidenciasHtml = config.evidencias.map(e =>
+    const evidenciasHtml = (config.evidencias && Array.isArray(config.evidencias)) ? config.evidencias.map(e =>
         `<a href="${e.url}" target="_blank" class="accion-btn">${e.nombre}</a>`
-    ).join('');
+    ).join('') : '';
 
     const evidenciasTitle = 'Ruta de Acciones Sugeridas';
 
     storyBox.innerHTML = `
         ${iconHTML}
-        <h3>${config.nombreCompleto}</h3>
+        <h3>${config.nombreCompleto || fallbackName}</h3>
+        ${config.descripcion ? `<p>${config.descripcion}</p>` : ''}
         ${evidenciasHtml ? `<div class="section-title">${evidenciasTitle}:</div><div class="acciones-container">${evidenciasHtml}</div>` : ''}
     `;
 }

@@ -1,5 +1,5 @@
 import { state, selectCompareNut, selectCompareVul } from '../configuracion.js';
-import { getIndicatorDisplayName } from './ayudantes.js';
+import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
 import { createColorPalette } from './utilidades_color.js';
 import { createLegend, createIndiceLegend, createPopupContent, createLegendToggleControl } from './componentes.js';
 
@@ -87,14 +87,14 @@ export function updateMap(mapKey, indicatorId) {
             return '#d9d9d9';
         };
     } else {
-        const values = Object.values(data).map(d => d[indicatorId]).filter(v => v != null);
+        const values = Object.keys(data).map(deptCode => isNutritionMap ? data[deptCode][indicatorId] : getIndicatorValue(deptCode, indicatorId)).filter(v => v != null);
         palette = createColorPalette(values, isNutritionMap);
     }
 
     const geoJsonLayer = L.geoJSON(state.geoData, {
         style: (feature) => {
             const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-            const value = data[deptCode] ? data[deptCode][indicatorId] : null;
+            const value = isNutritionMap ? (data[deptCode] ? data[deptCode][indicatorId] : null) : getIndicatorValue(deptCode, indicatorId);
             return {
                 fillColor: palette(value),
                 weight: 0.8,
@@ -175,7 +175,7 @@ export function updateMap(mapKey, indicatorId) {
             ? selectCompareNut.options[selectCompareNut.selectedIndex].text
             : getIndicatorDisplayName(indicatorId);
         const isPercentage = isNutritionMap;
-        const values = Object.values(data).map(d => d[indicatorId]).filter(v => v != null);
+        const values = Object.keys(data).map(deptCode => isNutritionMap ? data[deptCode][indicatorId] : getIndicatorValue(deptCode, indicatorId)).filter(v => v != null);
         legend = createLegend(map, palette, values, legendTitle, isPercentage);
     }
     

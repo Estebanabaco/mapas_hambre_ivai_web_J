@@ -1,0 +1,105 @@
+/* --- Estilos para el Accordion en Sidebar --- */
+.accordion-group {
+    margin-bottom: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: margin 0.3s ease;
+}
+.sidebar.collapsed .accordion-group {
+    border: none;
+    background-color: transparent;
+}
+.accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+.accordion-header:hover {
+    background-color: #e9ecef;
+}
+.accordion-header .radio-icon {
+    margin-right: 10px;
+}
+.accordion-title-wrapper {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    overflow: hidden;
+}
+.accordion-title {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.accordion-toggle-icon {
+    font-size: 0.8em;
+    color: #6c757d;
+    transition: transform 0.3s ease;
+    margin-left: 5px;
+}
+.accordion-group.open .accordion-toggle-icon {
+    transform: rotate(180deg);
+}
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #fafafa;
+}
+.accordion-group.open .accordion-content {
+    border-top: 1px solid #eee;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+.accordion-content .radio {
+    padding: 0 5px 0 25px; /* Indent sub-items */
+    margin-bottom: 2px;
+}
+.accordion-content .radio label {
+    font-size: 0.8em;
+    padding: 4px 6px;
+    margin-bottom: 0;
+}
+.accordion-content .radio .radio-span {
+    border: none;
+    background: transparent;
+    padding: 4px 6px;
+}
+.accordion-content .radio label:hover > .radio-span {
+    background-color: #f0f5fa;
+    border-radius: 4px;
+}
+.accordion-content .radio label > input[type='radio']:checked + .radio-span {
+    background-color: #e9f5ff;
+    border-left: 3px solid var(--primary-color);
+    font-weight: 600;
+}
+.accordion-content .radio-icon {
+    display: none; /* Hide icons for sub-items to save space */
+}
+
+/* Fix collapse behaviors */
+.sidebar.collapsed .accordion-title,
+.sidebar.collapsed .accordion-toggle-icon {
+    display: none;
+}
+.sidebar.collapsed .accordion-content {
+    display: none !important; /* Never show subitems when sidebar is collapsed */
+}
+.sidebar.collapsed .accordion-header {
+    padding: 8px 0;
+    justify-content: center;
+}
+.sidebar.collapsed .accordion-header .radio-icon {
+    margin-right: 0;
+}
