@@ -1,6 +1,6 @@
 import { state, selectCompareNut } from '../configuracion.js';
 import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
-import { dim_icons } from '../icons.js';
+import { dim_icons, sub_icons } from '../icons.js';
 
 export function createLegend(map, palette, values, title, isPercentage = false) {
     const legend = L.control({ position: 'bottomright' });
@@ -275,9 +275,34 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
         } else {
             const value = getIndicatorValue(deptCode, indicatorId);
             const displayName = getIndicatorDisplayName(indicatorId);
-            // Redondear a un par de decimales para mostrar, pero si es 0, mostrar "No disponible" solo si es nulo
             const formattedValue = (value !== null && !isNaN(value)) ? (value % 1 !== 0 ? value.toFixed(2) : value) : "No disponible";
-            return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}`;
+
+            // Detectar si el indicador seleccionado es una Dimensión (tiene variables hijas en appConfig)
+            const dimConfig = state.appConfig[indicatorId];
+            let childTableHtml = '';
+            if (dimConfig && dimConfig.variables && dimConfig.variables.length > 0) {
+                childTableHtml = `<br><table class="popup-table"><tr><th>Indicador</th><th>Valor</th></tr>`;
+                // Ordenar variables por su valor en el departamento (descendente)
+                const sortedVars = [...dimConfig.variables].sort((a, b) => {
+                    const valA = getIndicatorValue(deptCode, a.nombre) || 0;
+                    const valB = getIndicatorValue(deptCode, b.nombre) || 0;
+                    return valB - valA;
+                });
+                for (const v of sortedVars) {
+                    const childVal = getIndicatorValue(deptCode, v.nombre);
+                    const fmtVal = (childVal !== null && !isNaN(childVal)) ? (childVal % 1 !== 0 ? childVal.toFixed(2) : childVal) : "N/A";
+                    const iconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
+                    // Extraer color del ícono de la dimensión padre
+                    const parentIconHtml = dim_icons[indicatorId] || '';
+                    const colorMatch = parentIconHtml.match(/style="color:\s*([^;]+);"/);
+                    const iconColor = (colorMatch && colorMatch[1]) ? colorMatch[1] : '#666';
+                    const iconHtml = `<i class="${iconClass}" style="color: ${iconColor}; margin-right: 4px;"></i>`;
+                    childTableHtml += `<tr><td>${iconHtml} ${v.nombre}</td><td>${fmtVal}</td></tr>`;
+                }
+                childTableHtml += `</table>`;
+            }
+
+            return `<strong>${deptName}</strong><br><b>${displayName}:</b> ${formattedValue}${childTableHtml}`;
         }
     }
     // Handle Nutrition Map (compareNut)

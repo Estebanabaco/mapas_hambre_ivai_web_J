@@ -222,8 +222,23 @@ export function updateStoryBox(indicatorId) {
         // Buscar en la configuración de indicadores individuales
         const indConfig = state.indicatorConfig[indicatorId];
         if (indConfig) {
+            // Buscar el ícono único del indicador y el color de su dimensión padre
+            const uniqueIconClass = sub_icons[indicatorId] || 'fa-solid fa-circle-dot';
+            let parentColor = '#666';
+            // Recorrer appConfig para encontrar la dimensión padre que contiene este indicador
+            for (const dimKey of Object.keys(state.appConfig)) {
+                const dimConf = state.appConfig[dimKey];
+                if (dimConf && dimConf.variables && dimConf.variables.some(v => v.nombre === indicatorId)) {
+                    const parentIconHtml = dim_icons[dimKey] || '';
+                    const colorMatch = parentIconHtml.match(/style="color:\s*([^;]+);"/);
+                    if (colorMatch && colorMatch[1]) parentColor = colorMatch[1];
+                    break;
+                }
+            }
+            const indIconHTML = `<i class="${uniqueIconClass}" style="color: ${parentColor}; font-size: 1.5em; margin-right: 8px;"></i>`;
+
             storyBox.innerHTML = `
-                ${iconHTML}
+                ${indIconHTML}
                 <h3>${indConfig.nombre_completo || fallbackName}</h3>
                 ${indConfig.descripcion ? `<p>${indConfig.descripcion}</p>` : ''}
                 ${indConfig.unidad_medida ? `<p class="indicator-unit"><strong>Unidad de medida:</strong> ${indConfig.unidad_medida}</p>` : ''}
