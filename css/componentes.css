@@ -258,6 +258,11 @@
 }
 
 /* --- Legend Info Modal --- */
+#legend-info-modal {
+    background-color: rgba(0,0,0,0.15);
+    pointer-events: auto;
+}
+
 #legend-info-modal .modal-content {
     width: 450px; /* Ancho fijo */
     max-width: 90vw;

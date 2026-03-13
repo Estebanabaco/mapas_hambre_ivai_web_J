@@ -30,6 +30,7 @@ export function initMaps() {
         },
         layers: [baseLayers.Claro], // Default layer
         scrollWheelZoom: false,
+        doubleClickZoom: false,
         zoomControl: false
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.main);
@@ -44,6 +45,7 @@ export function initMaps() {
         },
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
         scrollWheelZoom: false,
+        doubleClickZoom: false,
         zoomControl: false
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareVul);
@@ -56,6 +58,7 @@ export function initMaps() {
         },
         layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
         scrollWheelZoom: false,
+        doubleClickZoom: false,
         zoomControl: false
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareNut);
