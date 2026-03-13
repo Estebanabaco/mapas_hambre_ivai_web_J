@@ -1,73 +1,206 @@
 {
-  "Pobreza monetaria extrema": {
-    "descripcion": "Descripción detallada del indicador de pobreza extrema. (Ej: Población con ingresos insuficientes para adquirir una canasta básica de alimentos).",
-    "fuente_datos": "DANE - Gran Encuesta Integrada de Hogares (GEIH)",
-    "unidad_medida": "Porcentaje (%)"
+  "Hogares jefa mujer (c/hijos < 18 años)": {
+    "nombre_csv": "hog_jefa_mujer",
+    "nombre_completo": "Porcentaje de hogares con jefatura femenina",
+    "descripcion": "Proporción de hogares donde el jefe de hogar es mujer.",
+    "unidad_medida": "Porcentaje"
   },
-  "Pobreza multidimensional": {
-    "descripcion": "Descripción del IPM. (Ej: Mide múltiples carencias a nivel de los hogares y las personas en los ámbitos de la salud, la educación y el nivel de vida).",
-    "fuente_datos": "DANE",
-    "unidad_medida": "Porcentaje (%)"
+  "Acceso energía eléctrica": {
+    "nombre_csv": "hog_energia",
+    "nombre_completo": "Cobertura de energía eléctrica",
+    "descripcion": "Porcentaje de hogares con acceso al servicio de energía eléctrica.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Acceso acueducto": {
+    "nombre_csv": "hog_acued",
+    "nombre_completo": "Cobertura de Acueducto",
+    "descripcion": "Se refiere al porcentaje de hogares conectados a la red pública de distribución de agua, a través de sistemas de riego que permiten el transporte continuo de agua desde fuentes naturales hasta lugares de consumo. Este indicador no refleja el acceso real al agua potable en zonas rurales, por lo que no debería considerarse una medida exacta del acceso a este.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Acceso alcantarillado": {
+    "nombre_csv": "hog_alcant",
+    "nombre_completo": "Cobertura de alcantarillado",
+    "descripcion": "Representa el porcentaje de hogares con acceso sostenible a métodos de  de alcantarillado en un área geográfica concreta.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Acceso aseo": {
+    "nombre_csv": "hog_aseo",
+    "nombre_completo": "Cobertura de servicio de aseo",
+    "descripcion": "Porcentaje de hogares con acceso al servicio de recolección de basuras.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Promedio personas por hogar": {
+    "nombre_csv": "prom_hogar",
+    "nombre_completo": "Promedio de personas por hogar",
+    "descripcion": "Número promedio de personas que conforman un hogar.",
+    "unidad_medida": "Personas"
+  },
+  "Adquieren carne/pollo/pescado": {
+    "nombre_csv": "hog_carnes",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de carnes",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de carnes.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren lácteos": {
+    "nombre_csv": "hog_lact",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de lácteos",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de lácteos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren frutas": {
+    "nombre_csv": "hog_frutas",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de frutas",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de frutas.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren huevos": {
+    "nombre_csv": "hog_huevos",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de huevos",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de huevos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren verduras": {
+    "nombre_csv": "hog_verd",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de verduras",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de verduras.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren cereales": {
+    "nombre_csv": "hog_cer",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de cereales",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de cereales.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren granos": {
+    "nombre_csv": "hog_granos",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de granos",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de granos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Adquieren tubérculos/plátanos": {
+    "nombre_csv": "hog_tuberc",
+    "nombre_completo": "Porcentaje de Hogares con Consumo de tubérculos",
+    "descripcion": "Proporción de hogares que reportan consumo frecuente de tubérculos.",
+    "unidad_medida": "Porcentaje"
   },
   "Pobreza subjetiva": {
-    "descripcion": "Percepción de los hogares respecto a su nivel de ingresos.",
-    "fuente_datos": "Encuesta de Calidad de Vida",
-    "unidad_medida": "Porcentaje (%)"
-  },
-  "Pobreza monetaria": {
-    "descripcion": "Proporción de la población con ingresos per cápita por debajo de la línea de pobreza.",
-    "fuente_datos": "DANE - GEIH",
-    "unidad_medida": "Porcentaje (%)"
-  },
-  
-  "Coeficiente de GINI": {
-    "descripcion": "Medida estadística que representa la desigualdad de ingresos en una población.",
-    "fuente_datos": "DANE",
-    "unidad_medida": "Índice (0-1)"
+    "nombre_csv": "Pob_Subj",
+    "nombre_completo": "Pobreza Subjetiva",
+    "descripcion": "Porcentaje de hogares que se consideran a sí mismos como pobres.",
+    "unidad_medida": "Porcentaje"
   },
   "Tasa de desempleo": {
-    "descripcion": "Proporción de la fuerza laboral que no tiene trabajo y está buscando empleo activamente.",
-    "fuente_datos": "DANE - GEIH",
-    "unidad_medida": "Porcentaje (%)"
+    "nombre_csv": "desmp",
+    "nombre_completo": "Tasa de desempleo",
+    "descripcion": "Representa el porcentaje de personas que buscan empleo (DS) en relación con la Población Económicamente Activa (PEA), reflejando la proporción de la fuerza laboral que está sin trabajo.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Pobreza monetaria": {
+    "nombre_csv": "pob_mon",
+    "nombre_completo": "Incidencia de Pobreza Monetaria",
+    "descripcion": "Mide el porcentaje de la población cuyo ingreso per cápita en el hogar está bajo la línea de pobreza, definida por el costo mínimo per cápita de una canasta básica de bienes alimentarios y no alimentarios, comparado con la población total.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Pobreza monetaria extrema": {
+    "nombre_csv": "pob_mon_ext",
+    "nombre_completo": "Incidencia de la Pobreza Monetaria Extrema",
+    "descripcion": "Mide el porcentaje de población cuyo ingreso per cápita en el hogar está por debajo de la línea de pobreza, definida por el costo mínimo de una canasta básica de productos alimentarios y no alimentarios, en comparación con la población total.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Pobreza multidimensional": {
+    "nombre_csv": "pob_multi",
+    "nombre_completo": "Indice de Pobreza Multidimensional",
+    "descripcion": "Mide el porcentaje de población en pobreza considerando 5 dimensiones: educación del hogar, condiciones de niños y jóvenes, empleo, salud, y acceso a servicios públicos y condiciones de la vivienda. Estas dimensiones incluye 15 indicadores; los hogares con privación en al menos el 33% de estos se clasifican como pobres.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Coeficiente de GINI": {
+    "nombre_csv": "gini",
+    "nombre_completo": "Coeficiente de GINI",
+    "descripcion": "El coeficiente, asociado a la Curva de Lorenz, evalúa la distribución del ingreso en una región y período dados, oscilando entre 0 (igualdad total de ingresos) y 1 (todo el ingreso concentrado en un individuo).",
+    "unidad_medida": "Puntos en una escala del 0 al 1."
+  },
+  "Inseguridad alimentaria grave": {
+    "nombre_csv": "inseg_alim_grav",
+    "nombre_completo": "Prevalencia de inseguridad alimentaria grave",
+    "descripcion": "Mide el porcentaje de individuos de la población que han experimentado inseguridad alimentaria en niveles  graves en el último año, reflejando la proporción de la población afectada por una insuficiente ingesta de alimentos.",
+    "unidad_medida": "Porcentaje"
   },
   "IPC alimentos y bebidas": {
-    "descripcion": "Variación porcentual promedio de los precios al por menor de un conjunto de bienes y servicios de consumo final alimenticio.",
-    "fuente_datos": "DANE",
-    "unidad_medida": "Variación porcentual"
+    "nombre_csv": "ipc_alim",
+    "nombre_completo": "IPC de alimentos",
+    "descripcion": "Variación del nivel de precios de los bienes y servicios representativos del consumo de alimentos.",
+    "unidad_medida": "Índice/Porcentaje"
   },
-  
-  "Mortalidad desnutrición aguda < 5 años": {
-    "descripcion": "Tasa de mortalidad infantil asociada directamente a episodios de desnutrición severa a corto plazo.",
-    "fuente_datos": "Ministerio de Salud / INS",
-    "unidad_medida": "Tasa por 100,000"
+  "Inseguridad alimentaria moderada/grave": {
+    "nombre_csv": "inseg_alim_mod",
+    "nombre_completo": "Prevalencia de inseguridad alimentaria moderada o grave",
+    "descripcion": "Mide el porcentaje de individuos de la población que han experimentado inseguridad alimentaria en niveles moderados o graves en el último año, reflejando la proporción de la población afectada por una insuficiente ingesta de alimentos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Controles prenatales": {
+    "nombre_csv": "cont_pren",
+    "nombre_completo": "Porcentaje de nacidos vivos con 4 o más consultas de control prenatal",
+    "descripcion": "Mide el porcentaje de nacidos vivos cuyas madres asistieron a 4 o más controles prenatales durante su gestación, respecto al total de\nnacidos vivos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Tasa fecundidad (10-14 años)": {
+    "nombre_csv": "fec_14",
+    "nombre_completo": "Tasa de fecundidad de 10 a 14 años",
+    "descripcion": "Número de nacimientos vivos de madres entre 10 y 14 años por cada 1.000 mujeres de ese grupo de edad.",
+    "unidad_medida": "Tasa por 1.000 mujeres"
+  },
+  "Tasa fecundidad (15-19 años)": {
+    "nombre_csv": "fec_19",
+    "nombre_completo": "Tasa de fecundidad de 15 a 19 años",
+    "descripcion": "Número de nacimientos vivos de madres entre 15 y 19 años por cada 1.000 mujeres de ese grupo de edad.",
+    "unidad_medida": "Tasa por 1.000 mujeres"
   },
   "Mortalidad EDA < 5 años": {
-    "descripcion": "Tasa de mortalidad en menores de 5 años por Enfermedad Diarreica Aguda.",
-    "fuente_datos": "SIVIGILA",
-    "unidad_medida": "Tasa por 100,000"
+    "nombre_csv": "mort_eda",
+    "nombre_completo": "Mortalidad por EDA en menores de 5 años",
+    "descripcion": "Tasa de mortalidad por Enfermedad Diarreica Aguda (EDA) en niños menores de 5 años.",
+    "unidad_medida": "Tasa por 100.000 menores de 5 años"
   },
-  
-  "Inseguridad alimentaria grave": {
-    "descripcion": "Proporción de hogares donde, en el último año, alguien se quedó sin comer por falta de dinero o recursos.",
-    "fuente_datos": "FIES / ENSIN",
-    "unidad_medida": "Porcentaje (%)"
+  "Mortalidad desnutrición aguda < 5 años": {
+    "nombre_csv": "mort_dnt",
+    "nombre_completo": "Tasa de Mortalidad infantil por desnutrición en menores de 5 años.",
+    "descripcion": "Calcula el número de muertes en menores de 5 años debido deficiencias nutricionales y anemias nutricionale, por cada 100,000 niños en ese grupo de edad.",
+    "unidad_medida": "Muerte por cada 100.000 menores de cinco años."
   },
-  
+  "Morbilidad desnutrición aguda < 5 años": {
+    "nombre_csv": "morb_dnt",
+    "nombre_completo": "Morbilidad por desnutrición",
+    "descripcion": "Tasa o proporción de morbilidad por desnutrición en la población infantil.",
+    "unidad_medida": "Porcentaje/Tasa"
+  },
+  "Morbilidad EDA < 5 años": {
+    "nombre_csv": "morb_eda",
+    "nombre_completo": "Morbilidad por EDA",
+    "descripcion": "Proporción de menores de 5 años que presentaron Enfermedad Diarreica Aguda.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Bajo peso al nacer": {
+    "nombre_csv": "bajo_peso",
+    "nombre_completo": "Proporción del bajo peso al nacer.",
+    "descripcion": "Porcentaje de neonatos que registran un peso al nacer inferior a 2.500 gramos.",
+    "unidad_medida": "Porcentaje"
+  },
+  "Mortalidad materna": {
+    "nombre_csv": "mort_gest",
+    "nombre_completo": "Tasa de mortalidad materna",
+    "descripcion": "Es el número de defunciones maternas\nocurridas durante el embarazo, parto o durante los 42\ndías después del parto, por cada cien mil nacidos vivos.",
+    "unidad_medida": "Muertes por 100,000 nacidos vivos."
+  },
   "Población étnica": {
-    "descripcion": "Porcentaje de población que se auto-reconoce como perteneciente a un grupo étnico, a menudo coincidente con áreas de mayor vulnerabilidad histórica.",
-    "fuente_datos": "DANE",
-    "unidad_medida": "Porcentaje (%)"
+    "nombre_csv": "Porcentaje_Etnica",
+    "nombre_completo": "Porcentaje de población con autorreconocimiento étnico",
+    "descripcion": "Proporción de la población que se autorreconoce como parte de un grupo étnico (indígena, afro, etc.).",
+    "unidad_medida": "Porcentaje"
   },
-  
-  "Acceso acueducto": {
-    "descripcion": "Cobertura de hogares conectados a una red de suministro de agua potable.",
-    "fuente_datos": "DANE",
-    "unidad_medida": "Porcentaje (%)"
-  },
-  
-  "Adquieren carne/pollo/pescado": {
-    "descripcion": "Porcentaje de hogares que reportan consumo regular de proteínas de alto valor biológico animal.",
-    "fuente_datos": "Encuesta Nacional de Consumo Alimentario",
-    "unidad_medida": "Porcentaje (%)"
+  "Desnutrición crónica < 5 años": {
+    "nombre_csv": "dnt_cro",
+    "nombre_completo": "Retraso en talla (0 - 4 años)",
+    "descripcion": "Evalúa la proporción de niños, niñas y adolescentes, cuya talla se encuentra por debajo de la mediana de los estándares de crecimiento infantil de la Organización Mundial de la Salud (OMS) por más de dos desviaciones estándar (DE) por edad.",
+    "unidad_medida": "Porcentaje"
   }
 }

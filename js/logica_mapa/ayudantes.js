@@ -16,8 +16,8 @@ export function getIndicatorValue(deptCode, indicatorId) {
     }
     
     // 2. Si no, busca si es un Sub-indicador en el nuevo archivo independiente
-    if (state.subIndicatorData && state.subIndicatorData[deptCode] && state.subIndicatorData[deptCode][indicatorId] !== undefined) {
-        return state.subIndicatorData[deptCode][indicatorId];
+    if (state.indicatorData && state.indicatorData[deptCode] && state.indicatorData[deptCode][indicatorId] !== undefined) {
+        return state.indicatorData[deptCode][indicatorId];
     }
     
     return null;

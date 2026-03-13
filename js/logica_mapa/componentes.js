@@ -325,6 +325,14 @@ export function createMoreInfoPopup(indicatorId) {
     const config = state.appConfig[configKey];
 
     if (!config) {
+        // Buscar en la configuración de indicadores individuales
+        const indConfig = state.indicatorConfig ? state.indicatorConfig[indicatorId] : null;
+        if (indConfig) {
+            return `
+                <p>${indConfig.descripcion || ''}</p>
+                ${indConfig.unidad_medida ? `<p><strong>Unidad de medida:</strong> ${indConfig.unidad_medida}</p>` : ''}
+            `;
+        }
         return `<p>No hay descripción disponible para este indicador.</p>`;
     }
 

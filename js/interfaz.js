@@ -56,6 +56,7 @@ export function populateControls() {
                 // (e.g. "Tasa de desempleo" instead of "desmp"), we no longer need reverse mapping.
                 // We use the variable name directly as the value for the radio button.
                 let valueForRadio = v.nombre;
+                const indicatorWeightLabel = v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : '';
                 
                 // Extraer el color (hex o rgb) del iconHTML del padre para inyectárselo al hijo
                 let parentColor = '';
@@ -74,7 +75,7 @@ export function populateControls() {
                             <input type="radio" name="indicator" value="${valueForRadio}">
                             <span class="radio-span">
                                 <span class="radio-icon">${subIconHtml}</span>
-                                <span class="radio-label">${v.nombre}</span>
+                                <span class="radio-label">${v.nombre} ${indicatorWeightLabel}</span>
                             </span>
                         </label>
                     </div>
@@ -218,12 +219,22 @@ export function updateStoryBox(indicatorId) {
     const iconHTML = dim_icons[indicatorId] || '';
 
     if (!config) {
-        // En vez de mostrar un mensaje de "no disponible", mostraremos al menos el nombre de la variable seleccionada.
-        storyBox.innerHTML = `
-            ${iconHTML}
-            <h3>${fallbackName}</h3>
-            <p>Datos específicos obtenidos del archivo de indicadores 2024.</p>
-        `;
+        // Buscar en la configuración de indicadores individuales
+        const indConfig = state.indicatorConfig[indicatorId];
+        if (indConfig) {
+            storyBox.innerHTML = `
+                ${iconHTML}
+                <h3>${indConfig.nombre_completo || fallbackName}</h3>
+                ${indConfig.descripcion ? `<p>${indConfig.descripcion}</p>` : ''}
+                ${indConfig.unidad_medida ? `<p class="indicator-unit"><strong>Unidad de medida:</strong> ${indConfig.unidad_medida}</p>` : ''}
+            `;
+        } else {
+            storyBox.innerHTML = `
+                ${iconHTML}
+                <h3>${fallbackName}</h3>
+                <p>Datos específicos obtenidos del archivo de indicadores 2024.</p>
+            `;
+        }
         return;
     }
 
