@@ -1,0 +1,73 @@
+{
+  "Pobreza monetaria extrema": {
+    "descripcion": "Descripción detallada del indicador de pobreza extrema. (Ej: Población con ingresos insuficientes para adquirir una canasta básica de alimentos).",
+    "fuente_datos": "DANE - Gran Encuesta Integrada de Hogares (GEIH)",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  "Pobreza multidimensional": {
+    "descripcion": "Descripción del IPM. (Ej: Mide múltiples carencias a nivel de los hogares y las personas en los ámbitos de la salud, la educación y el nivel de vida).",
+    "fuente_datos": "DANE",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  "Pobreza subjetiva": {
+    "descripcion": "Percepción de los hogares respecto a su nivel de ingresos.",
+    "fuente_datos": "Encuesta de Calidad de Vida",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  "Pobreza monetaria": {
+    "descripcion": "Proporción de la población con ingresos per cápita por debajo de la línea de pobreza.",
+    "fuente_datos": "DANE - GEIH",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  
+  "Coeficiente de GINI": {
+    "descripcion": "Medida estadística que representa la desigualdad de ingresos en una población.",
+    "fuente_datos": "DANE",
+    "unidad_medida": "Índice (0-1)"
+  },
+  "Tasa de desempleo": {
+    "descripcion": "Proporción de la fuerza laboral que no tiene trabajo y está buscando empleo activamente.",
+    "fuente_datos": "DANE - GEIH",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  "IPC alimentos y bebidas": {
+    "descripcion": "Variación porcentual promedio de los precios al por menor de un conjunto de bienes y servicios de consumo final alimenticio.",
+    "fuente_datos": "DANE",
+    "unidad_medida": "Variación porcentual"
+  },
+  
+  "Mortalidad desnutrición aguda < 5 años": {
+    "descripcion": "Tasa de mortalidad infantil asociada directamente a episodios de desnutrición severa a corto plazo.",
+    "fuente_datos": "Ministerio de Salud / INS",
+    "unidad_medida": "Tasa por 100,000"
+  },
+  "Mortalidad EDA < 5 años": {
+    "descripcion": "Tasa de mortalidad en menores de 5 años por Enfermedad Diarreica Aguda.",
+    "fuente_datos": "SIVIGILA",
+    "unidad_medida": "Tasa por 100,000"
+  },
+  
+  "Inseguridad alimentaria grave": {
+    "descripcion": "Proporción de hogares donde, en el último año, alguien se quedó sin comer por falta de dinero o recursos.",
+    "fuente_datos": "FIES / ENSIN",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  
+  "Población étnica": {
+    "descripcion": "Porcentaje de población que se auto-reconoce como perteneciente a un grupo étnico, a menudo coincidente con áreas de mayor vulnerabilidad histórica.",
+    "fuente_datos": "DANE",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  
+  "Acceso acueducto": {
+    "descripcion": "Cobertura de hogares conectados a una red de suministro de agua potable.",
+    "fuente_datos": "DANE",
+    "unidad_medida": "Porcentaje (%)"
+  },
+  
+  "Adquieren carne/pollo/pescado": {
+    "descripcion": "Porcentaje de hogares que reportan consumo regular de proteínas de alto valor biológico animal.",
+    "fuente_datos": "Encuesta Nacional de Consumo Alimentario",
+    "unidad_medida": "Porcentaje (%)"
+  }
+}
