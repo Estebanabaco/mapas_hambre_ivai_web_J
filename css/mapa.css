@@ -87,17 +87,19 @@
 /* --- Custom Tooltip --- */
 .custom-tooltip {
     position: absolute;
-    background-color: var(--text-color);
-    color: var(--white);
-    padding: 8px 12px;
-    border-radius: 5px;
-    font-size: 0.85em;
-    white-space: nowrap;
-    z-index: 1010; /* Above leaflet controls */
+    background-color: var(--panel-bg, #1e2a38);
+    color: var(--white, #fff);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82em;
+    max-width: 280px;
+    z-index: 1010;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    pointer-events: none; /* So it doesn't interfere with mouse events */
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    line-height: 1.4;
 }
 
 .custom-tooltip.visible {
@@ -105,16 +107,45 @@
     visibility: visible;
 }
 
-/* Tooltip Arrow */
-.custom-tooltip::after {
+/* Flecha a la izquierda del tooltip */
+.custom-tooltip::before {
     content: '';
     position: absolute;
-    top: 50%;
-    right: 100%; /* Arrow on the left */
-    margin-top: -5px;
-    border-width: 5px;
+    top: 14px;
+    right: 100%;
+    border-width: 6px;
     border-style: solid;
-    border-color: transparent var(--text-color) transparent transparent;
+    border-color: transparent var(--panel-bg, #1e2a38) transparent transparent;
+}
+
+.tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.tooltip-icon {
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+.tooltip-title {
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.tooltip-description {
+    margin: 0 0 4px 0;
+    opacity: 0.88;
+    line-height: 1.45;
+}
+
+.tooltip-unit {
+    margin: 0;
+    opacity: 0.65;
+    font-size: 0.9em;
 }
 
 /* --- Estilos de Resaltado Interactivo --- */
@@ -127,7 +158,6 @@
 }
 
 .map-feature-highlight {
-    weight: 2.5;
     color: '#2c3e50';
 }
 

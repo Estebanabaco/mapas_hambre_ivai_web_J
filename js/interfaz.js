@@ -269,47 +269,110 @@ export function updateStoryBox(indicatorId) {
 
 export function setupTooltips() {
     const indicatorSelector = document.getElementById('indicator-selector');
-    const sidebar = document.querySelector('.sidebar');
+    const sidebarContent = document.querySelector('.sidebar-content');
     let tooltip = null;
+    let hideTimeout = null;
 
-    indicatorSelector.addEventListener('mouseover', (e) => {
-        const label = e.target.closest('label');
-        if (!label || !sidebar.classList.contains('collapsed')) {
-            return;
+    // Crear el elemento tooltip una sola vez
+    tooltip = document.createElement('div');
+    tooltip.className = 'custom-tooltip';
+    document.body.appendChild(tooltip);
+
+    const getDescription = (indicatorId) => {
+        if (!indicatorId) return null;
+
+        // Índice integrado
+        const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
+        const appConf = state.appConfig && state.appConfig[configKey];
+        if (appConf && appConf.descripcion) {
+            return {
+                nombre: appConf.nombreCompleto || indicatorId,
+                descripcion: appConf.descripcion,
+                unidad: null,
+                iconHTML: dim_icons[indicatorId] || ''
+            };
         }
 
-        const title = label.getAttribute('title');
-        if (!title) return;
-
-        if (!tooltip) {
-            tooltip = document.createElement('div');
-            tooltip.className = 'custom-tooltip';
-            document.body.appendChild(tooltip);
+        // Indicador individual
+        const indConf = state.indicatorConfig && state.indicatorConfig[indicatorId];
+        if (indConf && indConf.descripcion) {
+            // Buscar color de la dimensión padre
+            const uniqueIconClass = sub_icons[indicatorId] || 'fa-solid fa-circle-dot';
+            let parentColor = '#666';
+            if (state.appConfig) {
+                for (const dimKey of Object.keys(state.appConfig)) {
+                    const dimConf = state.appConfig[dimKey];
+                    if (dimConf && dimConf.variables && dimConf.variables.some(v => v.nombre === indicatorId)) {
+                        const parentIconHtml = dim_icons[dimKey] || '';
+                        const colorMatch = parentIconHtml.match(/style="color:\s*([^;]+);"/);
+                        if (colorMatch && colorMatch[1]) parentColor = colorMatch[1];
+                        break;
+                    }
+                }
+            }
+            return {
+                nombre: indConf.nombre_completo || indicatorId,
+                descripcion: indConf.descripcion,
+                unidad: indConf.unidad_medida || null,
+                iconHTML: `<i class="${uniqueIconClass}" style="color: ${parentColor};"></i>`
+            };
         }
 
-        tooltip.textContent = title;
+        return null;
+    };
+
+    const showTooltip = (indicatorId, targetEl) => {
+        const info = getDescription(indicatorId);
+        if (!info) return;
+
+        tooltip.innerHTML = `
+            <div class="tooltip-header">
+                <span class="tooltip-icon">${info.iconHTML}</span>
+                <strong class="tooltip-title">${info.nombre}</strong>
+            </div>
+            <p class="tooltip-description">${info.descripcion}</p>
+            ${info.unidad ? `<p class="tooltip-unit"><em>${info.unidad}</em></p>` : ''}
+        `;
+
         tooltip.classList.add('visible');
 
-        const labelRect = label.getBoundingClientRect();
-        
-        // Position tooltip
-        tooltip.style.top = `${labelRect.top + (labelRect.height / 2) - (tooltip.offsetHeight / 2)}px`;
-        tooltip.style.left = `${labelRect.right + 10}px`; // 10px to the right
+        const rect = targetEl.getBoundingClientRect();
+        const sidebarEl = document.querySelector('.sidebar');
+        const sidebarRect = sidebarEl.getBoundingClientRect();
+
+        // Posicionar a la derecha del sidebar
+        tooltip.style.top = `${Math.min(rect.top, window.innerHeight - tooltip.offsetHeight - 10)}px`;
+        tooltip.style.left = `${sidebarRect.right + 12}px`;
+    };
+
+    const hideTooltip = () => {
+        hideTimeout = setTimeout(() => {
+            tooltip.classList.remove('visible');
+        }, 100);
+    };
+
+    indicatorSelector.addEventListener('mouseover', (e) => {
+        clearTimeout(hideTimeout);
+
+        // Buscar el radio button más cercano para obtener su value (indicatorId)
+        const radio = e.target.closest('label')?.querySelector('input[type="radio"]')
+                   || e.target.closest('.accordion-header')?.querySelector('input[type="radio"]');
+
+        const targetEl = e.target.closest('label') || e.target.closest('.accordion-header');
+
+        if (radio && targetEl) {
+            showTooltip(radio.value, targetEl);
+        }
     });
 
     indicatorSelector.addEventListener('mouseout', (e) => {
-        const label = e.target.closest('label');
-        if (label && tooltip) {
-            tooltip.classList.remove('visible');
-        }
+        const stillInside = e.relatedTarget && indicatorSelector.contains(e.relatedTarget);
+        if (!stillInside) hideTooltip();
     });
 
-    // Hide tooltip on scroll within the sidebar to prevent it from being orphaned
-    const sidebarContent = document.querySelector('.sidebar-content');
+    // Ocultar al hacer scroll
     sidebarContent.addEventListener('scroll', () => {
-        if (tooltip) {
-            tooltip.classList.remove('visible');
-        }
+        tooltip.classList.remove('visible');
     });
 }
 
@@ -347,6 +410,25 @@ export function setupEventListeners() {
             updateMap('main', e.target.value);
             updateStoryBox(e.target.value);
             closeLegendInfoModal();
+
+            // Si el radio seleccionado pertenece al header de un acordeón (dimensión),
+            // abrir automáticamente ese acordeón y cerrar los demás.
+            const parentGroup = e.target.closest('.accordion-group');
+            if (parentGroup) {
+                // Cerrar todos los demás acordeones
+                document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                    if (openGroup !== parentGroup) {
+                        openGroup.classList.remove('open');
+                        openGroup.querySelector('.accordion-content').style.maxHeight = null;
+                    }
+                });
+                // Abrir el de la dimensión seleccionada si no está abierto ya
+                if (!parentGroup.classList.contains('open')) {
+                    parentGroup.classList.add('open');
+                    parentGroup.querySelector('.accordion-content').style.maxHeight =
+                        parentGroup.querySelector('.accordion-content').scrollHeight + 'px';
+                }
+            }
         }
     });
 
