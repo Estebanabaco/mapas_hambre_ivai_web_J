@@ -34,8 +34,6 @@ export function populateControls() {
         const displayName = config.nombreCompleto || key.replace(/_/g, ' ');
         const iconHTML = dim_icons[key] || '<i class="fa-solid fa-chart-simple"></i>';
         const finalLabel = key === 'Indice' ? displayName : `${displayName} ${weightLabel}`;
-        const infoIconHtml = `<i class="fas fa-info-circle dimension-info-btn" data-indicator-id="${key}" title="Más información sobre ${displayName}"></i>`;
-
         if (key === 'Indice') {
             indexHtml = `
                 <div class="accordion-group">
@@ -48,7 +46,6 @@ export function populateControls() {
                             </div>
                         </label>
                         <div style="display:flex; align-items:center;">
-                            ${infoIconHtml}
                             <i class="fa-solid fa-chevron-down accordion-toggle-icon" style="visibility: hidden;"></i>
                         </div>
                     </div>
@@ -96,7 +93,6 @@ export function populateControls() {
                             </div>
                         </label>
                         <div style="display:flex; align-items:center;">
-                            ${infoIconHtml}
                             <i class="fa-solid fa-chevron-down accordion-toggle-icon"></i>
                         </div>
                     </div>
