@@ -107,29 +107,7 @@ export function populateControls() {
     if (indexSelector) indexSelector.innerHTML = indexHtml;
     indicatorSelector.innerHTML = dimensionsHtml;
 
-    // Accordion Toggle Logic
-    setTimeout(() => {
-        document.querySelectorAll('.accordion-header .accordion-toggle-icon').forEach(icon => {
-            icon.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent triggering the radio button on toggle click
-                const group = e.target.closest('.accordion-group');
-                const content = group.querySelector('.accordion-content');
-                if (group.classList.contains('open')) {
-                    group.classList.remove('open');
-                    content.style.maxHeight = null;
-                } else {
-                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
-                         openGroup.classList.remove('open');
-                         openGroup.querySelector('.accordion-content').style.maxHeight = null;
-                    });
-                    group.classList.add('open');
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
-        });
-        
-        // Auto-expand the selected one if needed on load, or just keep closed.
-    }, 100);
+    // Configuración de acordeones removida (ahora usamos delegación de eventos centralizada)
 
     // Populate SlimSelect (Comparisons) with all indicators + subindicators
     let allSelectData = [];
@@ -408,6 +386,19 @@ export function setupSidebarToggle() {
 export function setupEventListeners() {
     const sidebarContent = document.querySelector('.sidebar-content');
     
+    // Rastrear si la opción ya estaba seleccionada ANTES del click
+    sidebarContent.addEventListener('mousedown', (e) => {
+        const headerLabel = e.target.closest('.accordion-header label');
+        if (headerLabel) {
+            const radio = headerLabel.querySelector('input[type="radio"]');
+            if (radio && radio.checked) {
+                headerLabel.dataset.wasChecked = 'true';
+            } else if (radio) {
+                headerLabel.dataset.wasChecked = 'false';
+            }
+        }
+    });
+
     sidebarContent.addEventListener('change', (e) => {
         if (e.target.name === 'indicator') {
             state.currentIndicator = e.target.value;
@@ -437,6 +428,55 @@ export function setupEventListeners() {
     });
 
     sidebarContent.addEventListener('click', (e) => {
+        // 1. Clic directo en el icono de la flechita (chevron)
+        const toggleIcon = e.target.closest('.accordion-toggle-icon');
+        if (toggleIcon) {
+            e.stopPropagation();
+            const group = toggleIcon.closest('.accordion-group');
+            if (group) {
+                const content = group.querySelector('.accordion-content');
+                if (group.classList.contains('open')) {
+                    group.classList.remove('open');
+                    if (content) content.style.maxHeight = null;
+                } else {
+                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                         openGroup.classList.remove('open');
+                         const c = openGroup.querySelector('.accordion-content');
+                         if (c) c.style.maxHeight = null;
+                    });
+                    group.classList.add('open');
+                    if (content) content.style.maxHeight = content.scrollHeight + "px";
+                }
+            }
+            return;
+        }
+
+        // 2. Clic en una dimensión (label) que YA ESTABA SELECCIONADA
+        const headerLabel = e.target.closest('.accordion-header label');
+        if (headerLabel && headerLabel.dataset.wasChecked === 'true') {
+            const group = headerLabel.closest('.accordion-group');
+            if (group) {
+                const content = group.querySelector('.accordion-content');
+                if (group.classList.contains('open')) {
+                    // Si estaba abierto, colapsarlo
+                    group.classList.remove('open');
+                    if (content) content.style.maxHeight = null;
+                } else {
+                    // Si estaba cerrado, abrirlo y cerrar los demás
+                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                         if (openGroup !== group) {
+                             openGroup.classList.remove('open');
+                             const c = openGroup.querySelector('.accordion-content');
+                             if (c) c.style.maxHeight = null;
+                         }
+                    });
+                    group.classList.add('open');
+                    if (content) content.style.maxHeight = content.scrollHeight + "px";
+                }
+                e.preventDefault(); // Prevenir comportamientos por defecto extraños al hacer clic repetido
+            }
+        }
+
         if (e.target.classList.contains('dimension-info-btn')) {
             const indicatorId = e.target.dataset.indicatorId;
             if (indicatorId) {
