@@ -106,8 +106,7 @@
 }
 
 /* Fix collapse behaviors */
-.sidebar.collapsed .accordion-title,
-.sidebar.collapsed .accordion-toggle-icon {
+.sidebar.collapsed .accordion-title {
     display: none;
 }
 .sidebar.collapsed .accordion-content {
@@ -116,6 +115,14 @@
 .sidebar.collapsed .accordion-header {
     padding: 8px 0;
     justify-content: center;
+    flex-direction: column;
+    gap: 4px; /* Espacio entre el icono principal y la flechita */
+}
+.sidebar.collapsed .accordion-header > label {
+    width: auto !important;
+}
+.sidebar.collapsed .accordion-toggle-icon {
+    margin-left: 0;
 }
 .sidebar.collapsed .accordion-header .radio-icon {
     margin-right: 0;
