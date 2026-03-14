@@ -22,7 +22,11 @@ export function populateControls() {
         return (weightsMap.get(b) || 0) - (weightsMap.get(a) || 0);
     });
 
-    indicatorSelector.innerHTML = indicators.map((key, index) => {
+    const indexSelector = document.getElementById('index-selector');
+    let indexHtml = '';
+    let dimensionsHtml = '';
+
+    indicators.forEach((key, index) => {
         const weight = weightsMap.get(key);
         const weightLabel = weight ? `(${(weight * 100).toFixed(1)}%)` : '';
         const configKey = key === 'Indice' ? 'integrated' : key;
@@ -32,78 +36,80 @@ export function populateControls() {
         const finalLabel = key === 'Indice' ? displayName : `${displayName} ${weightLabel}`;
         const infoIconHtml = `<i class="fas fa-info-circle dimension-info-btn" data-indicator-id="${key}" title="Más información sobre ${displayName}"></i>`;
 
-        // If it's Indice, it's just a regular radio button, no accordion
         if (key === 'Indice') {
-            return `
-                <div class="radio main-index-radio" style="margin-bottom: 15px;">
-                  <label title="${displayName}">
-                    <input type="radio" name="indicator" value="${key}" ${index === 0 ? 'checked' : ''}>
-                     <span class="radio-span">
-                        <span class="radio-icon">${iconHTML}</span>
-                        <span class="radio-label">${finalLabel}</span>
-                     </span>
-                  </label>
-                  ${infoIconHtml}
+            indexHtml = `
+                <div class="accordion-group">
+                    <div class="accordion-header">
+                        <label style="display: flex; align-items: center; margin: 0; width: 100%; cursor: pointer;" title="${displayName}">
+                            <input type="radio" name="indicator" value="${key}" style="display:none;" ${index === 0 ? 'checked' : ''}>
+                            <span class="radio-icon">${iconHTML}</span>
+                            <div class="accordion-title-wrapper">
+                                <span class="accordion-title">${finalLabel}</span>
+                            </div>
+                        </label>
+                        <div style="display:flex; align-items:center;">
+                            ${infoIconHtml}
+                            <i class="fa-solid fa-chevron-down accordion-toggle-icon" style="visibility: hidden;"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // For dimensions, create an accordion group
+            let subIndicatorsHtml = '';
+            if (config.variables && config.variables.length > 0) {
+                subIndicatorsHtml = config.variables.map(v => {
+                    let valueForRadio = v.nombre;
+                    const indicatorWeightLabel = v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : '';
+                    
+                    let parentColor = '';
+                    const colorMatch = iconHTML.match(/style="color:\s*([^;]+);"/);
+                    if (colorMatch && colorMatch[1]) {
+                        parentColor = colorMatch[1];
+                    }
+                    
+                    const uniqueIconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
+                    const subIconHtml = `<i class="${uniqueIconClass}" style="color: ${parentColor};"></i>`;
+
+                    return `
+                        <div class="radio">
+                            <label title="${v.nombre}">
+                                <input type="radio" name="indicator" value="${valueForRadio}">
+                                <span class="radio-span">
+                                    <span class="radio-icon">${subIconHtml}</span>
+                                    <span class="radio-label">${v.nombre} ${indicatorWeightLabel}</span>
+                                </span>
+                            </label>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            dimensionsHtml += `
+                <div class="accordion-group">
+                    <div class="accordion-header">
+                        <label style="display: flex; align-items: center; margin: 0; width: 100%; cursor: pointer;" title="${displayName}">
+                            <input type="radio" name="indicator" value="${key}" style="display:none;" ${index === 0 ? 'checked' : ''}>
+                            <span class="radio-icon">${iconHTML}</span>
+                            <div class="accordion-title-wrapper">
+                                <span class="accordion-title">${finalLabel}</span>
+                            </div>
+                        </label>
+                        <div style="display:flex; align-items:center;">
+                            ${infoIconHtml}
+                            <i class="fa-solid fa-chevron-down accordion-toggle-icon"></i>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        ${subIndicatorsHtml}
+                    </div>
                 </div>
             `;
         }
+    });
 
-        // For dimensions, create an accordion group
-        let subIndicatorsHtml = '';
-        if (config.variables && config.variables.length > 0) {
-            subIndicatorsHtml = config.variables.map(v => {
-                // Now that the backend Python script outputs the exact names from config
-                // (e.g. "Tasa de desempleo" instead of "desmp"), we no longer need reverse mapping.
-                // We use the variable name directly as the value for the radio button.
-                let valueForRadio = v.nombre;
-                const indicatorWeightLabel = v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : '';
-                
-                // Extraer el color (hex o rgb) del iconHTML del padre para inyectárselo al hijo
-                let parentColor = '';
-                const colorMatch = iconHTML.match(/style="color:\s*([^;]+);"/);
-                if (colorMatch && colorMatch[1]) {
-                    parentColor = colorMatch[1];
-                }
-                
-                // Buscar la clase de icono única para este subindicador. Si no existe, usar un círculo por defecto
-                const uniqueIconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
-                const subIconHtml = `<i class="${uniqueIconClass}" style="color: ${parentColor};"></i>`;
-
-                return `
-                    <div class="radio">
-                        <label title="${v.nombre}">
-                            <input type="radio" name="indicator" value="${valueForRadio}">
-                            <span class="radio-span">
-                                <span class="radio-icon">${subIconHtml}</span>
-                                <span class="radio-label">${v.nombre} ${indicatorWeightLabel}</span>
-                            </span>
-                        </label>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        return `
-            <div class="accordion-group">
-                <div class="accordion-header">
-                    <label style="display: flex; align-items: center; margin: 0; width: 100%; cursor: pointer;" title="${displayName}">
-                        <input type="radio" name="indicator" value="${key}" style="display:none;" ${index === 0 ? 'checked' : ''}>
-                        <span class="radio-icon">${iconHTML}</span>
-                        <div class="accordion-title-wrapper">
-                            <span class="accordion-title">${finalLabel}</span>
-                        </div>
-                    </label>
-                    <div style="display:flex; align-items:center;">
-                        ${infoIconHtml}
-                        <i class="fa-solid fa-chevron-down accordion-toggle-icon"></i>
-                    </div>
-                </div>
-                <div class="accordion-content">
-                    ${subIndicatorsHtml}
-                </div>
-            </div>
-        `;
-    }).join('');
+    if (indexSelector) indexSelector.innerHTML = indexHtml;
+    indicatorSelector.innerHTML = dimensionsHtml;
 
     // Accordion Toggle Logic
     setTimeout(() => {
@@ -351,7 +357,7 @@ export function setupTooltips() {
         }, 100);
     };
 
-    indicatorSelector.addEventListener('mouseover', (e) => {
+    sidebarContent.addEventListener('mouseover', (e) => {
         clearTimeout(hideTimeout);
 
         // Buscar el radio button más cercano para obtener su value (indicatorId)
@@ -365,8 +371,8 @@ export function setupTooltips() {
         }
     });
 
-    indicatorSelector.addEventListener('mouseout', (e) => {
-        const stillInside = e.relatedTarget && indicatorSelector.contains(e.relatedTarget);
+    sidebarContent.addEventListener('mouseout', (e) => {
+        const stillInside = e.relatedTarget && sidebarContent.contains(e.relatedTarget);
         if (!stillInside) hideTooltip();
     });
 
@@ -404,7 +410,9 @@ export function setupSidebarToggle() {
 
 // --- EVENT LISTENERS ---
 export function setupEventListeners() {
-    indicatorSelector.addEventListener('change', (e) => {
+    const sidebarContent = document.querySelector('.sidebar-content');
+    
+    sidebarContent.addEventListener('change', (e) => {
         if (e.target.name === 'indicator') {
             state.currentIndicator = e.target.value;
             updateMap('main', e.target.value);
@@ -432,7 +440,7 @@ export function setupEventListeners() {
         }
     });
 
-    indicatorSelector.addEventListener('click', (e) => {
+    sidebarContent.addEventListener('click', (e) => {
         if (e.target.classList.contains('dimension-info-btn')) {
             const indicatorId = e.target.dataset.indicatorId;
             if (indicatorId) {

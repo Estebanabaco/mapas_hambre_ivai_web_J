@@ -37,6 +37,15 @@
     width: 0;
 }
 
+.sidebar.collapsed .dimension-section-title {
+    opacity: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+
 .toggle-btn {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -45,6 +54,7 @@
     padding: 5px 10px;
     transition: background-color 0.2s;
     font-size: 0.9em;
+    flex-shrink: 0;
 }
 
 .toggle-btn:hover {
@@ -86,6 +96,18 @@
     color: var(--primary-color);
     font-weight: 700;
     margin-bottom: 15px;
+}
+
+
+
+.dimension-section-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 1.05rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
 }
 
 /* --- Selector de Dimensiones (Estilo Shiny) --- */
@@ -172,35 +194,6 @@
 
 .radio label i {
     color: inherit;
-/* --- Estilo Destacado para el Índice Principal --- */
-.main-index-radio .radio-span {
-    background-color: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-left: 4px solid transparent; 
-    padding: 8px 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.04); /* Sutil elevación para separarlo de los acordeones */
-}
-
-.main-index-radio label:hover > .radio-span {
-    background-color: #e9ecef;
-}
-
-.main-index-radio label > input[type='radio']:checked + .radio-span {
-    background-color: #e9f5ff;
-    border-color: #e0e0e0;
-    border-left: 4px solid var(--primary-color);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.06);
-    transform: translateY(-1px);
-}
-
-.main-index-radio .radio-label {
-    font-size: 0.95em; /* Ligeramente más grande que las dimensiones normales (0.85em) */
-}
-
-.main-index-radio label > input[type='radio']:checked + .radio-span .radio-label,
-.main-index-radio label > input[type='radio']:checked + .radio-span .radio-icon {
-    font-weight: 700;
-    color: var(--primary-color);
 }
 
 /* --- Controles de comparación en el sidebar --- */
