@@ -109,14 +109,23 @@
 .sidebar.collapsed .accordion-title {
     display: none;
 }
-.sidebar.collapsed .accordion-content {
-    display: none !important; /* Never show subitems when sidebar is collapsed */
+.sidebar.collapsed .accordion-content .radio {
+    padding: 4px 0;
+    justify-content: center;
+    margin-bottom: 0;
+}
+.sidebar.collapsed .accordion-content .radio-span {
+    justify-content: center;
+}
+.sidebar.collapsed .accordion-content .radio-icon {
+    margin-right: 0;
 }
 .sidebar.collapsed .accordion-header {
     padding: 8px 0;
     justify-content: center;
-    flex-direction: column;
-    gap: 4px; /* Espacio entre el icono principal y la flechita */
+    flex-direction: row;
+    align-items: center;
+    gap: 6px; /* Espacio horizontal entre el icono principal y la flechita */
 }
 .sidebar.collapsed .accordion-header > label {
     width: auto !important;
