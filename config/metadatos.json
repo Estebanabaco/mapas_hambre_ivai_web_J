@@ -3,16 +3,16 @@
   "availableYears": [2024, 2023],
   "rutas": {
     "2024": {
-      "indexData": "data/datos_indice.json",
-      "nutritionData": "data/datos_nutricionales.json",
-      "indicatorData": "data/datos_indicadores.json",
-      "weights": "config/002_Pesos_AHP_Hambre.json"
+      "indexData": "data/2024/datos_indice.json",
+      "nutritionData": "data/2024/datos_nutricionales.json",
+      "indicatorData": "data/2024/datos_indicadores.json",
+      "weights": "data/2024/002_Pesos_AHP_Hambre.json"
     },
     "2023": {
-      "indexData": "data_example/2023/datos_indice.json",
-      "nutritionData": "data_example/2023/datos_nutricionales.json",
-      "indicatorData": "data_example/2023/datos_indicadores.json",
-      "weights": "data_example/2023/002_Pesos_AHP_Hambre.json"
+      "indexData": "data/2023/datos_indice.json",
+      "nutritionData": "data/2023/datos_nutricionales.json",
+      "indicatorData": "data/2023/datos_indicadores.json",
+      "weights": "data/2023/002_Pesos_AHP_Hambre.json"
     }
   }
 }
