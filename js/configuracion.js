@@ -6,6 +6,8 @@ export const state = {
     indicatorData: {},
     indicatorConfig: {},
     currentIndicator: 'Indice',
+    catalog: null,
+    currentYear: null,
     appConfig: null,
     weights: null,
     maps: {

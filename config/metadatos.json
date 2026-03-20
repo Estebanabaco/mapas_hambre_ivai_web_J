@@ -1,0 +1,12 @@
+{
+  "defaultYear": 2024,
+  "availableYears": [2024],
+  "rutas": {
+    "2024": {
+      "indexData": "data/datos_indice.json",
+      "nutritionData": "data/datos_nutricionales.json",
+      "indicatorData": "data/datos_indicadores.json",
+      "weights": "config/002_Pesos_AHP_Hambre.json"
+    }
+  }
+}

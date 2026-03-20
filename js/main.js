@@ -1,5 +1,5 @@
 import { state, indicatorSelector, selectCompareVul, selectCompareNut } from './configuracion.js';
-import { loadData } from './manejo_datos.js';
+import { loadCatalog, loadData } from './manejo_datos.js';
 import { initMaps, updateMap } from './logica_mapa/mapa.js';
 import { populateControls, populateFooter, setupEventListeners, setupSidebarToggle, setupTooltips, updateStoryBox, populateModal } from './interfaz.js';
 
@@ -7,6 +7,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MAIN EXECUTION ---
     async function main() {
         try {
+            await loadCatalog();
+            
+            const yearSelector = document.getElementById('year-selector');
+            if (yearSelector && state.catalog) {
+                yearSelector.innerHTML = state.catalog.availableYears.map(year => 
+                    `<option value="${year}" ${year === state.currentYear ? 'selected' : ''}>${year}</option>`
+                ).join('');
+                
+                yearSelector.addEventListener('change', async (e) => {
+                    const newYear = parseInt(e.target.value);
+                    if (newYear !== state.currentYear) {
+                        state.currentYear = newYear;
+                        const mainMapEl = document.getElementById('map-main');
+                        if (mainMapEl) mainMapEl.style.opacity = '0.5';
+                        
+                        await loadData();
+                        
+                        if (mainMapEl) mainMapEl.style.opacity = '1';
+                        
+                        populateControls();
+                        populateFooter();
+                        populateModal();
+                        
+                        const initialIndicator = document.querySelector('input[name="indicator"]:checked');
+                        if (initialIndicator) {
+                            updateMap('main', initialIndicator.value);
+                            updateStoryBox(initialIndicator.value);
+                        }
+                        const selectedVul = state.slimSelects?.compareVul?.getSelected();
+                        if (selectedVul && selectedVul.length > 0) {
+                            updateMap('compareVul', selectedVul[0]);
+                        }
+                        const compareNutVal = selectCompareNut?.value;
+                        if (compareNutVal) {
+                            updateMap('compareNut', compareNutVal);
+                        }
+                    }
+                });
+            }
+
             await loadData();
             if (state.geoData && state.indexData) {
                 initMaps();

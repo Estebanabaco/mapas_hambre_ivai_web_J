@@ -1,15 +1,26 @@
 import { state, storyBox } from './configuracion.js';
 
 // --- DATA FETCHING ---
+export async function loadCatalog() {
+    try {
+        const catalogData = await fetch('config/metadatos.json').then(res => res.json());
+        state.catalog = catalogData;
+        state.currentYear = catalogData.defaultYear;
+    } catch (error) {
+        console.error("Failed to load catalog:", error);
+    }
+}
+
 export async function loadData() {
     try {
+        const rutas = state.catalog.rutas[state.currentYear];
         const [geoData, indexData, nutritionData, indicatorData, appConfig, weights, siteConfig, indicatorConfig] = await Promise.all([
             fetch('mapa/ColDepSNVlite.geojson').then(res => res.json()),
-            fetch('data/datos_indice.json').then(res => res.json()),
-            fetch('data/datos_nutricionales.json').then(res => res.json()),
-            fetch('data/datos_indicadores.json').then(res => res.json()),
+            fetch(rutas.indexData).then(res => res.json()),
+            fetch(rutas.nutritionData).then(res => res.json()),
+            fetch(rutas.indicatorData).then(res => res.json()),
             fetch('config/configuracion_app.json').then(res => res.json()),
-            fetch('config/002_Pesos_AHP_Hambre.json').then(res => res.json()),
+            fetch(rutas.weights).then(res => res.json()),
             fetch('config/site_config.json').then(res => res.json()),
             fetch('config/config_indicadores.json').then(res => res.json())
         ]);
