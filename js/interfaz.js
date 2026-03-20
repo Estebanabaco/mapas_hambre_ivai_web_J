@@ -402,28 +402,36 @@ export function setupEventListeners() {
     sidebarContent.addEventListener('change', (e) => {
         if (e.target.name === 'indicator') {
             state.currentIndicator = e.target.value;
-            updateMap('main', e.target.value);
-            updateStoryBox(e.target.value);
-            closeLegendInfoModal();
-
+            
             // Si el radio seleccionado pertenece al header de un acordeón (dimensión),
-            // abrir automáticamente ese acordeón y cerrar los demás.
+            // abrir automáticamente ese acordeón y cerrar los demás. Hacerlo antes de las tareas pesadas.
             const parentGroup = e.target.closest('.accordion-group');
             if (parentGroup) {
                 // Cerrar todos los demás acordeones
                 document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
                     if (openGroup !== parentGroup) {
                         openGroup.classList.remove('open');
-                        openGroup.querySelector('.accordion-content').style.maxHeight = null;
+                        const content = openGroup.querySelector('.accordion-content');
+                        if (content) content.style.maxHeight = null;
                     }
                 });
                 // Abrir el de la dimensión seleccionada si no está abierto ya
                 if (!parentGroup.classList.contains('open')) {
                     parentGroup.classList.add('open');
-                    parentGroup.querySelector('.accordion-content').style.maxHeight =
-                        parentGroup.querySelector('.accordion-content').scrollHeight + 'px';
+                    const content = parentGroup.querySelector('.accordion-content');
+                    if (content) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
                 }
             }
+
+            // Tareas pesadas (redibujar mapa) se ejecutan con un mínimo retraso 
+            // para que el navegador alcance a actualizar la vista primero (evitar visual freeze)
+            setTimeout(() => {
+                updateMap('main', e.target.value);
+                updateStoryBox(e.target.value);
+                closeLegendInfoModal();
+            }, 10);
         }
     });
 

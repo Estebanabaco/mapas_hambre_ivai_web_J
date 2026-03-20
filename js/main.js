@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupSidebarToggle();
                 setupTooltips();
 
-                const initialIndicator = indicatorSelector.querySelector('input:checked');
+                const initialIndicator = document.querySelector('input[name="indicator"]:checked');
                 if (initialIndicator) {
                     updateMap('main', initialIndicator.value);
                     updateStoryBox(initialIndicator.value);
