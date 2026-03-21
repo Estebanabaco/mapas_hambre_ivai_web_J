@@ -36,9 +36,9 @@ function resolveContainer(container) {
 }
 
 function mountLegacyContainer(targetContainer) {
-    const legacyRoot = document.getElementById('app-container');
+    const legacyRoot = document.getElementById('ivai-legacy-root') || document.getElementById('app-container');
     if (!legacyRoot) {
-        throw new Error('Legacy root #app-container was not found.');
+        throw new Error('Legacy root #ivai-legacy-root was not found.');
     }
 
     if (!targetContainer) return;

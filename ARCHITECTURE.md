@@ -26,8 +26,9 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - Implementacion de helpers compartidos de mapa migrada a `src/shared/map-components.js`
 - Punto de entrada publico agregado en `src/index.js` (`createIvaiApp`)
 - Bootstrap legacy movido a `src/bootstrap/legacy-app.js` para desacoplar `src/index.js` de `js/main.js`
-- `createIvaiApp` ahora admite montaje por contenedor reubicando `#app-container` legacy
-- Adapter WordPress MVP agregado en `src/adapters/wordpress/ivai-wordpress.php` (shortcode por iframe)
+- `createIvaiApp` ahora admite montaje por contenedor reubicando `#ivai-legacy-root`
+- Se agrupo la UI legacy en `#ivai-legacy-root` para facilitar el montaje en contenedores externos
+- Adapter WordPress MVP agregado en `src/adapters/wordpress/ivai-wordpress.php` (shortcode en modo `iframe` y `direct` experimental)
 - Compatibilidad legacy mantenida mediante wrappers:
   - `js/configuracion.js`
   - `js/manejo_datos.js`
@@ -35,6 +36,6 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 ## Siguientes pasos de implementacion
 
 1. Reducir dependencia de IDs globales para soportar multiples instancias reales por contenedor
-2. Evolucionar adapter WordPress de iframe a montaje directo de libreria JS
+2. Endurecer adapter WordPress directo (carga de assets, errores y soporte futuro para multiples instancias)
 3. Agregar pipeline de build/tests para distribuir la libreria
 4. Definir versionado y empaquetado para consumo externo
