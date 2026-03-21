@@ -42,6 +42,167 @@ $allowedTypes = [
     'ahp' => '002_Pesos_AHP_Hambre.json'
 ];
 
+$catalogPath = __DIR__ . '/../config/metadatos.json';
+$yearStatusPath = __DIR__ . '/../config/year_status.json';
+
+/**
+ * Lee JSON desde disco con lock compartido. Si no existe, retorna $default.
+ */
+function read_json_locked(string $path, array $default = []): array
+{
+    if (!file_exists($path)) {
+        return $default;
+    }
+
+    $fh = fopen($path, 'rb');
+    if ($fh === false) {
+        return $default;
+    }
+
+    if (!flock($fh, LOCK_SH)) {
+        fclose($fh);
+        return $default;
+    }
+
+    $content = stream_get_contents($fh);
+    flock($fh, LOCK_UN);
+    fclose($fh);
+
+    $decoded = json_decode($content ?: '', true);
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+        return $default;
+    }
+
+    return $decoded;
+}
+
+/**
+ * Escribe JSON en disco con lock exclusivo.
+ */
+function write_json_locked(string $path, array $data): bool
+{
+    $dir = dirname($path);
+    if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        return false;
+    }
+
+    $fh = fopen($path, 'c+');
+    if ($fh === false) {
+        return false;
+    }
+
+    if (!flock($fh, LOCK_EX)) {
+        fclose($fh);
+        return false;
+    }
+
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+        flock($fh, LOCK_UN);
+        fclose($fh);
+        return false;
+    }
+
+    ftruncate($fh, 0);
+    rewind($fh);
+    $ok = fwrite($fh, $json) !== false;
+    fflush($fh);
+    flock($fh, LOCK_UN);
+    fclose($fh);
+
+    return $ok;
+}
+
+/**
+ * Rutas estandar por año para metadatos.
+ */
+function standard_routes_for_year(string $year): array
+{
+    return [
+        'indexData' => "data/{$year}/datos_indice.json",
+        'nutritionData' => "data/{$year}/datos_nutricionales.json",
+        'indicatorData' => "data/{$year}/datos_indicadores.json",
+        'weights' => "data/{$year}/002_Pesos_AHP_Hambre.json"
+    ];
+}
+
+/**
+ * Actualiza estado de completitud por año.
+ */
+function update_year_status(string $statusPath, string $year, string $type): array
+{
+    $status = read_json_locked($statusPath, []);
+    if (!isset($status[$year]) || !is_array($status[$year])) {
+        $status[$year] = [
+            'indice' => false,
+            'indicadores' => false,
+            'nutricionales' => false,
+            'ahp' => false,
+            'baseReady' => false,
+            'updatedAt' => null
+        ];
+    }
+
+    $status[$year][$type] = true;
+    $status[$year]['baseReady'] =
+        !empty($status[$year]['indice']) &&
+        !empty($status[$year]['indicadores']) &&
+        !empty($status[$year]['nutricionales']);
+    $status[$year]['updatedAt'] = date('c');
+
+    if (!write_json_locked($statusPath, $status)) {
+        return [
+            'ok' => false,
+            'error' => 'No se pudo actualizar year_status.json.'
+        ];
+    }
+
+    return [
+        'ok' => true,
+        'status' => $status[$year]
+    ];
+}
+
+/**
+ * Sincroniza metadatos solo si baseReady=true.
+ */
+function sync_catalog_when_base_ready(string $catalogPath, string $year, bool $baseReady): array
+{
+    if (!$baseReady) {
+        return ['ok' => true, 'catalogUpdated' => false];
+    }
+
+    $catalog = read_json_locked($catalogPath, []);
+    if (empty($catalog) || !isset($catalog['availableYears']) || !isset($catalog['rutas'])) {
+        return [
+            'ok' => false,
+            'error' => 'metadatos.json no tiene la estructura esperada.'
+        ];
+    }
+
+    $yearInt = (int) $year;
+    $available = array_map('intval', (array) $catalog['availableYears']);
+    if (!in_array($yearInt, $available, true)) {
+        $available[] = $yearInt;
+    }
+    rsort($available, SORT_NUMERIC);
+    $catalog['availableYears'] = array_values($available);
+
+    if (!isset($catalog['rutas']) || !is_array($catalog['rutas'])) {
+        $catalog['rutas'] = [];
+    }
+    $catalog['rutas'][(string) $year] = standard_routes_for_year($year);
+
+    if (!write_json_locked($catalogPath, $catalog)) {
+        return [
+            'ok' => false,
+            'error' => 'No se pudo escribir metadatos.json.'
+        ];
+    }
+
+    return ['ok' => true, 'catalogUpdated' => true];
+}
+
 /**
  * Valida recursivamente que las claves de un array de datos coincidan con las de una plantilla.
  */
@@ -151,11 +312,28 @@ if (!is_dir($folderPath)) {
 
 // Escribir el nuevo archivo JSON
 if (file_put_contents($filePath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))) {
+    $statusUpdate = update_year_status($yearStatusPath, $year, $type);
+    if (!$statusUpdate['ok']) {
+        http_response_code(500);
+        echo json_encode(['error' => $statusUpdate['error']]);
+        exit;
+    }
+
+    $baseReady = !empty($statusUpdate['status']['baseReady']);
+    $catalogSync = sync_catalog_when_base_ready($catalogPath, $year, $baseReady);
+    if (!$catalogSync['ok']) {
+        http_response_code(500);
+        echo json_encode(['error' => $catalogSync['error']]);
+        exit;
+    }
+
     http_response_code(200);
     echo json_encode([
         'success' => true, 
         'message' => "Archivo '{$allowedTypes[$type]}' para el año {$year} actualizado con éxito.",
-        'path' => $filePath
+        'path' => $filePath,
+        'yearStatus' => $statusUpdate['status'],
+        'catalogUpdated' => !empty($catalogSync['catalogUpdated'])
     ]);
 } else {
     http_response_code(500);

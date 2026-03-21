@@ -35,7 +35,9 @@ function publishByTypes_(types, title) {
     }
   }
 
-  SpreadsheetApp.getUi().alert(`${title}:\n` + results.join('\n'));
+  const readinessNote = maybeBuildBaseReadinessNote_(types);
+  const message = `${title}:\n${results.join('\n')}${readinessNote ? `\n\n${readinessNote}` : ''}`;
+  SpreadsheetApp.getUi().alert(message);
 }
 
 function publishType_(type, silent) {
@@ -86,9 +88,13 @@ function buildPayloadByType_(type) {
     };
   }
 
-  const rows = readTableAsObjects_(IVAI_TYPES[type].sheet);
+  const sheetName = IVAI_TYPES[type].sheet;
+  const rows = readTableAsObjects_(sheetName, {
+    includeEmptyColumns: true,
+    headers: SHEET_HEADERS[sheetName]
+  });
   if (!rows.length) {
-    throw new Error(`La hoja ${IVAI_TYPES[type].sheet} no tiene datos.`);
+    throw new Error(`La hoja ${sheetName} no tiene datos.`);
   }
 
   const output = {};
@@ -108,8 +114,78 @@ function buildPayloadByType_(type) {
   }
 
   if (!Object.keys(output).length) {
-    throw new Error(`No se encontraron dept_code validos en hoja ${IVAI_TYPES[type].sheet}.`);
+    throw new Error(`No se encontraron dept_code validos en hoja ${sheetName}.`);
   }
 
   return output;
+}
+
+function maybeBuildBaseReadinessNote_(types) {
+  if (!isBaseTypesSelection_(types)) {
+    return '';
+  }
+
+  try {
+    const statusResponse = fetchYearStatus_();
+    const status = (statusResponse && statusResponse.status) || {};
+    const baseReady = !!status.baseReady;
+    const visible = !!statusResponse.visibleInCatalog;
+
+    if (baseReady && visible) {
+      return `Estado del año ${statusResponse.year}: LISTO. Ya está visible en la app.`;
+    }
+
+    if (baseReady && !visible) {
+      return `Estado del año ${statusResponse.year}: base completa, pero aún no visible en catálogo.`;
+    }
+
+    return `Estado del año ${statusResponse.year}: base incompleta (indice=${boolToSiNo_(status.indice)}, indicadores=${boolToSiNo_(status.indicadores)}, nutricionales=${boolToSiNo_(status.nutricionales)}).`;
+  } catch (err) {
+    return `No se pudo consultar estado de activación del año: ${err.message}`;
+  }
+}
+
+function isBaseTypesSelection_(types) {
+  if (!types || types.length !== 3) {
+    return false;
+  }
+
+  const expected = { indice: true, indicadores: true, nutricionales: true };
+  for (let i = 0; i < types.length; i++) {
+    if (!expected[types[i]]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function fetchYearStatus_() {
+  const settings = getSettings_();
+  const url = `${settings.yearStatusUrl}?year=${encodeURIComponent(settings.year)}`;
+
+  const response = UrlFetchApp.fetch(url, {
+    method: 'get',
+    headers: {
+      Authorization: `Bearer ${settings.token}`
+    },
+    muteHttpExceptions: true
+  });
+
+  const code = response.getResponseCode();
+  const body = response.getContentText();
+  if (code < 200 || code >= 300) {
+    throw new Error(`HTTP ${code}: ${body}`);
+  }
+
+  const parsed = JSON.parse(body || '{}');
+  if (!parsed || parsed.success !== true) {
+    throw new Error('Respuesta inválida de year-status.');
+  }
+
+  return parsed;
+}
+
+function boolToSiNo_(value) {
+  return value ? 'si' : 'no';
 }

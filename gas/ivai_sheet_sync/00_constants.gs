@@ -48,7 +48,6 @@ const SHEET_HEADERS = {
     'gini',
     'desmp',
     'ipc_alim',
-    'prnbi',
     'ctrl_pren',
     'mrt_mtna',
     'morb_desn_agd_u5',

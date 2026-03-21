@@ -1,4 +1,7 @@
-function readTableAsObjects_(sheetName) {
+function readTableAsObjects_(sheetName, options) {
+  const opts = options || {};
+  const includeEmptyColumns = !!opts.includeEmptyColumns;
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) {
     throw new Error(`No existe la hoja: ${sheetName}`);
@@ -8,7 +11,11 @@ function readTableAsObjects_(sheetName) {
   const values = range.getValues();
   if (values.length < 2) return [];
 
-  const headers = values[0].map((h) => String(h || '').trim());
+  let headers = values[0].map((h) => String(h || '').trim());
+  if (Array.isArray(opts.headers) && opts.headers.length) {
+    headers = opts.headers.slice();
+  }
+
   const output = [];
 
   for (let r = 1; r < values.length; r++) {
@@ -21,7 +28,12 @@ function readTableAsObjects_(sheetName) {
       if (!header) continue;
 
       const rawValue = row[c];
-      if (rawValue === '' || rawValue === null) continue;
+      if (rawValue === '' || rawValue === null || rawValue === undefined) {
+        if (includeEmptyColumns) {
+          obj[header] = null;
+        }
+        continue;
+      }
 
       obj[header] = normalizeCellValue_(rawValue);
       hasData = true;
@@ -85,7 +97,9 @@ function transformIndicadoresJsonToSheetRow_(rowObj) {
 function transformIndicadoresSheetToJsonRow_(rowObj) {
   const out = {};
   Object.keys(rowObj || {}).forEach((key) => {
-    const mapped = INDICADORES_SHEET_TO_JSON[key] || key;
+    const mapped = INDICADORES_SHEET_TO_JSON[key];
+    // Ignora columnas legacy/no mapeadas (ej. prnbi) para no romper la validación estricta del backend.
+    if (!mapped) return;
     out[mapped] = rowObj[key];
   });
   return out;
@@ -169,6 +183,29 @@ function upsertSheetWithHeaders_(ss, name, headers) {
     sheet.setFrozenRows(1);
     sheet.autoResizeColumns(1, headers.length);
   }
+}
+
+function removeColumnsByHeader_(sheetName, headersToRemove) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet || !headersToRemove || !headersToRemove.length) return;
+
+  const lastCol = sheet.getLastColumn();
+  if (lastCol < 1) return;
+
+  const headerValues = sheet.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map((h) => String(h || '').trim());
+
+  const indexesToDelete = [];
+  headersToRemove.forEach((target) => {
+    const idx = headerValues.indexOf(target);
+    if (idx !== -1) {
+      indexesToDelete.push(idx + 1); // 1-based
+    }
+  });
+
+  indexesToDelete
+    .sort((a, b) => b - a)
+    .forEach((colIndex) => sheet.deleteColumn(colIndex));
 }
 
 function resolveAhpIndicadoresSheetName_() {

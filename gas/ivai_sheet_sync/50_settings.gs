@@ -28,6 +28,7 @@ function showActiveSettings() {
         `Base URL: ${settings.baseUrl}`,
         `Origen Base URL: ${settings.baseUrlSource || 'desconocido'}`,
         `API Update: ${settings.apiBaseUrl}`,
+        `API Year Status: ${settings.yearStatusUrl}`,
         `Data URL: ${settings.dataBaseUrl}`,
         `Token: ${token ? tokenMask : 'NO CONFIGURADO'}`
       ].join('\n'),
@@ -96,6 +97,7 @@ function getSettings_() {
     baseUrl,
     baseUrlSource: baseData.baseUrlSource,
     apiBaseUrl: deriveApiUpdateUrl_(baseUrl),
+    yearStatusUrl: deriveYearStatusUrl_(baseUrl),
     token,
     dataBaseUrl: deriveDataBaseUrl_(baseUrl)
   };
@@ -160,4 +162,9 @@ function deriveApiUpdateUrl_(baseUrl) {
 function deriveDataBaseUrl_(baseUrl) {
   const base = normalizeBaseUrl_(baseUrl);
   return `${base}/data`;
+}
+
+function deriveYearStatusUrl_(baseUrl) {
+  const base = normalizeBaseUrl_(baseUrl);
+  return `${base}/api/year-status.php`;
 }

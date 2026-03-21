@@ -13,7 +13,7 @@ Sincronizador bidireccional (precarga + publicación) entre Google Sheets y JSON
 Hoja `Config`:
 
 - `B2`: `year` (ej. `2024`)
-- `B3`: `base_url` (default: `http://localhost/ivai2024`)
+- `B3`: `base_url` (default: `https://tu-dominio.com/ivai2024`)
 - `B4`: referencia visual (token se guarda en Script Properties)
 
 Token:
@@ -58,8 +58,11 @@ Token:
 - La precarga crea copia de respaldo de cada hoja (`*_backup_YYYYMMDD_HHMMSS`) antes de sobrescribir.
 - Desde `base_url`, el script deriva automáticamente:
   - API update: `.../api/update.php`
+  - API year status: `.../api/year-status.php`
   - Data JSON: `.../data/<year>/archivo.json`
 - Para `indicadores`, el script convierte automáticamente nombres JSON legibles a columnas cortas de la hoja (y viceversa al publicar).
+- La columna legacy `prnbi` se elimina automáticamente de `indicadores` durante el setup para evitar confusión.
+- Al publicar `datos base`, el script consulta `year-status` y muestra si el año ya quedó activado/visible.
 - Usa una URL pública accesible desde internet para que Apps Script pueda precargar/publicar correctamente.
 - `setupIvaiSheets()` también crea/actualiza `diccionario_datos` con todas las variables del modelo.
 - El diccionario intenta autocompletar `nombre_mostrado`, `descripcion` y `unidad` consultando:
