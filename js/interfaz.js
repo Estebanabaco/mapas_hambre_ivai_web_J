@@ -182,11 +182,15 @@ export function populateFooter() {
 export function populateModal() {
     const modalYear = document.getElementById('modal-year');
     if (modalYear) {
-        modalYear.textContent = state.siteConfig.year;
+        modalYear.textContent = state.currentYear || state.siteConfig.year;
     }
     const modalSources = document.getElementById('modal-sources-content');
     if (modalSources) {
-        modalSources.textContent = state.siteConfig.fuentes;
+        let fuentes = state.siteConfig.fuentes || '';
+        if (state.currentYear) {
+            fuentes = fuentes.replace(/ICBF \(202\d\)/g, `ICBF (${state.currentYear})`);
+        }
+        modalSources.textContent = fuentes;
     }
 }
 
@@ -227,7 +231,7 @@ export function updateStoryBox(indicatorId) {
             storyBox.innerHTML = `
                 ${iconHTML}
                 <h3>${fallbackName}</h3>
-                <p>Datos específicos obtenidos del archivo de indicadores 2024.</p>
+                <p>Datos específicos obtenidos del archivo de indicadores ${state.currentYear || 2024}.</p>
             `;
         }
         return;

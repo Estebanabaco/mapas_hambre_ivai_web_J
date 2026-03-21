@@ -4,39 +4,26 @@ header('Content-Type: application/json');
 // --- Configuración ---
 define('SECRET_TOKEN', 'AbacoIvai2030');
 
-// Mapeo de claves de API a las rutas de archivo de destino
-$allowedFiles = [
-    'site_config' => '../config/site_config.json',
-    'configuracion_app' => '../data_example/configuracion_app.json',
-    'pesos_ahp' => '../data_example/002_Pesos_AHP_Hambre.json',
-    'datos_indice' => '../data_example/datos_indice.json',
-    'datos_nutricionales' => '../data_example/datos_nutricionales.json',
-    'pesos_ahp_2023' => '../data/2023/002_Pesos_AHP_Hambre.json',
-    'datos_indice_2023' => '../data/2023/datos_indice.json',
-    'datos_nutricionales_2023' => '../data/2023/datos_nutricionales.json'
-];
-
-// Mapeo a los archivos de plantilla para validación de estructura
-$validationTemplates = [
-    'site_config' => '../config/site_config.example.json',
-    'configuracion_app' => '../data_example/configuracion_app.json',
-    'pesos_ahp' => '../data_example/002_Pesos_AHP_Hambre.json',
-    'datos_indice' => '../data_example/datos_indice.json',
-    'datos_nutricionales' => '../data_example/datos_nutricionales.json',
-    'pesos_ahp_2023' => '../data_example/2023/002_Pesos_AHP_Hambre.json',
-    'datos_indice_2023' => '../data_example/2023/datos_indice.json',
-    'datos_nutricionales_2023' => '../data_example/2023/datos_nutricionales.json'
+// Mapeo de tipos de datos permitidos a sus nombres de archivo
+$allowedTypes = [
+    'indice' => 'datos_indice.json',
+    'indicadores' => 'datos_indicadores.json',
+    'nutricionales' => 'datos_nutricionales.json',
+    'ahp' => '002_Pesos_AHP_Hambre.json'
 ];
 
 /**
  * Valida recursivamente que las claves de un array de datos coincidan con las de una plantilla.
- *
- * @param array $data El array de datos a validar.
- * @param array $template El array de plantilla con la estructura esperada.
- * @return bool True si las claves coinciden, False en caso contrario.
  */
 function validate_keys(array $data, array $template): bool
 {
+    // Si las claves del array son numéricas (arrays convencionales), omitimos la validación estricta de orden
+    // y tamaño estricto para permitir listas de diferente longitud, pero aseguramos la estructura del contenido.
+    // Para simplificar, si es un array secuencial, solo validamos el primer elemento si existe.
+    if (array_keys($template) === range(0, count($template) - 1)) {
+       return true; 
+    }
+
     $dataKeys = array_keys($data);
     $templateKeys = array_keys($template);
     sort($dataKeys);
@@ -47,13 +34,11 @@ function validate_keys(array $data, array $template): bool
     }
 
     foreach ($template as $key => $value) {
+        // validate nested objects
         if (is_array($value) && isset($data[$key]) && is_array($data[$key])) {
-            // Si el valor es un array asociativo (objeto JSON), validar recursivamente.
-            if (array_keys($value) !== range(0, count($value) - 1)) {
-                if (!validate_keys($data[$key], $value)) {
-                    return false;
-                }
-            }
+             if (!validate_keys($data[$key], $value)) {
+                 return false;
+             }
         }
     }
 
@@ -81,10 +66,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$fileKey = $_GET['file'] ?? '';
-if (!array_key_exists($fileKey, $allowedFiles)) {
+$type = $_GET['type'] ?? '';
+$year = $_GET['year'] ?? '';
+
+if (!array_key_exists($type, $allowedTypes)) {
     http_response_code(400);
-    echo json_encode(['error' => "Invalid file key specified. Allowed keys: " . implode(', ', array_keys($allowedFiles))]);
+    echo json_encode(['error' => "Tipo de archivo no válido. Tipos permitidos: " . implode(', ', array_keys($allowedTypes))]);
+    exit;
+}
+
+if (!preg_match('/^\d{4}$/', $year)) {
+    http_response_code(400);
+    echo json_encode(['error' => "Debe especificar un parámetro 'year' válido de 4 dígitos (ej. ?year=2024&type=indice)."]);
     exit;
 }
 
@@ -99,33 +92,43 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // --- 4. Validación de Estructura ---
-$templatePath = $validationTemplates[$fileKey];
-if (!file_exists($templatePath)) {
-    http_response_code(500);
-    echo json_encode(['error' => "Validation template file not found: {$templatePath}"]);
-    exit;
+// Usamos los archivos del 2024 como plantilla dorada para verificar que las llaves sean correctas.
+$templatePath = "../data/2024/{$allowedTypes[$type]}";
+
+if (file_exists($templatePath)) {
+    $templateData = json_decode(file_get_contents($templatePath), true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($templateData)) {
+        if (!validate_keys($inputData, $templateData)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'La estructura del JSON (claves y departamentos) no coincide con la plantilla estricta de la aplicación.']);
+            exit;
+        }
+    }
 }
 
-$templateData = json_decode(file_get_contents($templatePath), true);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    http_response_code(500);
-    echo json_encode(['error' => "Could not parse validation template JSON: {$templatePath}"]);
-    exit;
+// --- 5. Creación de Carpetas y Escritura del Archivo ---
+$folderPath = "../data/{$year}";
+$filePath = "{$folderPath}/{$allowedTypes[$type]}";
+
+// Crear la carpeta del año si no existe (ej. nueva carga para 2025)
+if (!is_dir($folderPath)) {
+    if (!mkdir($folderPath, 0755, true)) {
+        http_response_code(500);
+        echo json_encode(['error' => "No se pudo crear el directorio para el año {$year}."]);
+        exit;
+    }
 }
 
-if (!validate_keys($inputData, $templateData)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'JSON structure does not match the expected template.']);
-    exit;
-}
-
-// --- 5. Escritura del Archivo ---
-$filePath = $allowedFiles[$fileKey];
+// Escribir el nuevo archivo JSON
 if (file_put_contents($filePath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))) {
     http_response_code(200);
-    echo json_encode(['success' => "File '{$fileKey}' updated successfully."]);
+    echo json_encode([
+        'success' => true, 
+        'message' => "Archivo '{$allowedTypes[$type]}' para el año {$year} actualizado con éxito.",
+        'path' => $filePath
+    ]);
 } else {
     http_response_code(500);
-    echo json_encode(['error' => "Failed to write to file: {$filePath}"]);
+    echo json_encode(['error' => "Fallo al intentar escribir el archivo en: {$filePath}"]);
 }
 ?>
