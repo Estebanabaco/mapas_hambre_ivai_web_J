@@ -14,14 +14,13 @@ export async function loadCatalog() {
 export async function loadData() {
     try {
         const rutas = state.catalog.rutas[state.currentYear];
-        const [geoData, indexData, nutritionData, indicatorData, appConfig, weights, siteConfig, indicatorConfig] = await Promise.all([
+        const [geoData, indexData, nutritionData, indicatorData, appConfig, weights, indicatorConfig] = await Promise.all([
             fetch('mapa/ColDepSNVlite.geojson').then(res => res.json()),
             fetch(rutas.indexData).then(res => res.json()),
             fetch(rutas.nutritionData).then(res => res.json()),
             fetch(rutas.indicatorData).then(res => res.json()),
             fetch('config/configuracion_app.json').then(res => res.json()),
             fetch(rutas.weights).then(res => res.json()),
-            fetch('config/site_config.json').then(res => res.json()),
             fetch('config/config_indicadores.json').then(res => res.json())
         ]);
         state.geoData = geoData;
@@ -30,7 +29,6 @@ export async function loadData() {
         state.indicatorData = indicatorData || {};
         state.appConfig = appConfig;
         state.weights = weights;
-        state.siteConfig = siteConfig;
         state.indicatorConfig = indicatorConfig || {};
 
         // Dynamically add Clasificacion_Indice based on Indice

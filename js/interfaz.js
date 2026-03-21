@@ -250,18 +250,18 @@ export function triggerEvolutionUpdate() {
 }
 
 export function populateFooter() {
-    const year = state.siteConfig.year;
+    const year = state.currentYear || state.catalog?.defaultYear;
     appFooter.innerHTML = `Última actualización: Octubre ${year}`;
 }
 
 export function populateModal() {
     const modalYear = document.getElementById('modal-year');
     if (modalYear) {
-        modalYear.textContent = state.currentYear || state.siteConfig.year;
+        modalYear.textContent = state.currentYear || state.catalog?.defaultYear;
     }
     const modalSources = document.getElementById('modal-sources-content');
     if (modalSources) {
-        let fuentes = state.siteConfig.fuentes || '';
+        let fuentes = state.catalog?.fuentes || '';
         if (state.currentYear) {
             fuentes = fuentes.replace(/ICBF \(202\d\)/g, `ICBF (${state.currentYear})`);
         }

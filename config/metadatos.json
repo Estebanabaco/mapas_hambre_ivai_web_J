@@ -1,6 +1,7 @@
 {
   "defaultYear": 2024,
   "availableYears": [2024, 2023],
+  "fuentes": "DANE (GEIH, ECV, IPC, EEVV, Censo), INS–SIVIGILA, ENSIN (2015) & ICBF (2024)",
   "rutas": {
     "2024": {
       "indexData": "data/2024/datos_indice.json",
