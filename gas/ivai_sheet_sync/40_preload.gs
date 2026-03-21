@@ -25,7 +25,8 @@ function preloadAhpYear() {
   const year = settings.year;
 
   const backupDim = backupSheet_('ahp_dimensiones');
-  const backupVar = backupSheet_('ahp_variables_intra');
+  const ahpIndicadoresSheet = resolveAhpIndicadoresSheetName_();
+  const backupVar = backupSheet_(ahpIndicadoresSheet);
 
   const ahp = fetchYearJson_(year, 'ahp');
   if (!ahp || !ahp.Pesos_Dimensiones || !ahp.Pesos_Variables_Intra) {
@@ -33,7 +34,7 @@ function preloadAhpYear() {
   }
 
   writeArrayObjectsToSheet_('ahp_dimensiones', ahp.Pesos_Dimensiones, SHEET_HEADERS.ahp_dimensiones);
-  writeArrayObjectsToSheet_('ahp_variables_intra', ahp.Pesos_Variables_Intra, SHEET_HEADERS.ahp_variables_intra);
+  writeArrayObjectsToSheet_('ahp_indicadores', ahp.Pesos_Variables_Intra, SHEET_HEADERS.ahp_indicadores);
 
   SpreadsheetApp.getUi().alert(
     `Precarga AHP completada para ${year}.\nRespaldos: ${[backupDim, backupVar].filter(Boolean).join(', ') || 'sin respaldo'}`

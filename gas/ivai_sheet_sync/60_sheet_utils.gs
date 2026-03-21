@@ -51,7 +51,11 @@ function writeDeptObjectToSheet_(sheetName, objByDept) {
   Object.keys(objByDept || {})
     .sort((a, b) => Number(a) - Number(b))
     .forEach((deptCode) => {
-      const row = Object.assign({ dept_code: deptCode }, objByDept[deptCode]);
+      const rawData = objByDept[deptCode] || {};
+      const normalizedData = (sheetName === 'indicadores')
+        ? transformIndicadoresJsonToSheetRow_(rawData)
+        : rawData;
+      const row = Object.assign({ dept_code: deptCode }, normalizedData);
       rows.push(row);
     });
 
@@ -67,6 +71,24 @@ function writeDeptObjectToSheet_(sheetName, objByDept) {
   clearSheetData_(sheet);
   const matrix = rows.map((r) => headers.map((h) => (r[h] === undefined ? '' : r[h])));
   sheet.getRange(2, 1, matrix.length, headers.length).setValues(matrix);
+}
+
+function transformIndicadoresJsonToSheetRow_(rowObj) {
+  const out = {};
+  Object.keys(rowObj || {}).forEach((key) => {
+    const mapped = INDICADORES_JSON_TO_SHEET[key] || key;
+    out[mapped] = rowObj[key];
+  });
+  return out;
+}
+
+function transformIndicadoresSheetToJsonRow_(rowObj) {
+  const out = {};
+  Object.keys(rowObj || {}).forEach((key) => {
+    const mapped = INDICADORES_SHEET_TO_JSON[key] || key;
+    out[mapped] = rowObj[key];
+  });
+  return out;
 }
 
 function writeArrayObjectsToSheet_(sheetName, rows, headers) {
@@ -109,14 +131,23 @@ function upsertConfigSheet_(ss) {
     sheet = ss.insertSheet('Config');
   }
 
-  const labels = [
-    ['Parametro', 'Valor'],
-    ['year', DEFAULTS.YEAR],
-    ['api_base_url', DEFAULTS.API_BASE_URL],
-    ['api_token', '(se guarda en Script Properties)']
-  ];
+  // Escribir estructura base solo cuando esté vacía para no pisar configuración del usuario.
+  const a1 = String(sheet.getRange('A1').getValue() || '').trim();
+  const b2 = String(sheet.getRange('B2').getValue() || '').trim();
+  const b3 = String(sheet.getRange('B3').getValue() || '').trim();
+  const b4 = String(sheet.getRange('B4').getValue() || '').trim();
 
-  sheet.getRange(1, 1, labels.length, labels[0].length).setValues(labels);
+  if (a1 === '') sheet.getRange('A1').setValue('Parametro');
+  if (String(sheet.getRange('B1').getValue() || '').trim() === '') sheet.getRange('B1').setValue('Valor');
+
+  if (String(sheet.getRange('A2').getValue() || '').trim() === '') sheet.getRange('A2').setValue('year');
+  if (String(sheet.getRange('A3').getValue() || '').trim() === '') sheet.getRange('A3').setValue('base_url');
+  if (String(sheet.getRange('A4').getValue() || '').trim() === '') sheet.getRange('A4').setValue('api_token');
+
+  if (b2 === '') sheet.getRange('B2').setValue(DEFAULTS.YEAR);
+  if (b3 === '') sheet.getRange('B3').setValue(DEFAULTS.BASE_URL);
+  if (b4 === '') sheet.getRange('B4').setValue('(se guarda en Script Properties)');
+
   sheet.getRange('A1:B1').setFontWeight('bold');
   sheet.autoResizeColumns(1, 2);
 
@@ -137,6 +168,22 @@ function upsertSheetWithHeaders_(ss, name, headers) {
     sheet.getRange('A1:' + columnToLetter_(headers.length) + '1').setFontWeight('bold');
     sheet.setFrozenRows(1);
     sheet.autoResizeColumns(1, headers.length);
+  }
+}
+
+function resolveAhpIndicadoresSheetName_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (ss.getSheetByName('ahp_indicadores')) return 'ahp_indicadores';
+  if (ss.getSheetByName('ahp_variables_intra')) return 'ahp_variables_intra';
+  return 'ahp_indicadores';
+}
+
+function migrateAhpVariablesSheet_(ss) {
+  const newSheet = ss.getSheetByName('ahp_indicadores');
+  const legacySheet = ss.getSheetByName('ahp_variables_intra');
+
+  if (!newSheet && legacySheet) {
+    legacySheet.setName('ahp_indicadores');
   }
 }
 

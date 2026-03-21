@@ -13,7 +13,7 @@ Sincronizador bidireccional (precarga + publicación) entre Google Sheets y JSON
 Hoja `Config`:
 
 - `B2`: `year` (ej. `2024`)
-- `B3`: `api_base_url` (default: `http://localhost/ivai2024/api/update.php`)
+- `B3`: `base_url` (default: `http://localhost/ivai2024`)
 - `B4`: referencia visual (token se guarda en Script Properties)
 
 Token:
@@ -27,7 +27,7 @@ Token:
 - `indicadores` (columna clave: `dept_code`)
 - `nutricionales` (columna clave: `dept_code`)
 - `ahp_dimensiones`
-- `ahp_variables_intra`
+- `ahp_indicadores`
 
 ## Menú IVAI
 
@@ -40,13 +40,13 @@ Token:
 - `Publicar datos base` (sin AHP)
 - `Publicar AHP`
 - `Publicar TODO (incluye AHP)`
-- `Configurar URL API`
+- `Configurar URL base`
 - `Configurar token API`
-- `Usar localhost por defecto`
+- `Ver configuración activa`
 
 ## Flujo recomendado
 
-1. Configurar `year` y `api_base_url` en `Config`.
+1. Configurar `year` y `base_url` en `Config`.
 2. Ejecutar `Precargar año (datos base)`.
 3. Revisar/editar datos.
 4. Publicar con `Publicar datos base`.
@@ -55,8 +55,11 @@ Token:
 ## Notas
 
 - La precarga crea copia de respaldo de cada hoja (`*_backup_YYYYMMDD_HHMMSS`) antes de sobrescribir.
-- Para precarga se deriva automáticamente la ruta de datos (`.../data/<year>/archivo.json`) desde `api_base_url`.
-- Si usas localhost, recuerda que Apps Script necesita una URL accesible desde internet (localhost puro suele no ser accesible desde servidores de Google).
+- Desde `base_url`, el script deriva automáticamente:
+  - API update: `.../api/update.php`
+  - Data JSON: `.../data/<year>/archivo.json`
+- Para `indicadores`, el script convierte automáticamente nombres JSON legibles a columnas cortas de la hoja (y viceversa al publicar).
+- Usa una URL pública accesible desde internet para que Apps Script pueda precargar/publicar correctamente.
 
 ## Estructura de archivos GAS
 
@@ -67,3 +70,7 @@ Token:
 - `40_preload.gs`: precarga de JSON por año.
 - `50_settings.gs`: configuración de URL/token y lectura de settings.
 - `60_sheet_utils.gs`: utilidades de lectura/escritura en Sheets.
+
+### Compatibilidad
+
+Si ya existe la hoja antigua `ahp_variables_intra`, el setup la renombra automáticamente a `ahp_indicadores`.

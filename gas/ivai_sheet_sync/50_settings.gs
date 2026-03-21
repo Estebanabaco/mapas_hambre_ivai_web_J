@@ -13,22 +13,39 @@ function setApiToken() {
   ui.alert('Token guardado en Script Properties.');
 }
 
-function setLocalhostApi() {
-  const cfgSheet = upsertConfigSheet_(SpreadsheetApp.getActiveSpreadsheet());
-  cfgSheet.getRange('B3').setValue(DEFAULTS.API_BASE_URL);
-  PropertiesService.getScriptProperties().setProperty('IVAI_API_BASE_URL', DEFAULTS.API_BASE_URL);
+function showActiveSettings() {
+  try {
+    const settings = getSettings_();
+    const token = settings.token || '';
+    const tokenMask = token.length > 8
+      ? `${token.substring(0, 4)}...${token.substring(token.length - 4)}`
+      : (token ? '***' : 'NO CONFIGURADO');
 
-  SpreadsheetApp.getUi().alert(`API configurada a localhost:\n${DEFAULTS.API_BASE_URL}`);
+    SpreadsheetApp.getUi().alert(
+      'Configuración activa',
+      [
+        `Año: ${settings.year}`,
+        `Base URL: ${settings.baseUrl}`,
+        `Origen Base URL: ${settings.baseUrlSource || 'desconocido'}`,
+        `API Update: ${settings.apiBaseUrl}`,
+        `Data URL: ${settings.dataBaseUrl}`,
+        `Token: ${token ? tokenMask : 'NO CONFIGURADO'}`
+      ].join('\n'),
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } catch (err) {
+    SpreadsheetApp.getUi().alert(`Error leyendo configuración: ${err.message}`);
+  }
 }
 
-function setApiBaseUrl() {
+function setBaseUrl() {
   const ui = SpreadsheetApp.getUi();
   const cfgSheet = upsertConfigSheet_(SpreadsheetApp.getActiveSpreadsheet());
-  const currentValue = String(cfgSheet.getRange('B3').getValue() || '').trim() || DEFAULTS.API_BASE_URL;
+  const currentValue = String(cfgSheet.getRange('B3').getValue() || '').trim() || DEFAULTS.BASE_URL;
 
   const result = ui.prompt(
-    'Configurar URL API',
-    `Ingresa la URL base de update.php.\nActual: ${currentValue}`,
+    'Configurar URL base',
+    `Ingresa la URL general del proyecto (ej. https://dominio.com/ivai2024).\nActual: ${currentValue}`,
     ui.ButtonSet.OK_CANCEL
   );
 
@@ -40,9 +57,19 @@ function setApiBaseUrl() {
     return;
   }
 
-  cfgSheet.getRange('B3').setValue(nextUrl);
-  PropertiesService.getScriptProperties().setProperty('IVAI_API_BASE_URL', nextUrl);
-  ui.alert(`URL API actualizada:\n${nextUrl}`);
+  const normalized = normalizeBaseUrl_(nextUrl);
+  cfgSheet.getRange('B3').setValue(normalized);
+  PropertiesService.getScriptProperties().setProperty('IVAI_BASE_URL', normalized);
+
+  const apiUrl = deriveApiUpdateUrl_(normalized);
+  SpreadsheetApp.getUi().alert(
+    `URL base actualizada:\n${normalized}\n\nEndpoint de actualización derivado:\n${apiUrl}`
+  );
+}
+
+// Backward compatible alias (old menu/function name)
+function setApiBaseUrl() {
+  setBaseUrl();
 }
 
 function getSettings_() {
@@ -50,18 +77,28 @@ function getSettings_() {
   const cfgSheet = upsertConfigSheet_(SpreadsheetApp.getActiveSpreadsheet());
 
   const yearCell = String(cfgSheet.getRange('B2').getValue() || '').trim();
-  const apiCell = String(cfgSheet.getRange('B3').getValue() || '').trim();
+  const baseCell = String(cfgSheet.getRange('B3').getValue() || '').trim();
 
   const year = yearCell || props.getProperty('IVAI_DEFAULT_YEAR') || DEFAULTS.YEAR;
-  const apiBaseUrl = apiCell || props.getProperty('IVAI_API_BASE_URL') || DEFAULTS.API_BASE_URL;
+  const resolved = resolveBaseUrl_(baseCell, props);
+  const rawBase = resolved.value;
+  const baseUrl = normalizeBaseUrl_(rawBase);
   const token = props.getProperty('IVAI_API_TOKEN') || '';
+
+  if (resolved.source.indexOf('script_properties') === 0 && baseCell !== baseUrl) {
+    cfgSheet.getRange('B3').setValue(baseUrl);
+  }
 
   if (!/^\d{4}$/.test(String(year))) {
     throw new Error('El año (Config!B2) debe tener formato YYYY.');
   }
 
-  if (!/^https?:\/\//i.test(apiBaseUrl)) {
-    throw new Error('La URL API (Config!B3) debe iniciar con http:// o https://');
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    throw new Error('La URL base (Config!B3) debe iniciar con http:// o https://');
+  }
+
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(baseUrl)) {
+    throw new Error('La URL base no puede ser localhost. Usa una URL pública accesible desde internet.');
   }
 
   if (!token) {
@@ -70,25 +107,44 @@ function getSettings_() {
 
   return {
     year: String(year),
-    apiBaseUrl,
+    baseUrl,
+    baseUrlSource: resolved.source,
+    apiBaseUrl: deriveApiUpdateUrl_(baseUrl),
     token,
-    dataBaseUrl: deriveDataBaseUrl_(apiBaseUrl)
+    dataBaseUrl: deriveDataBaseUrl_(baseUrl)
   };
 }
 
-function deriveDataBaseUrl_(apiBaseUrl) {
-  const clean = String(apiBaseUrl || '').replace(/\?.*$/, '').trim();
+function resolveBaseUrl_(baseCellValue, props) {
+  const fromProps = String(props.getProperty('IVAI_BASE_URL') || '').trim();
+  const fromLegacyProp = String(props.getProperty('IVAI_API_BASE_URL') || '').trim();
+  const fromCell = String(baseCellValue || '').trim();
+
+  if (fromProps) return { value: fromProps, source: 'script_properties:IVAI_BASE_URL' };
+  if (fromCell) return { value: fromCell, source: 'sheet:Config!B3' };
+  if (fromLegacyProp) return { value: fromLegacyProp, source: 'script_properties:IVAI_API_BASE_URL' };
+
+  return { value: DEFAULTS.BASE_URL, source: 'default' };
+}
+
+function normalizeBaseUrl_(input) {
+  const clean = String(input || '').replace(/\?.*$/, '').trim();
   if (!clean) {
-    throw new Error('api_base_url vacío en Config!B3.');
+    throw new Error('base_url vacío en Config!B3.');
   }
 
-  if (/\/api\/update\.php$/i.test(clean)) {
-    return clean.replace(/\/api\/update\.php$/i, '/data');
-  }
+  let base = clean.replace(/\/$/, '');
+  base = base.replace(/\/api\/update\.php$/i, '');
+  base = base.replace(/\/data$/i, '');
+  return base;
+}
 
-  if (/\/data$/i.test(clean)) {
-    return clean;
-  }
+function deriveApiUpdateUrl_(baseUrl) {
+  const base = normalizeBaseUrl_(baseUrl);
+  return `${base}/api/update.php`;
+}
 
-  return clean.replace(/\/$/, '') + '/data';
+function deriveDataBaseUrl_(baseUrl) {
+  const base = normalizeBaseUrl_(baseUrl);
+  return `${base}/data`;
 }

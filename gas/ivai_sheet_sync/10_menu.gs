@@ -13,8 +13,8 @@ function onOpen() {
     .addItem('Publicar AHP', 'publishAhp')
     .addItem('Publicar TODO (incluye AHP)', 'publishAll')
     .addSeparator()
-    .addItem('Configurar URL API', 'setApiBaseUrl')
+    .addItem('Configurar URL base', 'setBaseUrl')
     .addItem('Configurar token API', 'setApiToken')
-    .addItem('Usar localhost por defecto', 'setLocalhostApi')
+    .addItem('Ver configuración activa', 'showActiveSettings')
     .addToUi();
 }

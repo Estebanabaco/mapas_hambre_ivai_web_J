@@ -74,7 +74,7 @@ function buildPayloadByType_(type) {
 
   if (type === 'ahp') {
     const dimensiones = readTableAsObjects_('ahp_dimensiones');
-    const variables = readTableAsObjects_('ahp_variables_intra');
+    const variables = readTableAsObjects_(resolveAhpIndicadoresSheetName_());
 
     if (!dimensiones.length || !variables.length) {
       throw new Error('Las hojas AHP no tienen datos suficientes.');
@@ -100,7 +100,11 @@ function buildPayloadByType_(type) {
     }
 
     delete row.dept_code;
-    output[String(deptCode)] = row;
+    const normalizedRow = (type === 'indicadores')
+      ? transformIndicadoresSheetToJsonRow_(row)
+      : row;
+
+    output[String(deptCode)] = normalizedRow;
   }
 
   if (!Object.keys(output).length) {
