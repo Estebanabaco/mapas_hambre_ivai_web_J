@@ -17,17 +17,44 @@ function getTabButton(tabKey) {
     return null;
 }
 
-export async function createIvaiApp(container, options = {}) {
-    await waitForDomReady();
+function resolveContainer(container) {
+    if (!container) return null;
 
-    if (container && typeof container === 'string') {
+    if (typeof container === 'string') {
         const mount = document.querySelector(container);
         if (!mount) {
             throw new Error(`Container not found: ${container}`);
         }
-    } else if (container && !(container instanceof HTMLElement)) {
+        return mount;
+    }
+
+    if (!(container instanceof HTMLElement)) {
         throw new Error('Container must be a selector string or HTMLElement.');
     }
+
+    return container;
+}
+
+function mountLegacyContainer(targetContainer) {
+    const legacyRoot = document.getElementById('app-container');
+    if (!legacyRoot) {
+        throw new Error('Legacy root #app-container was not found.');
+    }
+
+    if (!targetContainer) return;
+
+    if (targetContainer === legacyRoot || targetContainer.contains(legacyRoot)) {
+        return;
+    }
+
+    targetContainer.appendChild(legacyRoot);
+}
+
+export async function createIvaiApp(container, options = {}) {
+    await waitForDomReady();
+
+    const resolvedContainer = resolveContainer(container);
+    mountLegacyContainer(resolvedContainer);
 
     await initializeLegacyApp();
 
