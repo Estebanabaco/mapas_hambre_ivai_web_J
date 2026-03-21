@@ -12,7 +12,7 @@
 .tab-button {
     background-color: transparent;
     border: 1px solid transparent;
-    color: var(--primary-color);
+    color: #009640;
     padding: 10px 15px;
     margin: 0 2px -1px 0;
     border-radius: 5px 5px 0 0;
@@ -92,7 +92,7 @@
     margin-left: auto; /* Empuja el botón a la derecha */
     background-color: transparent;
     border: 1px solid transparent;
-    color: var(--primary-color);
+    color: #009640;
     padding: 10px 15px;
     border-radius: 5px 5px 0 0;
     cursor: pointer;

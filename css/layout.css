@@ -1,7 +1,7 @@
 /* --- Súper Encabezado Global --- */
 .global-super-header {
     background-color: #fff;
-    border-bottom: 2px solid var(--primary-color, #00A859);
+    border-bottom: 2px solid #009640;
     display: flex;
     justify-content: space-between;
     align-items: center;
