@@ -314,6 +314,69 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
     }
 }
 
+export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dataObj, yearStr) {
+    const isNutritionIndicator = (indicatorId === 'ENSIN' || indicatorId === 'Cronica' || indicatorId === 'R_Cronica' || indicatorId === 'Aguda' || indicatorId === 'R_Aguda');
+
+    if (isNutritionIndicator) {
+        const value = dataObj.nutritionData[deptCode] ? dataObj.nutritionData[deptCode][indicatorId] : null;
+        const displayName = getIndicatorDisplayName(indicatorId);
+        const formattedValue = (value !== null && !isNaN(value)) ? `${value.toFixed(1)}%` : "No disponible";
+        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue}`;
+    }
+
+    const deptData = dataObj.indexData[deptCode];
+    if (!deptData) return `<strong>${deptName} (${yearStr})</strong><br>Datos no disponibles`;
+
+    const isIndice = indicatorId === 'Indice';
+    if (isIndice) {
+        const idxVal = deptData.Indice !== null ? deptData.Indice.toFixed(1) : "N/A";
+        const rank = deptData.Ranking || "N/A";
+        const classification = deptData.Clasificacion_Indice || "N/A";
+
+        let tableHtml = `<br><table class="popup-table"><tr><th>Dimensión</th><th>Valor</th></tr>`;
+        const dimensions = Object.keys(deptData).filter(k => k !== 'Indice' && k !== 'Ranking' && k !== 'Clasificacion_Indice');
+        dimensions.sort((a, b) => (deptData[b] || 0) - (deptData[a] || 0));
+
+        for (const dim of dimensions) {
+            const dimVal = deptData[dim] !== null ? deptData[dim].toFixed(1) : "N/A";
+            const dimName = getIndicatorDisplayName(dim);
+            const iconHTML = dim_icons[dim] || '';
+            tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td>${dimVal}</td></tr>`;
+        }
+        tableHtml += `</table>`;
+
+        return `<strong>${deptName} (${yearStr})</strong><br><b>Índice Integrado:</b> ${idxVal} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
+    } else {
+        const value = getIndicatorValue(deptCode, indicatorId, dataObj.indexData, dataObj.indicatorData);
+        const displayName = getIndicatorDisplayName(indicatorId);
+        const formattedValue = (value !== null && !isNaN(value)) ? (value % 1 !== 0 ? value.toFixed(2) : value) : "No disponible";
+
+        const dimConfig = state.appConfig[indicatorId];
+        let childTableHtml = '';
+        if (dimConfig && dimConfig.variables && dimConfig.variables.length > 0) {
+            childTableHtml = `<br><table class="popup-table"><tr><th>Indicador</th><th>Valor</th></tr>`;
+            const sortedVars = [...dimConfig.variables].sort((a, b) => {
+                const valA = getIndicatorValue(deptCode, a.nombre, dataObj.indexData, dataObj.indicatorData) || 0;
+                const valB = getIndicatorValue(deptCode, b.nombre, dataObj.indexData, dataObj.indicatorData) || 0;
+                return valB - valA;
+            });
+            for (const v of sortedVars) {
+                const childVal = getIndicatorValue(deptCode, v.nombre, dataObj.indexData, dataObj.indicatorData);
+                const fmtVal = (childVal !== null && !isNaN(childVal)) ? (childVal % 1 !== 0 ? childVal.toFixed(2) : childVal) : "N/A";
+                const iconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
+                const parentIconHtml = dim_icons[indicatorId] || '';
+                const colorMatch = parentIconHtml.match(/style="color:\s*([^;]+);"/);
+                const iconColor = (colorMatch && colorMatch[1]) ? colorMatch[1] : '#666';
+                const iconHtml = `<i class="${iconClass}" style="color: ${iconColor}; margin-right: 4px;"></i>`;
+                childTableHtml += `<tr><td>${iconHtml} ${v.nombre}</td><td>${fmtVal}</td></tr>`;
+            }
+            childTableHtml += `</table>`;
+        }
+
+        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue}${childTableHtml}`;
+    }
+}
+
 export function createLegendToggleControl(map, mapKey) {
     const control = L.control({ position: 'topright' });
     control.onAdd = function() {

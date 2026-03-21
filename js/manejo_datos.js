@@ -56,3 +56,41 @@ export async function loadData() {
         storyBox.innerHTML = `<p style="color: red;">Error: No se pudieron cargar los archivos de datos. Verifique la consola para más detalles.</p>`;
     }
 }
+
+export async function loadYearData(year) {
+    try {
+        const rutas = state.catalog.rutas[year];
+        if (!rutas) throw new Error("Rutas no encontradas para el año " + year);
+        
+        const [indexData, nutritionData, indicatorData, weights] = await Promise.all([
+            fetch(rutas.indexData).then(res => res.json()),
+            fetch(rutas.nutritionData).then(res => res.json()),
+            fetch(rutas.indicatorData).then(res => res.json()),
+            fetch(rutas.weights).then(res => res.json())
+        ]);
+
+        // Dynamically add Clasificacion_Indice based on Indice
+        for (const deptoCode in indexData) {
+            const deptoData = indexData[deptoCode];
+            const indice = deptoData.Indice;
+            if (indice !== null && indice !== undefined) {
+                let classification = 'Mínima';
+                if (indice >= 65) classification = 'Crítica';
+                else if (indice >= 50) classification = 'Alta';
+                else if (indice >= 30) classification = 'Media';
+                else if (indice >= 15) classification = 'Baja';
+                deptoData.Clasificacion_Indice = classification;
+            }
+        }
+
+        return {
+            indexData,
+            nutritionData,
+            indicatorData: indicatorData || {},
+            weights
+        };
+    } catch (error) {
+        console.error(`Failed to load data for year ${year}:`, error);
+        return null;
+    }
+}

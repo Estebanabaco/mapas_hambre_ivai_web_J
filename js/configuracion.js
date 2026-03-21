@@ -14,21 +14,30 @@ export const state = {
         main: null,
         compareVul: null,
         compareNut: null,
+        evolutionBase: null,
+        evolutionCompare: null,
     },
     layers: {
         main: null,
         compareVul: null,
         compareNut: null,
+        evolutionBase: null,
+        evolutionCompare: null,
     },
     legends: {
         main: null,
         compareVul: null,
         compareNut: null,
+        evolutionBase: null,
+        evolutionCompare: null,
     },
     compareMapsFitted: false,
+    evolutionMapFitted: false,
     slimSelects: {
         compareVul: null,
         compareNut: null,
+        evolutionMetric: null,
+        evolutionCompareYear: null,
     },
     currentIndicator: 'Indice'
 };
@@ -47,8 +56,15 @@ export const appFooter = document.querySelector('.app-footer');
 export const tabs = {
     vulnerability: document.getElementById('tab-vulnerability'),
     compare: document.getElementById('tab-compare'),
+    evolution: document.getElementById('tab-evolution'),
 };
 export const tabButtons = {
     vulnerability: document.getElementById('btn-tab-main'),
     compare: document.getElementById('btn-tab-compare'),
+    evolution: document.getElementById('btn-tab-evolution'),
 };
+export const selectEvolutionMetric = document.getElementById('select-evolution-metric');
+export const selectEvolutionCompareYear = document.getElementById('select-evolution-compare-year');
+export const labelEvolutionBaseYear = document.getElementById('label-evolution-base-year');
+export const labelEvMapBase = document.getElementById('label-ev-map-base');
+export const labelEvMapCompare = document.getElementById('label-ev-map-compare');

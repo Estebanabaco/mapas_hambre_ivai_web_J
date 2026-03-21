@@ -44,6 +44,7 @@
         <nav>
             <button id="btn-tab-main" class="tab-button active" data-tab="tab-vulnerability">Mapa de Vulnerabilidad</button>
             <button id="btn-tab-compare" class="tab-button" data-tab="tab-compare">Mapas Comparativos</button>
+            <button id="btn-tab-evolution" class="tab-button" data-tab="tab-evolution">Evolución Temporal</button>
             <!-- Espaciador flexible para empujar el botón de Acerca al final -->
             <div style="flex-grow: 1;"></div>
             <button id="about-btn" class="about-button"><i class="fas fa-info-circle"></i><span class="about-text"> Acerca de este Mapa</span></button>
@@ -99,6 +100,46 @@
                             </select>
                         </div>
                         <div id="map-compare-nut" class="map-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Evolución Temporal -->
+        <div id="tab-evolution" class="tab-content">
+            <div class="row-container">
+                <div class="evolution-container" style="display: flex; flex-direction: column; height: 100%; width: 100%; min-height: 600px;">
+                    <div class="evolution-controls" style="padding: 8px 20px; background: var(--card-bg, #fff); border-bottom: 1px solid var(--border-color); z-index: 10;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <!-- Row 1: Metric Selector -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <select id="select-evolution-metric" style="width: 300px;"></select>
+                            </div>
+                            <!-- Row 2: Year comparison -->
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="display: flex; align-items: center; background: var(--primary-color); color: #fff; padding: 4px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;">
+                                    <i class="fas fa-lock" style="margin-right: 6px; font-size: 0.7rem; opacity: 0.8;"></i>
+                                    <span id="label-evolution-base-year">2024</span>
+                                </div>
+                                <i class="fas fa-arrows-left-right" style="color: var(--primary-color); font-size: 0.85rem;"></i>
+                                <select id="select-evolution-compare-year" class="form-select" style="width: 85px; padding: 4px 8px; border-radius: 20px; border: 2px solid var(--primary-color); font-weight: bold; text-align: center; font-size: 0.85rem;"></select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="compare-container" style="flex-grow: 1; margin-top: 0; padding-top: 0;">
+                        <div class="compare-map-wrapper">
+                            <div style="text-align: center; padding: 6px 0; background: var(--primary-color); color: #fff; font-weight: bold; font-size: 0.85rem; letter-spacing: 0.3px;">
+                                <i class="fas fa-calendar-check" style="margin-right: 5px;"></i> <span id="label-ev-map-base">2024</span> — Año Actual
+                            </div>
+                            <div id="map-evolution-base" class="map-container"></div>
+                        </div>
+                        <div class="compare-map-wrapper">
+                            <div style="text-align: center; padding: 6px 0; background: #6c757d; color: #fff; font-weight: bold; font-size: 0.85rem; letter-spacing: 0.3px;">
+                                <i class="fas fa-history" style="margin-right: 5px;"></i> <span id="label-ev-map-compare">-</span> — Año de Contraste
+                            </div>
+                            <div id="map-evolution-compare" class="map-container"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -161,6 +202,9 @@
 
     <!-- Slim Select JS -->
     <script src="https://cdn.jsdelivr.net/npm/slim-select@2.8.2/dist/slimselect.min.js"></script>
+
+
+
 
     <!-- Custom JS -->
     <script type="module" src="js/main.js"></script>

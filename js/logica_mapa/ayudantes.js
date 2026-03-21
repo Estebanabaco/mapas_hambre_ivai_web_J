@@ -7,17 +7,19 @@ export function getIndicatorDisplayName(indicatorId) {
 }
 
 // Nueva función para obtener flexiblemente un valor del JSON
-export function getIndicatorValue(deptCode, indicatorId) {
-    if (!deptCode || !state.indexData[deptCode]) return null;
+export function getIndicatorValue(deptCode, indicatorId, customIndexData = null, customIndicatorData = null) {
+    const iData = customIndexData || state.indexData;
+    const indData = customIndicatorData || state.indicatorData;
+    if (!deptCode || !iData[deptCode]) return null;
     
     // 1. Busca si está en la raíz principal (Índice o Dimensiones)
-    if (state.indexData[deptCode][indicatorId] !== undefined) {
-        return state.indexData[deptCode][indicatorId];
+    if (iData[deptCode][indicatorId] !== undefined) {
+        return iData[deptCode][indicatorId];
     }
     
     // 2. Si no, busca si es un Sub-indicador en el nuevo archivo independiente
-    if (state.indicatorData && state.indicatorData[deptCode] && state.indicatorData[deptCode][indicatorId] !== undefined) {
-        return state.indicatorData[deptCode][indicatorId];
+    if (indData && indData[deptCode] && indData[deptCode][indicatorId] !== undefined) {
+        return indData[deptCode][indicatorId];
     }
     
     return null;

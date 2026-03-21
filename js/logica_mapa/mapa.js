@@ -1,9 +1,10 @@
-import { state, selectCompareNut, selectCompareVul } from '../configuracion.js';
+import { state, selectCompareNut, selectCompareVul, COLOMBIA_CENTER, INITIAL_ZOOM } from '../configuracion.js';
 import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
+import { loadYearData } from '../manejo_datos.js';
 import { createColorPalette } from './utilidades_color.js';
-import { createLegend, createIndiceLegend, createPopupContent, createLegendToggleControl } from './componentes.js';
+import { createLegend, createIndiceLegend, createPopupContent, createEvolutionPopupContent, createLegendToggleControl } from './componentes.js';
 
-export let currentTileLayers = { main: null, compareVul: null, compareNut: null };
+export let currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
 
 export function toggleMapTheme(isDark) {
     const tileUrl = isDark 
@@ -11,7 +12,7 @@ export function toggleMapTheme(isDark) {
         : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
     const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
     
-    ['main', 'compareVul', 'compareNut'].forEach(key => {
+    ['main', 'compareVul', 'compareNut', 'evolutionBase', 'evolutionCompare'].forEach(key => {
         if (state.maps[key]) {
             if (currentTileLayers[key]) {
                 state.maps[key].removeLayer(currentTileLayers[key]);
@@ -53,6 +54,26 @@ export function initMaps() {
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareNut);
     createLegendToggleControl(state.maps.compareNut, 'compareNut').addTo(state.maps.compareNut);
+
+    state.maps.evolutionBase = L.map('map-evolution-base', {
+        fullscreenControl: true,
+        fullscreenControlOptions: { position: 'topright' },
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        zoomControl: false
+    }).setView(COLOMBIA_CENTER, INITIAL_ZOOM);
+    L.control.zoom({ position: 'topright' }).addTo(state.maps.evolutionBase);
+    createLegendToggleControl(state.maps.evolutionBase, 'evolutionBase').addTo(state.maps.evolutionBase);
+
+    state.maps.evolutionCompare = L.map('map-evolution-compare', {
+        fullscreenControl: true,
+        fullscreenControlOptions: { position: 'topright' },
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        zoomControl: false
+    }).setView(COLOMBIA_CENTER, INITIAL_ZOOM);
+    L.control.zoom({ position: 'topright' }).addTo(state.maps.evolutionCompare);
+    createLegendToggleControl(state.maps.evolutionCompare, 'evolutionCompare').addTo(state.maps.evolutionCompare);
 
     // Load saved or default theme
     const isDark = localStorage.getItem('theme') === 'dark';
@@ -181,4 +202,138 @@ export function updateMap(mapKey, indicatorId) {
 
     legend.addTo(map);
     state.legends[mapKey] = legend;
+}
+
+export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
+    const mapBase = state.maps.evolutionBase;
+    const mapCompare = state.maps.evolutionCompare;
+    if (!mapBase || !mapCompare) return;
+
+    if (state.layers.evolutionBase) { mapBase.removeLayer(state.layers.evolutionBase); state.layers.evolutionBase = null; }
+    if (state.layers.evolutionCompare) { mapCompare.removeLayer(state.layers.evolutionCompare); state.layers.evolutionCompare = null; }
+    if (state.legends.evolutionBase) { mapBase.removeControl(state.legends.evolutionBase); state.legends.evolutionBase = null; }
+    if (state.legends.evolutionCompare) { mapCompare.removeControl(state.legends.evolutionCompare); state.legends.evolutionCompare = null; }
+
+    // Brute-force cleanup: remove any leftover legend DOM from both containers
+    [mapBase, mapCompare].forEach(m => {
+        const container = m.getContainer();
+        if (container) {
+            container.querySelectorAll('.legend-wrapper, .leaflet-legend').forEach(el => el.remove());
+        }
+    });
+
+    const baseData = await loadYearData(baseYear);
+    const compareData = await loadYearData(compareYear);
+    if (!baseData || !compareData) return;
+
+    const isNutritionMap = (indicatorId === 'ENSIN' || indicatorId === 'Cronica' || indicatorId === 'R_Cronica' || indicatorId === 'Aguda' || indicatorId === 'R_Aguda');
+    const isIndice = indicatorId === 'Indice';
+
+    let palette;
+    if (isIndice) {
+        palette = (value, classification) => {
+            if (classification === 'Crítica') return '#B30000';
+            if (classification === 'Alta') return '#E64519';
+            if (classification === 'Media') return '#F9A825';
+            if (classification === 'Baja') return '#8BC34A';
+            if (classification === 'Mínima') return '#2E7D32';
+            return '#d9d9d9';
+        };
+    } else {
+        const allValues = [
+            ...Object.keys(baseData.indexData).map(deptCode => isNutritionMap ? baseData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, baseData.indexData, baseData.indicatorData)),
+            ...Object.keys(compareData.indexData).map(deptCode => isNutritionMap ? compareData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, compareData.indexData, compareData.indicatorData))
+        ].filter(v => v != null);
+        palette = createColorPalette(allValues, isNutritionMap);
+    }
+
+    const createEvolutionLayer = (dataObj, yearStr) => {
+        const layersByDept = {};
+        const layer = L.geoJSON(state.geoData, {
+            style: (feature) => {
+                const deptCode = parseInt(feature.properties.DPTO_CCDGO);
+                const value = isNutritionMap ? (dataObj.nutritionData[deptCode] ? dataObj.nutritionData[deptCode][indicatorId] : null) : getIndicatorValue(deptCode, indicatorId, dataObj.indexData, dataObj.indicatorData);
+                let fillColor = '#d9d9d9';
+                if (isIndice) {
+                    fillColor = palette(value, dataObj.indexData[deptCode]?.Clasificacion_Indice);
+                } else if (value != null) {
+                    fillColor = palette(value);
+                }
+                return {
+                    fillColor: fillColor,
+                    weight: 0.8,
+                    color: '#ffffff',
+                    fillOpacity: 0.85
+                };
+            },
+            onEachFeature: (feature, l) => {
+                const deptCode = parseInt(feature.properties.DPTO_CCDGO);
+                let deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || '').trim().toLowerCase();
+                deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                const value = isNutritionMap ? (dataObj.nutritionData[deptCode] ? dataObj.nutritionData[deptCode][indicatorId] : null) : getIndicatorValue(deptCode, indicatorId, dataObj.indexData, dataObj.indicatorData);
+                
+                layersByDept[deptCode] = l;
+                l.bindTooltip(`${deptName} (${yearStr})`);
+                l.bindPopup(() => createEvolutionPopupContent(deptCode, deptName, indicatorId, dataObj, yearStr), { maxWidth: 350 });
+            }
+        });
+        layer._deptLayers = layersByDept;
+        return layer;
+    };
+
+    state.layers.evolutionBase = createEvolutionLayer(baseData, baseYear).addTo(mapBase);
+    state.layers.evolutionCompare = createEvolutionLayer(compareData, compareYear).addTo(mapCompare);
+
+    // Cross-map popup sync: clicking a department on one map opens its popup on the other
+    const crossOpenPopup = (sourceDeptLayers, targetLayer, targetMap) => {
+        Object.keys(sourceDeptLayers).forEach(deptCode => {
+            sourceDeptLayers[deptCode].on('click', () => {
+                const sibling = targetLayer._deptLayers[deptCode];
+                if (sibling) {
+                    const center = sibling.getBounds().getCenter();
+                    sibling.openPopup(center);
+                }
+            });
+        });
+    };
+    crossOpenPopup(state.layers.evolutionBase._deptLayers, state.layers.evolutionCompare, mapCompare);
+    crossOpenPopup(state.layers.evolutionCompare._deptLayers, state.layers.evolutionBase, mapBase);
+
+    if (!state.evolutionMapFitted) {
+        const mainlandGeoData = {
+            ...state.geoData,
+            features: state.geoData.features.filter(f => f.properties.DPTO_CCDGO !== '88')
+        };
+        const geoJsonLayer = L.geoJSON(mainlandGeoData);
+        const bounds = geoJsonLayer.getBounds();
+        
+        mapBase.fitBounds(bounds, { padding: [10, 10] });
+        mapCompare.fitBounds(bounds, { padding: [10, 10] });
+        
+        mapBase.sync(mapCompare);
+        mapCompare.sync(mapBase);
+
+        state.evolutionMapFitted = true;
+    }
+
+    let legendBase, legendCompare;
+    if (isIndice) {
+        legendBase = createIndiceLegend(mapBase, state.layers.evolutionBase);
+        legendCompare = createIndiceLegend(mapCompare, state.layers.evolutionCompare);
+    } else {
+        const legendTitle = `${getIndicatorDisplayName(indicatorId)}`;
+
+        const isPercentage = isNutritionMap;
+        const allValues = [
+            ...Object.keys(baseData.indexData).map(deptCode => isNutritionMap ? baseData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, baseData.indexData, baseData.indicatorData)),
+            ...Object.keys(compareData.indexData).map(deptCode => isNutritionMap ? compareData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, compareData.indexData, compareData.indicatorData))
+        ].filter(v => v != null);
+        legendBase = createLegend(mapBase, palette, allValues, legendTitle, isPercentage);
+        legendCompare = createLegend(mapCompare, palette, allValues, legendTitle, isPercentage);
+    }
+    
+    legendBase.addTo(mapBase);
+    legendCompare.addTo(mapCompare);
+    state.legends.evolutionBase = legendBase;
+    state.legends.evolutionCompare = legendCompare;
 }
