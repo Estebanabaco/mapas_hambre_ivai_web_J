@@ -84,6 +84,27 @@
     margin-right: 5px;
 }
 
+.leaflet-popup-content .trend-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    font-size: 0.82em;
+    vertical-align: middle;
+}
+
+.leaflet-popup-content .trend-up {
+    color: #dc3545;
+}
+
+.leaflet-popup-content .trend-down {
+    color: #198754;
+}
+
+.leaflet-popup-content .trend-flat {
+    color: #6c757d;
+}
+
 /* --- Custom Tooltip --- */
 .custom-tooltip {
     position: absolute;

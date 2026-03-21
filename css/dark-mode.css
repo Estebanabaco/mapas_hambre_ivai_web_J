@@ -312,6 +312,15 @@ body.dark-mode .leaflet-popup-content .popup-table td {
 body.dark-mode .leaflet-popup-content h3 {
     color: var(--primary-color, #F58634);
 }
+body.dark-mode .leaflet-popup-content .trend-up {
+    color: #ff6b6b;
+}
+body.dark-mode .leaflet-popup-content .trend-down {
+    color: #51cf66;
+}
+body.dark-mode .leaflet-popup-content .trend-flat {
+    color: #adb5bd;
+}
 
 /* --- Leaflet generic controls --- */
 body.dark-mode .leaflet-control-custom {

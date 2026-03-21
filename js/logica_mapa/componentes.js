@@ -314,14 +314,37 @@ export function createPopupContent(deptCode, deptName, indicatorId, mapKey) {
     }
 }
 
-export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dataObj, yearStr) {
+export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dataObj, yearStr, compareDataObj = null, compareYearStr = null) {
+    const createTrendHtml = (currentValue, compareValue) => {
+        const compareLabel = compareYearStr || 'el ano comparado';
+        if (currentValue === null || currentValue === undefined || isNaN(currentValue)) return '';
+        if (compareValue === null || compareValue === undefined || isNaN(compareValue)) return '';
+
+        if (currentValue > compareValue) {
+            return `<span class="trend-indicator trend-up" title="Subio frente a ${compareLabel}"><i class="fa-solid fa-arrow-up"></i></span>`;
+        }
+        if (currentValue < compareValue) {
+            return `<span class="trend-indicator trend-down" title="Bajo frente a ${compareLabel}"><i class="fa-solid fa-arrow-down"></i></span>`;
+        }
+        return `<span class="trend-indicator trend-flat" title="Sin cambio frente a ${compareLabel}"><i class="fa-solid fa-minus"></i></span>`;
+    };
+
+    const formatNumeric = (value, digits = 2) => {
+        if (value === null || value === undefined || isNaN(value)) return 'No disponible';
+        return (value % 1 !== 0) ? value.toFixed(digits) : value;
+    };
+
     const isNutritionIndicator = (indicatorId === 'ENSIN' || indicatorId === 'Cronica' || indicatorId === 'R_Cronica' || indicatorId === 'Aguda' || indicatorId === 'R_Aguda');
 
     if (isNutritionIndicator) {
         const value = dataObj.nutritionData[deptCode] ? dataObj.nutritionData[deptCode][indicatorId] : null;
+        const compareValue = compareDataObj && compareDataObj.nutritionData[deptCode]
+            ? compareDataObj.nutritionData[deptCode][indicatorId]
+            : null;
         const displayName = getIndicatorDisplayName(indicatorId);
-        const formattedValue = (value !== null && !isNaN(value)) ? `${value.toFixed(1)}%` : "No disponible";
-        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue}`;
+        const formattedValue = (value !== null && !isNaN(value)) ? `${(value * 100).toFixed(1)}%` : "No disponible";
+        const trendHtml = createTrendHtml(value, compareValue);
+        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue} ${trendHtml}`;
     }
 
     const deptData = dataObj.indexData[deptCode];
@@ -330,6 +353,9 @@ export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dat
     const isIndice = indicatorId === 'Indice';
     if (isIndice) {
         const idxVal = deptData.Indice !== null ? deptData.Indice.toFixed(1) : "N/A";
+        const compareDeptData = compareDataObj ? compareDataObj.indexData[deptCode] : null;
+        const idxCompareVal = compareDeptData ? compareDeptData.Indice : null;
+        const idxTrendHtml = createTrendHtml(deptData.Indice, idxCompareVal);
         const rank = deptData.Ranking || "N/A";
         const classification = deptData.Clasificacion_Indice || "N/A";
 
@@ -339,17 +365,23 @@ export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dat
 
         for (const dim of dimensions) {
             const dimVal = deptData[dim] !== null ? deptData[dim].toFixed(1) : "N/A";
+            const compareDimVal = compareDeptData ? compareDeptData[dim] : null;
+            const dimTrendHtml = createTrendHtml(deptData[dim], compareDimVal);
             const dimName = getIndicatorDisplayName(dim);
             const iconHTML = dim_icons[dim] || '';
-            tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td>${dimVal}</td></tr>`;
+            tableHtml += `<tr><td>${iconHTML} ${dimName}</td><td>${dimVal} ${dimTrendHtml}</td></tr>`;
         }
         tableHtml += `</table>`;
 
-        return `<strong>${deptName} (${yearStr})</strong><br><b>Índice Integrado:</b> ${idxVal} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
+        return `<strong>${deptName} (${yearStr})</strong><br><b>Índice Integrado:</b> ${idxVal} ${idxTrendHtml} (${classification})<br><b>Ranking General:</b> ${rank}${tableHtml}`;
     } else {
         const value = getIndicatorValue(deptCode, indicatorId, dataObj.indexData, dataObj.indicatorData);
+        const compareValue = compareDataObj
+            ? getIndicatorValue(deptCode, indicatorId, compareDataObj.indexData, compareDataObj.indicatorData)
+            : null;
+        const trendHtml = createTrendHtml(value, compareValue);
         const displayName = getIndicatorDisplayName(indicatorId);
-        const formattedValue = (value !== null && !isNaN(value)) ? (value % 1 !== 0 ? value.toFixed(2) : value) : "No disponible";
+        const formattedValue = formatNumeric(value, 2);
 
         const dimConfig = state.appConfig[indicatorId];
         let childTableHtml = '';
@@ -362,18 +394,22 @@ export function createEvolutionPopupContent(deptCode, deptName, indicatorId, dat
             });
             for (const v of sortedVars) {
                 const childVal = getIndicatorValue(deptCode, v.nombre, dataObj.indexData, dataObj.indicatorData);
-                const fmtVal = (childVal !== null && !isNaN(childVal)) ? (childVal % 1 !== 0 ? childVal.toFixed(2) : childVal) : "N/A";
+                const compareChildVal = compareDataObj
+                    ? getIndicatorValue(deptCode, v.nombre, compareDataObj.indexData, compareDataObj.indicatorData)
+                    : null;
+                const childTrendHtml = createTrendHtml(childVal, compareChildVal);
+                const fmtVal = formatNumeric(childVal, 2);
                 const iconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
                 const parentIconHtml = dim_icons[indicatorId] || '';
                 const colorMatch = parentIconHtml.match(/style="color:\s*([^;]+);"/);
                 const iconColor = (colorMatch && colorMatch[1]) ? colorMatch[1] : '#666';
                 const iconHtml = `<i class="${iconClass}" style="color: ${iconColor}; margin-right: 4px;"></i>`;
-                childTableHtml += `<tr><td>${iconHtml} ${v.nombre}</td><td>${fmtVal}</td></tr>`;
+                childTableHtml += `<tr><td>${iconHtml} ${v.nombre}</td><td>${fmtVal} ${childTrendHtml}</td></tr>`;
             }
             childTableHtml += `</table>`;
         }
 
-        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue}${childTableHtml}`;
+        return `<strong>${deptName} (${yearStr})</strong><br><b>${displayName}:</b> ${formattedValue} ${trendHtml}${childTableHtml}`;
     }
 }
 
