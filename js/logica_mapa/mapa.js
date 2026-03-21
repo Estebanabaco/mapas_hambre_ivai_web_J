@@ -6,6 +6,15 @@ export { updateEvolutionMap } from '../../src/tabs/evolution/map-controller.js';
 
 export let currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
 export function toggleMapTheme(isDark) {
     const tileUrl = isDark 
         ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png' 
@@ -24,8 +33,18 @@ export function toggleMapTheme(isDark) {
 }
 
 export function initMaps() {
+    const mapMainEl = getById('map-main');
+    const mapCompareVulEl = getById('map-compare-vul');
+    const mapCompareNutEl = getById('map-compare-nut');
+    const mapEvolutionBaseEl = getById('map-evolution-base');
+    const mapEvolutionCompareEl = getById('map-evolution-compare');
+
+    if (!mapMainEl || !mapCompareVulEl || !mapCompareNutEl || !mapEvolutionBaseEl || !mapEvolutionCompareEl) {
+        throw new Error('No se encontraron todos los contenedores de mapa en el root activo.');
+    }
+
     // Initialize maps without initial tile layers (will be added by toggleMapTheme)
-    state.maps.main = L.map('map-main', {
+    state.maps.main = L.map(mapMainEl, {
         fullscreenControl: true,
         fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
@@ -35,7 +54,7 @@ export function initMaps() {
     L.control.zoom({ position: 'topright' }).addTo(state.maps.main);
     createLegendToggleControl(state.maps.main, 'main').addTo(state.maps.main);
 
-    state.maps.compareVul = L.map('map-compare-vul', {
+    state.maps.compareVul = L.map(mapCompareVulEl, {
         fullscreenControl: true,
         fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
@@ -45,7 +64,7 @@ export function initMaps() {
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareVul);
     createLegendToggleControl(state.maps.compareVul, 'compareVul').addTo(state.maps.compareVul);
 
-    state.maps.compareNut = L.map('map-compare-nut', {
+    state.maps.compareNut = L.map(mapCompareNutEl, {
         fullscreenControl: true,
         fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
@@ -55,7 +74,7 @@ export function initMaps() {
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareNut);
     createLegendToggleControl(state.maps.compareNut, 'compareNut').addTo(state.maps.compareNut);
 
-    state.maps.evolutionBase = L.map('map-evolution-base', {
+    state.maps.evolutionBase = L.map(mapEvolutionBaseEl, {
         fullscreenControl: true,
         fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
@@ -65,7 +84,7 @@ export function initMaps() {
     L.control.zoom({ position: 'topright' }).addTo(state.maps.evolutionBase);
     createLegendToggleControl(state.maps.evolutionBase, 'evolutionBase').addTo(state.maps.evolutionBase);
 
-    state.maps.evolutionCompare = L.map('map-evolution-compare', {
+    state.maps.evolutionCompare = L.map(mapEvolutionCompareEl, {
         fullscreenControl: true,
         fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
