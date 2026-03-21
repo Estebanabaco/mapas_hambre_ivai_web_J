@@ -1,7 +1,7 @@
 import { state, selectCompareNut, COLOMBIA_CENTER, INITIAL_ZOOM } from '../configuracion.js';
-import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
-import { createColorPalette } from './utilidades_color.js';
-import { createLegend, createIndiceLegend, createPopupContent, createLegendToggleControl } from './componentes.js';
+import { createLegendToggleControl } from './componentes.js';
+import { updateVulnerabilityMap } from '../../src/tabs/vulnerability/map-controller.js';
+import { updateCompareMap } from '../../src/tabs/compare/map-controller.js';
 export { updateEvolutionMap } from '../../src/tabs/evolution/map-controller.js';
 
 export let currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
@@ -81,126 +81,13 @@ export function initMaps() {
 }
 
 export function updateMap(mapKey, indicatorId) {
-    const map = state.maps[mapKey];
-    if (!map) return;
-
-    if (state.layers[mapKey]) map.removeLayer(state.layers[mapKey]);
-    if (state.legends[mapKey]) map.removeControl(state.legends[mapKey]);
-
-    const isNutritionMap = mapKey === 'compareNut';
-    const data = isNutritionMap ? state.nutritionData : state.indexData;
-    
-    let palette, legend;
-    const isIndice = indicatorId === 'Indice';
-
-    // Define palette first
-    if (isIndice && mapKey === 'main') {
-        palette = (value) => {
-            const classification = Object.values(state.indexData).find(d => d.Indice === value)?.Clasificacion_Indice;
-            if (classification === 'Crítica') return '#B30000';
-            if (classification === 'Alta') return '#E64519';
-            if (classification === 'Media') return '#F9A825';
-            if (classification === 'Baja') return '#8BC34A';
-            if (classification === 'Mínima') return '#2E7D32';
-            return '#d9d9d9';
-        };
-    } else {
-        const values = Object.keys(data).map(deptCode => isNutritionMap ? data[deptCode][indicatorId] : getIndicatorValue(deptCode, indicatorId)).filter(v => v != null);
-        palette = createColorPalette(values, isNutritionMap);
+    if (mapKey === 'main') {
+        updateVulnerabilityMap(indicatorId);
+        return;
     }
 
-    const geoJsonLayer = L.geoJSON(state.geoData, {
-        style: (feature) => {
-            const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-            const value = isNutritionMap ? (data[deptCode] ? data[deptCode][indicatorId] : null) : getIndicatorValue(deptCode, indicatorId);
-            return {
-                fillColor: palette(value),
-                weight: 0.8,
-                color: '#ffffff',
-                fillOpacity: 0.85
-            };
-        },
-        onEachFeature: (feature, layer) => {
-            const deptCode = parseInt(feature.properties.DPTO_CCDGO);
-            let deptName = (feature.properties.DPTO_CNMBR || feature.properties.name || 'Nombre no disponible').trim().toLowerCase();
-            deptName = deptName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-            
-            layer.bindTooltip(deptName);
-            layer.bindPopup(() => createPopupContent(deptCode, deptName, indicatorId, mapKey));
-
-            layer.on({
-                mouseover: (e) => {
-                    e.target.isHovered = true;
-                    e.target.setStyle({ weight: 2.5, color: '#2c3e50' });
-                    e.target.bringToFront();
-
-                    if (isIndice && mapKey === 'main') {
-                        const classification = state.indexData[deptCode]?.Clasificacion_Indice;
-                        if (classification) {
-                            const legendContainer = state.legends.main.getContainer();
-                            if (legendContainer) {
-                                const legendItem = legendContainer.querySelector(`.legend-item[data-classification="${classification}"]`);
-                                if (legendItem) legendItem.classList.add('highlighted');
-                            }
-                        }
-                    }
-                },
-                mouseout: (e) => {
-                    e.target.isHovered = false;
-                    geoJsonLayer.resetStyle(e.target);
-
-                    if (isIndice && mapKey === 'main') {
-                        const classification = state.indexData[deptCode]?.Clasificacion_Indice;
-                        if (classification) {
-                            const legendContainer = state.legends.main.getContainer();
-                            if (legendContainer) {
-                                const legendItem = legendContainer.querySelector(`.legend-item[data-classification="${classification}"]`);
-                                if (legendItem) legendItem.classList.remove('highlighted');
-                            }
-                        }
-                    }
-                },
-                click: (e) => {
-                    const clickedDeptCode = parseInt(e.target.feature.properties.DPTO_CCDGO);
-
-                    // Only sync popups for comparison maps
-                    if (mapKey === 'compareVul' || mapKey === 'compareNut') {
-                        const otherMapKey = mapKey === 'compareVul' ? 'compareNut' : 'compareVul';
-                        const otherMapLayer = state.layers[otherMapKey];
-
-                        if (otherMapLayer) {
-                            otherMapLayer.eachLayer(otherLayer => {
-                                const otherDeptCode = parseInt(otherLayer.feature.properties.DPTO_CCDGO);
-                                if (otherDeptCode === clickedDeptCode) {
-                                    // Ensure the popup is opened on the next tick to avoid race conditions
-                                    setTimeout(() => {
-                                        otherLayer.openPopup();
-                                    }, 0);
-                                }
-                            });
-                        }
-                    }
-                }
-            });
-        }
-    });
-
-    // Now create legend, passing the layer if needed
-    if (isIndice && mapKey === 'main') { 
-        legend = createIndiceLegend(map, geoJsonLayer);
-    } else {
-        const legendTitle = isNutritionMap
-            ? selectCompareNut.options[selectCompareNut.selectedIndex].text
-            : getIndicatorDisplayName(indicatorId);
-        const isPercentage = isNutritionMap;
-        const values = Object.keys(data).map(deptCode => isNutritionMap ? data[deptCode][indicatorId] : getIndicatorValue(deptCode, indicatorId)).filter(v => v != null);
-        legend = createLegend(map, palette, values, legendTitle, isPercentage);
+    if (mapKey === 'compareVul' || mapKey === 'compareNut') {
+        updateCompareMap(mapKey, indicatorId, selectCompareNut);
     }
-    
-    geoJsonLayer.addTo(map);
-    state.layers[mapKey] = geoJsonLayer;
-
-    legend.addTo(map);
-    state.legends[mapKey] = legend;
 }
 

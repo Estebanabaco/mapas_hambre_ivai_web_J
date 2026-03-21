@@ -21,6 +21,8 @@ This project is transitioning from a page-coupled app to a library-style archite
 - Data loading extracted to `src/core/data-service.js`
 - Evolution tab UI flow extracted to `src/tabs/evolution/ui-controller.js`
 - Evolution map rendering extracted to `src/tabs/evolution/map-controller.js`
+- Main vulnerability map rendering extracted to `src/tabs/vulnerability/map-controller.js`
+- Compare tab map rendering extracted to `src/tabs/compare/map-controller.js`
 - Legacy compatibility retained through wrappers:
   - `js/configuracion.js`
   - `js/manejo_datos.js`
