@@ -9,6 +9,7 @@ function setupIvaiSheets() {
   upsertSheetWithHeaders_(ss, 'nutricionales', SHEET_HEADERS.nutricionales);
   upsertSheetWithHeaders_(ss, 'ahp_dimensiones', SHEET_HEADERS.ahp_dimensiones);
   upsertSheetWithHeaders_(ss, 'ahp_indicadores', SHEET_HEADERS.ahp_indicadores);
+  upsertDataDictionarySheet_(ss, { overwrite: true });
 
-  SpreadsheetApp.getUi().alert('Hojas IVAI creadas/actualizadas correctamente.');
+  SpreadsheetApp.getUi().alert('Hojas IVAI y diccionario de datos creados/actualizados correctamente.');
 }

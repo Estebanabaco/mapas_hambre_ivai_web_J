@@ -28,6 +28,7 @@ Token:
 - `nutricionales` (columna clave: `dept_code`)
 - `ahp_dimensiones`
 - `ahp_indicadores`
+- `diccionario_datos` (diccionario técnico generado desde el código)
 
 ## Menú IVAI
 
@@ -47,7 +48,7 @@ Token:
 ## Flujo recomendado
 
 1. Configurar `year` y `base_url` en `Config`.
-2. Ejecutar `Precargar año (datos base)`.
+2. Ejecutar `Precargar año (datos base)` (también refresca `diccionario_datos`).
 3. Revisar/editar datos.
 4. Publicar con `Publicar datos base`.
 5. Publicar `AHP` solo cuando aplique.
@@ -60,6 +61,10 @@ Token:
   - Data JSON: `.../data/<year>/archivo.json`
 - Para `indicadores`, el script convierte automáticamente nombres JSON legibles a columnas cortas de la hoja (y viceversa al publicar).
 - Usa una URL pública accesible desde internet para que Apps Script pueda precargar/publicar correctamente.
+- `setupIvaiSheets()` también crea/actualiza `diccionario_datos` con todas las variables del modelo.
+- El diccionario intenta autocompletar `nombre_mostrado`, `descripcion` y `unidad` consultando:
+  - `config/config_indicadores.json`
+  - `config/configuracion_app.json`
 
 ## Estructura de archivos GAS
 

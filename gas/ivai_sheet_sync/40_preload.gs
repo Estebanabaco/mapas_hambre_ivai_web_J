@@ -1,4 +1,5 @@
 function preloadBaseYear() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   const settings = getSettings_();
   const year = settings.year;
 
@@ -6,6 +7,7 @@ function preloadBaseYear() {
   backups.push(backupSheet_('indice'));
   backups.push(backupSheet_('indicadores'));
   backups.push(backupSheet_('nutricionales'));
+  backups.push(backupSheet_(DATA_DICTIONARY_SHEET));
 
   const indice = fetchYearJson_(year, 'indice');
   const indicadores = fetchYearJson_(year, 'indicadores');
@@ -14,9 +16,10 @@ function preloadBaseYear() {
   writeDeptObjectToSheet_('indice', indice);
   writeDeptObjectToSheet_('indicadores', indicadores);
   writeDeptObjectToSheet_('nutricionales', nutricionales);
+  upsertDataDictionarySheet_(ss, { overwrite: true });
 
   SpreadsheetApp.getUi().alert(
-    `Precarga base completada para ${year}.\nRespaldos: ${backups.filter(Boolean).join(', ') || 'sin respaldo'}`
+    `Precarga base + diccionario completada para ${year}.\nRespaldos: ${backups.filter(Boolean).join(', ') || 'sin respaldo'}`
   );
 }
 

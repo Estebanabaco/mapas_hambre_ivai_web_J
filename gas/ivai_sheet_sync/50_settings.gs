@@ -77,20 +77,41 @@ function getSettings_() {
   const cfgSheet = upsertConfigSheet_(SpreadsheetApp.getActiveSpreadsheet());
 
   const yearCell = String(cfgSheet.getRange('B2').getValue() || '').trim();
-  const baseCell = String(cfgSheet.getRange('B3').getValue() || '').trim();
-
   const year = yearCell || props.getProperty('IVAI_DEFAULT_YEAR') || DEFAULTS.YEAR;
-  const resolved = resolveBaseUrl_(baseCell, props);
-  const rawBase = resolved.value;
-  const baseUrl = normalizeBaseUrl_(rawBase);
-  const token = props.getProperty('IVAI_API_TOKEN') || '';
 
-  if (resolved.source.indexOf('script_properties') === 0 && baseCell !== baseUrl) {
-    cfgSheet.getRange('B3').setValue(baseUrl);
-  }
+  const baseData = getBaseUrlData_();
+  const baseUrl = baseData.baseUrl;
+  const token = props.getProperty('IVAI_API_TOKEN') || '';
 
   if (!/^\d{4}$/.test(String(year))) {
     throw new Error('El año (Config!B2) debe tener formato YYYY.');
+  }
+
+  if (!token) {
+    throw new Error('No hay token API configurado. Usa el menu IVAI > Configurar token API.');
+  }
+
+  return {
+    year: String(year),
+    baseUrl,
+    baseUrlSource: baseData.baseUrlSource,
+    apiBaseUrl: deriveApiUpdateUrl_(baseUrl),
+    token,
+    dataBaseUrl: deriveDataBaseUrl_(baseUrl)
+  };
+}
+
+function getBaseUrlData_() {
+  const props = PropertiesService.getScriptProperties();
+  const cfgSheet = upsertConfigSheet_(SpreadsheetApp.getActiveSpreadsheet());
+  const baseCell = String(cfgSheet.getRange('B3').getValue() || '').trim();
+
+  const resolved = resolveBaseUrl_(baseCell, props);
+  const rawBase = resolved.value;
+  const baseUrl = normalizeBaseUrl_(rawBase);
+
+  if (resolved.source.indexOf('script_properties') === 0 && baseCell !== baseUrl) {
+    cfgSheet.getRange('B3').setValue(baseUrl);
   }
 
   if (!/^https?:\/\//i.test(baseUrl)) {
@@ -101,17 +122,9 @@ function getSettings_() {
     throw new Error('La URL base no puede ser localhost. Usa una URL pública accesible desde internet.');
   }
 
-  if (!token) {
-    throw new Error('No hay token API configurado. Usa el menu IVAI > Configurar token API.');
-  }
-
   return {
-    year: String(year),
     baseUrl,
-    baseUrlSource: resolved.source,
-    apiBaseUrl: deriveApiUpdateUrl_(baseUrl),
-    token,
-    dataBaseUrl: deriveDataBaseUrl_(baseUrl)
+    baseUrlSource: resolved.source
   };
 }
 

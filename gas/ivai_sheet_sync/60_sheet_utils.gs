@@ -187,6 +187,149 @@ function migrateAhpVariablesSheet_(ss) {
   }
 }
 
+function upsertDataDictionarySheet_(ss, options) {
+  const opts = options || {};
+  let sheet = ss.getSheetByName(DATA_DICTIONARY_SHEET);
+  if (!sheet) {
+    sheet = ss.insertSheet(DATA_DICTIONARY_SHEET);
+  }
+
+  const shouldOverwrite = !!opts.overwrite;
+  const hasData = sheet.getLastRow() > 1;
+
+  sheet.getRange(1, 1, 1, DATA_DICTIONARY_HEADERS.length).setValues([DATA_DICTIONARY_HEADERS]);
+  sheet.getRange(1, 1, 1, DATA_DICTIONARY_HEADERS.length).setFontWeight('bold');
+  sheet.setFrozenRows(1);
+
+  if (shouldOverwrite || !hasData) {
+    clearSheetData_(sheet);
+    const rows = getDataDictionaryRows_();
+    if (rows.length) {
+      sheet.getRange(2, 1, rows.length, DATA_DICTIONARY_HEADERS.length).setValues(rows);
+    }
+  }
+
+  sheet.autoResizeColumns(1, DATA_DICTIONARY_HEADERS.length);
+  return sheet;
+}
+
+function getDataDictionaryRows_() {
+  const dictionaryMeta = getDictionaryMetadata_();
+  const rows = [];
+
+  function pushRow(group, sheetName, variableSheet, variableJson, displayName, meta) {
+    const details = meta || {};
+    rows.push([
+      group,
+      sheetName,
+      variableSheet,
+      variableJson,
+      details.nombre_mostrado || displayName,
+      details.descripcion || '',
+      details.unidad || ''
+    ]);
+  }
+
+  SHEET_HEADERS.indice
+    .filter((v) => v !== 'dept_code')
+    .forEach((v) => {
+      const meta = resolveIndiceMeta_(v, dictionaryMeta.appConfig || {});
+      pushRow('indice', 'indice', v, v, v, meta);
+    });
+
+  SHEET_HEADERS.indicadores
+    .filter((v) => v !== 'dept_code')
+    .forEach((v) => {
+      const jsonName = INDICADORES_SHEET_TO_JSON[v] || v;
+      const meta = resolveIndicadorMeta_(v, jsonName, dictionaryMeta.indicadoresByJsonName || {});
+      pushRow('indicadores', 'indicadores', v, jsonName, jsonName, meta);
+    });
+
+  SHEET_HEADERS.nutricionales
+    .filter((v) => v !== 'dept_code')
+    .forEach((v) => {
+      const meta = resolveNutricionalMeta_(v, dictionaryMeta.appConfig || {});
+      pushRow('nutricionales', 'nutricionales', v, v, v, meta);
+    });
+
+  SHEET_HEADERS.ahp_dimensiones.forEach((v) => pushRow('ahp', 'ahp_dimensiones', v, v, v));
+  SHEET_HEADERS.ahp_indicadores.forEach((v) => pushRow('ahp', 'ahp_indicadores', v, v, v));
+
+  return rows;
+}
+
+function getDictionaryMetadata_() {
+  let baseUrl;
+  try {
+    baseUrl = getBaseUrlData_().baseUrl;
+  } catch (error) {
+    return {
+      indicadoresByJsonName: {},
+      appConfig: {}
+    };
+  }
+
+  const indicadoresByJsonName = fetchJsonSafe_(`${baseUrl}/config/config_indicadores.json`) || {};
+  const appConfig = fetchJsonSafe_(`${baseUrl}/config/configuracion_app.json`) || {};
+
+  return {
+    indicadoresByJsonName,
+    appConfig
+  };
+}
+
+function fetchJsonSafe_(url) {
+  try {
+    const response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      muteHttpExceptions: true
+    });
+
+    if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) {
+      return null;
+    }
+
+    return JSON.parse(response.getContentText());
+  } catch (error) {
+    return null;
+  }
+}
+
+function resolveIndicadorMeta_(variableSheet, variableJson, indicadoresByJsonName) {
+  const byJsonName = indicadoresByJsonName[variableJson];
+  if (!byJsonName) {
+    return {
+      nombre_mostrado: variableJson
+    };
+  }
+
+  return {
+    nombre_mostrado: byJsonName.nombre_completo || variableJson,
+    descripcion: byJsonName.descripcion || '',
+    unidad: byJsonName.unidad_medida || ''
+  };
+}
+
+function resolveIndiceMeta_(variable, appConfig) {
+  const key = variable === 'Indice' ? 'integrated' : variable;
+  const config = appConfig[key] || {};
+
+  return {
+    nombre_mostrado: config.nombre || variable,
+    descripcion: config.descripcion || '',
+    unidad: ''
+  };
+}
+
+function resolveNutricionalMeta_(variable, appConfig) {
+  const config = appConfig[variable] || {};
+  return {
+    nombre_mostrado: config.nombre || variable,
+    descripcion: config.descripcion || '',
+    unidad: ''
+  };
+}
+
 function columnToLetter_(column) {
   let temp;
   let letter = '';

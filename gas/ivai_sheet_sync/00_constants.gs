@@ -17,6 +17,18 @@ const DEFAULTS = {
   YEAR: '2024'
 };
 
+const DATA_DICTIONARY_SHEET = 'diccionario_datos';
+
+const DATA_DICTIONARY_HEADERS = [
+  'grupo',
+  'hoja',
+  'variable_sheet',
+  'variable_json',
+  'nombre_mostrado',
+  'descripcion',
+  'unidad'
+];
+
 const SHEET_HEADERS = {
   indice: [
     'dept_code',
