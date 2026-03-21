@@ -2,6 +2,98 @@ import { state, selectCompareNut } from '../configuracion.js';
 import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
 import { dim_icons, sub_icons } from '../icons.js';
 
+export function createContinuousLegendMarkup(values, title, isPercentage = false) {
+    const domain = values.filter(v => v !== null && !isNaN(v)).sort((a, b) => a - b);
+    if (domain.length === 0) {
+        return `<div class="leaflet-legend evolution-shared-legend-box"><h4>${title}</h4>No data</div>`;
+    }
+
+    const min = domain[0];
+    const max = domain[domain.length - 1];
+    const colors = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'];
+    const gradient = `linear-gradient(to bottom, ${colors.join(', ')})`;
+    const legendHeight = 180;
+
+    const formatLabel = (value) => isPercentage ? `${(value * 100).toFixed(0)}%` : Math.round(value);
+
+    let labels = [];
+    if (isPercentage) {
+        const rangePercent = (max - min) * 100;
+        let intervalPercent;
+        if (rangePercent <= 5) intervalPercent = 1;
+        else if (rangePercent <= 10) intervalPercent = 2;
+        else if (rangePercent <= 25) intervalPercent = 5;
+        else intervalPercent = 10;
+
+        const startPercent = Math.ceil(min * 100 / intervalPercent) * intervalPercent;
+        const endPercent = Math.floor(max * 100 / intervalPercent) * intervalPercent;
+        for (let i = startPercent; i <= endPercent; i += intervalPercent) {
+            labels.push(i / 100);
+        }
+    } else {
+        const interval = 10;
+        const start = Math.ceil(min / interval) * interval;
+        const end = Math.floor(max / interval) * interval;
+        for (let i = start; i <= end; i += interval) {
+            labels.push(i);
+        }
+    }
+
+    if (labels.length < 2) {
+        labels = [min, max];
+    }
+    labels = [...new Set(labels)].sort((a, b) => a - b);
+
+    let labelsDivs = '';
+    for (const val of labels) {
+        const percentPosition = (max - min) > 0 ? (val - min) / (max - min) * 100 : 0;
+        labelsDivs += `<div style="position: absolute; top: ${percentPosition}%; left: 0; width: 100%; transform: translateY(-50%);"><span style="padding-left: 5px;">&ndash; ${formatLabel(val)}</span></div>`;
+    }
+
+    return `
+        <div class="leaflet-legend leaflet-control-layers leaflet-control-layers-expanded evolution-shared-legend-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; font-size: 0.95em; color: #333;">${title}</h4>
+            </div>
+            <div style="display: flex; align-items: stretch; height: ${legendHeight}px; margin-top: 8px;">
+                <div style="width: 20px; background: ${gradient};"></div>
+                <div style="position: relative; width: 60px; font-size: 0.9em; margin-left: 5px;">
+                    ${labelsDivs}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+export function createIndiceLegendMarkup() {
+    const categories = [
+        { label: 'Mínima', range: '0-14', color: '#2E7D32' },
+        { label: 'Baja', range: '15-29', color: '#8BC34A' },
+        { label: 'Media', range: '30-49', color: '#F9A825' },
+        { label: 'Alta', range: '50-64', color: '#E64519' },
+        { label: 'Crítica', range: '65-100', color: '#B30000' }
+    ];
+
+    const legendItemsHtml = categories.map(c => `
+        <div class="legend-item" data-classification="${c.label}" style="flex-grow: 1; text-align: center; font-size: 0.75em; line-height: 1.1; padding: 4px 2px; border-radius: 3px;">
+            <div style="background-color:${c.color}; height: 15px; border: 1px solid #999; margin-bottom: 3px;"></div>
+            <div style="color: #333;">${c.label}</div>
+            <div style="color: #555; font-size:0.9em;">${c.range}</div>
+        </div>
+    `).join('');
+
+    return `
+        <div class="legend-wrapper evolution-shared-indice-wrapper">
+            <div class="leaflet-control-layers leaflet-control-layers-expanded evolution-shared-legend-box" style="min-width: 350px; max-width: 90vw;">
+                <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 8px;">
+                    <h4 style="margin:0; font-size:0.95em; color: #333;">Nivel de Vulnerabilidad</h4>
+                </div>
+                <div style="display: flex; width: 100%; justify-content: space-around;">${legendItemsHtml}</div>
+            </div>
+        </div>
+    `;
+}
+
 export function createLegend(map, palette, values, title, isPercentage = false) {
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function () {
@@ -426,6 +518,19 @@ export function createLegendToggleControl(map, mapKey) {
 
         L.DomEvent.on(button, 'click', function(e) {
             L.DomEvent.stop(e);
+
+            if (mapKey === 'evolutionBase' || mapKey === 'evolutionCompare') {
+                const sharedLegend = document.getElementById('evolution-shared-legend');
+                if (sharedLegend) {
+                    if (sharedLegend.style.display === 'none') {
+                        sharedLegend.style.display = '';
+                    } else {
+                        sharedLegend.style.display = 'none';
+                    }
+                }
+                return;
+            }
+
             const legend = state.legends[mapKey];
             if (legend) {
                 const container = legend.getContainer();

@@ -321,6 +321,18 @@ body.dark-mode .leaflet-popup-content .trend-down {
 body.dark-mode .leaflet-popup-content .trend-flat {
     color: #adb5bd;
 }
+body.dark-mode .evolution-shared-legend .evolution-shared-legend-box {
+    background-color: rgba(44, 44, 44, 0.92);
+}
+body.dark-mode .evolution-shared-legend .evolution-shared-indice-wrapper {
+    background-color: rgba(44, 44, 44, 0.8);
+}
+body.dark-mode .evolution-shared-legend .evolution-shared-legend-box h4 {
+    color: #e0e0e0 !important;
+}
+body.dark-mode .evolution-shared-legend .evolution-shared-indice-wrapper .legend-item div {
+    color: #e0e0e0 !important;
+}
 
 /* --- Leaflet generic controls --- */
 body.dark-mode .leaflet-control-custom {

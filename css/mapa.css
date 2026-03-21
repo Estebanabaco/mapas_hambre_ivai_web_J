@@ -105,6 +105,37 @@
     color: #6c757d;
 }
 
+.evolution-maps-container {
+    position: relative;
+}
+
+.evolution-shared-legend {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 700;
+    pointer-events: none;
+}
+
+.evolution-shared-legend #evolution-shared-legend-content {
+    pointer-events: auto;
+}
+
+.evolution-shared-legend .evolution-shared-legend-box {
+    background-color: rgba(255, 255, 255, 0.92);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.evolution-shared-legend .evolution-shared-indice-wrapper {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
 /* --- Custom Tooltip --- */
 .custom-tooltip {
     position: absolute;
@@ -321,4 +352,16 @@
 /* Elimina el contorno azul al hacer clic en un polígono del mapa */
 .leaflet-interactive:focus {
   outline: none;
+}
+
+@media (max-width: 900px) {
+    .evolution-shared-legend {
+        bottom: 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .evolution-shared-legend .evolution-shared-legend-box {
+        max-width: 100%;
+        overflow-x: auto;
+    }
 }

@@ -2,7 +2,7 @@ import { state, selectCompareNut, selectCompareVul, COLOMBIA_CENTER, INITIAL_ZOO
 import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
 import { loadYearData } from '../manejo_datos.js';
 import { createColorPalette } from './utilidades_color.js';
-import { createLegend, createIndiceLegend, createPopupContent, createEvolutionPopupContent, createLegendToggleControl } from './componentes.js';
+import { createLegend, createIndiceLegend, createPopupContent, createEvolutionPopupContent, createLegendToggleControl, createContinuousLegendMarkup, createIndiceLegendMarkup } from './componentes.js';
 
 export let currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
 
@@ -220,6 +220,15 @@ export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
     if (state.legends.evolutionBase) { mapBase.removeControl(state.legends.evolutionBase); state.legends.evolutionBase = null; }
     if (state.legends.evolutionCompare) { mapCompare.removeControl(state.legends.evolutionCompare); state.legends.evolutionCompare = null; }
 
+    const sharedLegendHost = document.getElementById('evolution-shared-legend');
+    const sharedLegendContent = document.getElementById('evolution-shared-legend-content');
+    if (sharedLegendContent) {
+        sharedLegendContent.innerHTML = '';
+    }
+    if (sharedLegendHost) {
+        sharedLegendHost.style.display = '';
+    }
+
     // Brute-force cleanup: remove any leftover legend DOM
     [mapBase, mapCompare].forEach(m => {
         const container = m.getContainer();
@@ -325,24 +334,50 @@ export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
         state.evolutionMapFitted = true;
     }
 
-    let legendBase, legendCompare;
-    if (isIndice) {
-        legendBase = createIndiceLegend(mapBase, state.layers.evolutionBase);
-        legendCompare = createIndiceLegend(mapCompare, state.layers.evolutionCompare);
-    } else {
-        const legendTitle = `${getIndicatorDisplayName(indicatorId)}`;
+    if (sharedLegendContent) {
+        if (isIndice) {
+            sharedLegendContent.innerHTML = createIndiceLegendMarkup();
 
-        const isPercentage = isNutritionMap;
-        const allValues = [
-            ...Object.keys(baseData.indexData).map(deptCode => isNutritionMap ? baseData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, baseData.indexData, baseData.indicatorData)),
-            ...Object.keys(compareData.indexData).map(deptCode => isNutritionMap ? compareData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, compareData.indexData, compareData.indicatorData))
-        ].filter(v => v != null);
-        legendBase = createLegend(mapBase, palette, allValues, legendTitle, isPercentage);
-        legendCompare = createLegend(mapCompare, palette, allValues, legendTitle, isPercentage);
+            const highlightClassificationInLayer = (layerGroup, dataSource, classification) => {
+                if (!layerGroup) return;
+                layerGroup.eachLayer(layer => {
+                    const deptCode = parseInt(layer.feature.properties.DPTO_CCDGO, 10);
+                    const deptData = dataSource[deptCode];
+                    if (deptData && deptData.Clasificacion_Indice === classification) {
+                        layer.setStyle({ weight: 2.5, color: '#2c3e50' });
+                        layer.bringToFront();
+                    }
+                });
+            };
+
+            const resetLayerStyles = (layerGroup) => {
+                if (!layerGroup) return;
+                layerGroup.eachLayer(layer => {
+                    layerGroup.resetStyle(layer);
+                });
+            };
+
+            const sharedLegendItems = sharedLegendContent.querySelectorAll('.legend-item[data-classification]');
+            sharedLegendItems.forEach(item => {
+                item.addEventListener('mouseover', () => {
+                    const classification = item.dataset.classification;
+                    highlightClassificationInLayer(state.layers.evolutionBase, baseData.indexData, classification);
+                    highlightClassificationInLayer(state.layers.evolutionCompare, compareData.indexData, classification);
+                });
+                item.addEventListener('mouseout', () => {
+                    resetLayerStyles(state.layers.evolutionBase);
+                    resetLayerStyles(state.layers.evolutionCompare);
+                });
+            });
+        } else {
+            const legendTitle = `${getIndicatorDisplayName(indicatorId)}`;
+            const isPercentage = isNutritionMap;
+            const allValues = [
+                ...Object.keys(baseData.indexData).map(deptCode => isNutritionMap ? baseData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, baseData.indexData, baseData.indicatorData)),
+                ...Object.keys(compareData.indexData).map(deptCode => isNutritionMap ? compareData.nutritionData[deptCode]?.[indicatorId] : getIndicatorValue(deptCode, indicatorId, compareData.indexData, compareData.indicatorData))
+            ].filter(v => v != null);
+
+            sharedLegendContent.innerHTML = createContinuousLegendMarkup(allValues, legendTitle, isPercentage);
+        }
     }
-    
-    legendBase.addTo(mapBase);
-    legendCompare.addTo(mapCompare);
-    state.legends.evolutionBase = legendBase;
-    state.legends.evolutionCompare = legendCompare;
 }
