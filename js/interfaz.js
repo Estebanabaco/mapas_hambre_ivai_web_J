@@ -173,7 +173,8 @@ export function populateControls() {
     });
     state.slimSelects.compareNut.setData(nutSelectData);
 
-    const evolutionAllData = [...allSelectData, ...nutSelectData];
+    // Evolucion temporal: solo indice y dimensiones (sin indicadores nutricionales)
+    const evolutionAllData = [...allSelectData];
     if (state.slimSelects.evolutionMetric) state.slimSelects.evolutionMetric.destroy();
     const selectEvolutionMetric = document.getElementById('select-evolution-metric');
     if (selectEvolutionMetric) {
