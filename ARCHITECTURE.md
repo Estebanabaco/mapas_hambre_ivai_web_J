@@ -17,6 +17,7 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - Busqueda de elementos DOM centralizada en `src/core/dom-registry.js`
 - Se agrega `state.domRoot` y `refreshDomBindings` para preparar desacople de selectores globales
 - `js/interfaz.js` ahora resuelve consultas DOM dentro de `state.domRoot` en vez de usar solo `document`
+- `createIvaiApp` ahora evita inicializaciones en contenedores distintos y reporta limite de instancia unica
 - Eventos/acciones del core agregados en:
   - `src/core/events.js`
   - `src/core/actions.js`

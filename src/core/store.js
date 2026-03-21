@@ -35,6 +35,7 @@ export const state = {
     evolutionMapFitted: false,
     evolutionPendingUpdate: false,
     appInitialized: false,
+    instanceMountKey: null,
     slimSelects: {
         compareVul: null,
         compareNut: null,
