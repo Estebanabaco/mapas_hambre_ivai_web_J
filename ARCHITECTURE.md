@@ -18,6 +18,13 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - Se agrega `state.domRoot` y `refreshDomBindings` para preparar desacople de selectores globales
 - `js/interfaz.js` ahora resuelve consultas DOM dentro de `state.domRoot` en vez de usar solo `document`
 - `createIvaiApp` ahora evita inicializaciones en contenedores distintos y reporta limite de instancia unica
+- `js/logica_mapa/mapa.js` inicializa Leaflet con nodos del root activo (`L.map(element)`) en lugar de IDs globales
+- Se agrega limpieza de listeners globales por instancia (`state.cleanupHandlers`) y clave de tema configurable
+- La clave de tema en storage ahora se deriva del contenedor de montaje (`ivai-theme:<mountKey>`) por defecto
+- `destroy()` ahora limpia tambien instancias SlimSelect y banderas de ajuste de mapas para permitir reinicios limpios
+- `destroy()` reinicia tambien el runtime de capas base (`currentTileLayers`) para evitar referencias cruzadas
+- Se introduce adapter de storage por instancia (`appOptions.storage`) para desacoplar acceso directo a `localStorage`
+- `destroy()` limpia caches de datos cargados (catalogo, datasets y configuraciones) para reinicializacion consistente
 - Eventos/acciones del core agregados en:
   - `src/core/events.js`
   - `src/core/actions.js`

@@ -1,5 +1,10 @@
 export const state = {
     domRoot: null,
+    appOptions: {
+        themeStorageKey: 'ivai-theme',
+        storage: null
+    },
+    cleanupHandlers: [],
     indexData: {},
     nutritionData: {},
     geoData: null,

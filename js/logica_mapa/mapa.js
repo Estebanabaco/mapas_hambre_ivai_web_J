@@ -6,6 +6,10 @@ export { updateEvolutionMap } from '../../src/tabs/evolution/map-controller.js';
 
 export let currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
 
+export function resetMapRuntime() {
+    currentTileLayers = { main: null, compareVul: null, compareNut: null, evolutionBase: null, evolutionCompare: null };
+}
+
 function getRoot() {
     return state.domRoot || document;
 }
@@ -13,6 +17,19 @@ function getRoot() {
 function getById(id) {
     const root = getRoot();
     return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
+function readTheme(themeStorageKey) {
+    const storage = state.appOptions?.storage;
+    if (storage && typeof storage.getItem === 'function') {
+        return storage.getItem(themeStorageKey);
+    }
+
+    try {
+        return localStorage.getItem(themeStorageKey);
+    } catch (error) {
+        return null;
+    }
 }
 
 export function toggleMapTheme(isDark) {
@@ -95,7 +112,8 @@ export function initMaps() {
     createLegendToggleControl(state.maps.evolutionCompare, 'evolutionCompare').addTo(state.maps.evolutionCompare);
 
     // Load saved or default theme
-    const isDark = localStorage.getItem('theme') === 'dark';
+    const themeStorageKey = state.appOptions?.themeStorageKey || 'ivai-theme';
+    const isDark = readTheme(themeStorageKey) === 'dark';
     toggleMapTheme(isDark);
 }
 

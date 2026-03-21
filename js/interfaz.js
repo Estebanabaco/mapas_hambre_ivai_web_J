@@ -15,6 +15,49 @@ function getRoot() {
     return state.domRoot || document;
 }
 
+function getDoc() {
+    const root = getRoot();
+    return root.ownerDocument || document;
+}
+
+function getWin() {
+    const doc = getDoc();
+    return doc.defaultView || window;
+}
+
+function registerGlobalListener(target, eventName, handler, options) {
+    if (!target || typeof target.addEventListener !== 'function') return;
+    target.addEventListener(eventName, handler, options);
+    state.cleanupHandlers.push(() => target.removeEventListener(eventName, handler, options));
+}
+
+function readTheme(themeStorageKey) {
+    const storage = state.appOptions?.storage;
+    if (storage && typeof storage.getItem === 'function') {
+        return storage.getItem(themeStorageKey);
+    }
+
+    try {
+        return localStorage.getItem(themeStorageKey);
+    } catch (error) {
+        return null;
+    }
+}
+
+function writeTheme(themeStorageKey, value) {
+    const storage = state.appOptions?.storage;
+    if (storage && typeof storage.setItem === 'function') {
+        storage.setItem(themeStorageKey, value);
+        return;
+    }
+
+    try {
+        localStorage.setItem(themeStorageKey, value);
+    } catch (error) {
+        // Ignore storage errors (private mode, restricted storage)
+    }
+}
+
 function getById(id) {
     const root = getRoot();
     return root.querySelector ? root.querySelector(`#${id}`) : null;
@@ -300,7 +343,13 @@ export function setupTooltips() {
     // Crear el elemento tooltip una sola vez
     tooltip = document.createElement('div');
     tooltip.className = 'custom-tooltip';
-    document.body.appendChild(tooltip);
+    getDoc().body.appendChild(tooltip);
+    state.cleanupHandlers.push(() => {
+        if (tooltip && tooltip.parentNode) {
+            tooltip.parentNode.removeChild(tooltip);
+        }
+        tooltip = null;
+    });
 
     const getDescription = (indicatorId) => {
         if (!indicatorId) return null;
@@ -375,7 +424,7 @@ export function setupTooltips() {
         }, 100);
     };
 
-    sidebarContent.addEventListener('mouseover', (e) => {
+    const onSidebarMouseOver = (e) => {
         clearTimeout(hideTimeout);
 
         // Buscar el radio button más cercano para obtener su value (indicatorId)
@@ -387,17 +436,21 @@ export function setupTooltips() {
         if (radio && targetEl) {
             showTooltip(radio.value, targetEl);
         }
-    });
+    };
 
-    sidebarContent.addEventListener('mouseout', (e) => {
+    const onSidebarMouseOut = (e) => {
         const stillInside = e.relatedTarget && sidebarContent.contains(e.relatedTarget);
         if (!stillInside) hideTooltip();
-    });
+    };
 
     // Ocultar al hacer scroll
-    sidebarContent.addEventListener('scroll', () => {
+    const onSidebarScroll = () => {
         tooltip.classList.remove('visible');
-    });
+    };
+
+    registerGlobalListener(sidebarContent, 'mouseover', onSidebarMouseOver);
+    registerGlobalListener(sidebarContent, 'mouseout', onSidebarMouseOut);
+    registerGlobalListener(sidebarContent, 'scroll', onSidebarScroll);
 }
 
 export function setupSidebarToggle() {
@@ -407,7 +460,7 @@ export function setupSidebarToggle() {
 
     const icon = toggleBtn.querySelector('i');
 
-    toggleBtn.addEventListener('click', () => {
+    const onToggleSidebarClick = () => {
         sidebar.classList.toggle('collapsed');
         const isCollapsed = sidebar.classList.contains('collapsed');
         if (isCollapsed) {
@@ -423,7 +476,9 @@ export function setupSidebarToggle() {
         setTimeout(() => {
             state.maps.main.invalidateSize();
         }, 400); // Should match the CSS transition duration
-    });
+    };
+
+    registerGlobalListener(toggleBtn, 'click', onToggleSidebarClick);
 }
 
 // --- EVENT LISTENERS ---
@@ -431,7 +486,7 @@ export function setupEventListeners() {
     const sidebarContent = query('.sidebar-content');
 
     // Rastrear si la opción ya estaba seleccionada ANTES del click
-    sidebarContent.addEventListener('mousedown', (e) => {
+    const onSidebarMouseDown = (e) => {
         const headerLabel = e.target.closest('.accordion-header label');
         if (headerLabel) {
             const radio = headerLabel.querySelector('input[type="radio"]');
@@ -441,9 +496,9 @@ export function setupEventListeners() {
                 headerLabel.dataset.wasChecked = 'false';
             }
         }
-    });
+    };
 
-    sidebarContent.addEventListener('change', (e) => {
+    const onSidebarChange = (e) => {
         if (e.target.name === 'indicator') {
             state.currentIndicator = e.target.value;
 
@@ -477,9 +532,12 @@ export function setupEventListeners() {
                 closeLegendInfoModal();
             }, 10);
         }
-    });
+    };
 
-    sidebarContent.addEventListener('click', (e) => {
+    registerGlobalListener(sidebarContent, 'mousedown', onSidebarMouseDown);
+    registerGlobalListener(sidebarContent, 'change', onSidebarChange);
+
+    const onSidebarClick = (e) => {
         // 1. Clic directo en el icono de la flechita (chevron)
         const toggleIcon = e.target.closest('.accordion-toggle-icon');
         if (toggleIcon) {
@@ -544,23 +602,24 @@ export function setupEventListeners() {
                 modal.style.display = 'block';
             }
         }
-    });
+    };
+    registerGlobalListener(sidebarContent, 'click', onSidebarClick);
 
 
 
-    tabButtons.vulnerability.addEventListener('click', () => switchTab('vulnerability'));
-    tabButtons.compare.addEventListener('click', () => switchTab('compare'));
-    if (tabButtons.evolution) tabButtons.evolution.addEventListener('click', () => switchTab('evolution'));
+    registerGlobalListener(tabButtons.vulnerability, 'click', () => switchTab('vulnerability'));
+    registerGlobalListener(tabButtons.compare, 'click', () => switchTab('compare'));
+    if (tabButtons.evolution) registerGlobalListener(tabButtons.evolution, 'click', () => switchTab('evolution'));
 
     // Modal listeners
-    aboutBtn.addEventListener('click', () => {
+    registerGlobalListener(aboutBtn, 'click', () => {
         aboutModal.style.display = 'block';
     });
     // Use a more robust selector for the close button within the 'about' modal
-    aboutModal.querySelector('.close-button').addEventListener('click', () => {
+    registerGlobalListener(aboutModal.querySelector('.close-button'), 'click', () => {
         aboutModal.style.display = 'none';
     });
-    aboutModal.addEventListener('click', (event) => {
+    registerGlobalListener(aboutModal, 'click', (event) => {
         if (event.target === aboutModal) {
             aboutModal.style.display = 'none';
         }
@@ -584,7 +643,7 @@ function makeModalDraggable() {
     let isDragging = false;
     let offsetX, offsetY;
 
-    header.addEventListener('mousedown', (e) => {
+    const onModalHeaderMouseDown = (e) => {
         // Prevent dragging from starting on the close button
         if (e.target.classList.contains('close-button')) {
             return;
@@ -596,10 +655,11 @@ function makeModalDraggable() {
         offsetY = e.clientY - modalContent.offsetTop;
 
         // Add a class to disable text selection and indicate dragging
-        document.body.style.userSelect = 'none';
-    });
+        getDoc().body.style.userSelect = 'none';
+    };
+    registerGlobalListener(header, 'mousedown', onModalHeaderMouseDown);
 
-    document.addEventListener('mousemove', (e) => {
+    const onModalMouseMove = (e) => {
         if (!isDragging) return;
 
         // Calculate new position
@@ -607,8 +667,8 @@ function makeModalDraggable() {
         let newY = e.clientY - offsetY;
 
         // Boundary checks to keep the modal within the viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        const viewportWidth = getWin().innerWidth;
+        const viewportHeight = getWin().innerHeight;
         const modalWidth = modalContent.offsetWidth;
         const modalHeight = modalContent.offsetHeight;
 
@@ -617,15 +677,18 @@ function makeModalDraggable() {
 
         modalContent.style.left = `${newX}px`;
         modalContent.style.top = `${newY}px`;
-    });
+    };
 
-    document.addEventListener('mouseup', () => {
+    const onModalMouseUp = () => {
         if (isDragging) {
             isDragging = false;
             // Re-enable text selection
-            document.body.style.userSelect = '';
+            getDoc().body.style.userSelect = '';
         }
-    });
+    };
+
+    registerGlobalListener(getDoc(), 'mousemove', onModalMouseMove);
+    registerGlobalListener(getDoc(), 'mouseup', onModalMouseUp);
 }
 
 export function makeLegendInfoModalDraggable() {
@@ -636,7 +699,7 @@ export function makeLegendInfoModalDraggable() {
     let isDragging = false;
     let offsetX, offsetY;
 
-    header.addEventListener('mousedown', (e) => {
+    const onLegendHeaderMouseDown = (e) => {
         if (e.target.classList.contains('close-button')) {
             return;
         }
@@ -650,18 +713,19 @@ export function makeLegendInfoModalDraggable() {
         offsetX = e.clientX - modalContent.getBoundingClientRect().left;
         offsetY = e.clientY - modalContent.getBoundingClientRect().top;
 
-        document.body.style.userSelect = 'none';
+        getDoc().body.style.userSelect = 'none';
         modalContent.style.cursor = 'grabbing';
-    });
+    };
+    registerGlobalListener(header, 'mousedown', onLegendHeaderMouseDown);
 
-    document.addEventListener('mousemove', (e) => {
+    const onLegendMouseMove = (e) => {
         if (!isDragging) return;
 
         let newX = e.clientX - offsetX;
         let newY = e.clientY - offsetY;
 
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        const viewportWidth = getWin().innerWidth;
+        const viewportHeight = getWin().innerHeight;
         const modalWidth = modalContent.offsetWidth;
         const modalHeight = modalContent.offsetHeight;
 
@@ -671,25 +735,29 @@ export function makeLegendInfoModalDraggable() {
         modalContent.style.left = `${newX}px`;
         modalContent.style.top = `${newY}px`;
         modalContent.style.transform = 'translate(0, 0)'; // Override transform
-    });
+    };
 
-    document.addEventListener('mouseup', () => {
+    const onLegendMouseUp = () => {
         if (isDragging) {
             isDragging = false;
-            document.body.style.userSelect = '';
+            getDoc().body.style.userSelect = '';
             modalContent.style.cursor = 'grab';
         }
-    });
+    };
 
-    closeBtn.addEventListener('click', () => {
+    registerGlobalListener(getDoc(), 'mousemove', onLegendMouseMove);
+    registerGlobalListener(getDoc(), 'mouseup', onLegendMouseUp);
+
+    registerGlobalListener(closeBtn, 'click', () => {
         modal.style.display = 'none';
     });
 
-    window.addEventListener('click', (event) => {
+    const onWindowClick = (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
         }
-    });
+    };
+    registerGlobalListener(getWin(), 'click', onWindowClick);
 }
 
 function switchTab(tabKey) {
@@ -730,24 +798,26 @@ export function setupDarkMode(toggleMapCallback) {
     if (!btn) return;
     const icon = btn.querySelector('i');
 
-    const isDark = localStorage.getItem('theme') === 'dark';
+    const themeStorageKey = state.appOptions?.themeStorageKey || 'ivai-theme';
+    const isDark = readTheme(themeStorageKey) === 'dark';
     if (isDark) {
-        document.body.classList.add('dark-mode');
+        getDoc().body.classList.add('dark-mode');
         icon.classList.remove('fa-moon');
         icon.classList.add('fa-sun');
     }
 
-    btn.addEventListener('click', () => {
-        const currentlyDark = document.body.classList.toggle('dark-mode');
+    const onDarkModeClick = () => {
+        const currentlyDark = getDoc().body.classList.toggle('dark-mode');
         if (currentlyDark) {
             icon.classList.remove('fa-moon');
             icon.classList.add('fa-sun');
-            localStorage.setItem('theme', 'dark');
+            writeTheme(themeStorageKey, 'dark');
         } else {
             icon.classList.remove('fa-sun');
             icon.classList.add('fa-moon');
-            localStorage.setItem('theme', 'light');
+            writeTheme(themeStorageKey, 'light');
         }
         if (toggleMapCallback) toggleMapCallback(currentlyDark);
-    });
+    };
+    registerGlobalListener(btn, 'click', onDarkModeClick);
 }
