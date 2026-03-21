@@ -1,5 +1,14 @@
 import { state } from './core/store.js';
-import { initializeLegacyApp } from '../js/main.js';
+import { initializeLegacyApp } from './bootstrap/legacy-app.js';
+
+function waitForDomReady() {
+    if (document.readyState === 'loading') {
+        return new Promise((resolve) => {
+            document.addEventListener('DOMContentLoaded', resolve, { once: true });
+        });
+    }
+    return Promise.resolve();
+}
 
 function getTabButton(tabKey) {
     if (tabKey === 'vulnerability') return document.getElementById('btn-tab-main');
@@ -9,6 +18,8 @@ function getTabButton(tabKey) {
 }
 
 export async function createIvaiApp(container, options = {}) {
+    await waitForDomReady();
+
     if (container && typeof container === 'string') {
         const mount = document.querySelector(container);
         if (!mount) {
@@ -45,6 +56,17 @@ export async function createIvaiApp(container, options = {}) {
                     map.remove();
                 }
             });
+
+            Object.keys(state.maps).forEach((key) => {
+                state.maps[key] = null;
+            });
+            Object.keys(state.layers).forEach((key) => {
+                state.layers[key] = null;
+            });
+            Object.keys(state.legends).forEach((key) => {
+                state.legends[key] = null;
+            });
+
             state.appInitialized = false;
         }
     };

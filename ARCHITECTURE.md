@@ -23,15 +23,16 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - Render de mapas de evolucion extraido a `src/tabs/evolution/map-controller.js`
 - Render del mapa principal de vulnerabilidad extraido a `src/tabs/vulnerability/map-controller.js`
 - Render de mapas comparativos extraido a `src/tabs/compare/map-controller.js`
-- Helpers compartidos de mapa ahora se consumen via `src/shared/map-components.js`
+- Implementacion de helpers compartidos de mapa migrada a `src/shared/map-components.js`
 - Punto de entrada publico agregado en `src/index.js` (`createIvaiApp`)
+- Bootstrap legacy movido a `src/bootstrap/legacy-app.js` para desacoplar `src/index.js` de `js/main.js`
 - Compatibilidad legacy mantenida mediante wrappers:
   - `js/configuracion.js`
   - `js/manejo_datos.js`
 
 ## Siguientes pasos de implementacion
 
-1. Terminar de migrar implementaciones de helpers desde `js/logica_mapa/componentes.js` hacia `src/shared/*`
-2. Desacoplar `src/index.js` del bootstrap legacy y soportar montaje en contenedor personalizado
-3. Agregar adapter de WordPress en `src/adapters/wordpress`
-4. Agregar pipeline de build/tests para distribuir la libreria
+1. Soportar montaje real por contenedor personalizado (actualmente usa estructura DOM legacy)
+2. Agregar adapter de WordPress en `src/adapters/wordpress`
+3. Agregar pipeline de build/tests para distribuir la libreria
+4. Definir versionado y empaquetado para consumo externo
