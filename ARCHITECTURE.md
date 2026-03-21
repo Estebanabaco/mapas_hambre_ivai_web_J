@@ -15,6 +15,8 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 
 - Estado y constantes de mapa movidos a `src/core/store.js`
 - Busqueda de elementos DOM centralizada en `src/core/dom-registry.js`
+- Se agrega `state.domRoot` y `refreshDomBindings` para preparar desacople de selectores globales
+- `js/interfaz.js` ahora resuelve consultas DOM dentro de `state.domRoot` en vez de usar solo `document`
 - Eventos/acciones del core agregados en:
   - `src/core/events.js`
   - `src/core/actions.js`
@@ -30,6 +32,9 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - Se agrupo la UI legacy en `#ivai-legacy-root` para facilitar el montaje en contenedores externos
 - Adapter WordPress MVP agregado en `src/adapters/wordpress/ivai-wordpress.php` (shortcode en modo `iframe` y `direct` experimental)
 - Pipeline base de verificaciones agregado con `package.json` (`npm run check`)
+- Build de distribucion agregado con `npm run build` (salida en `dist/`)
+- Documentacion de release y versionado inicial agregada en `RELEASE.md` y `CHANGELOG.md`
+- Prueba automatizada del adapter WordPress agregada en `scripts/test-wordpress-adapter.php`
 - Compatibilidad legacy mantenida mediante wrappers:
   - `js/configuracion.js`
   - `js/manejo_datos.js`
@@ -38,5 +43,5 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 
 1. Reducir dependencia de IDs globales para soportar multiples instancias reales por contenedor
 2. Endurecer adapter WordPress directo (carga de assets, errores y soporte futuro para multiples instancias)
-3. Extender pipeline con build empaquetado y pruebas de integracion
-4. Definir versionado y empaquetado para consumo externo
+3. Ampliar pruebas de integracion para escenarios de carga remota y errores de red reales
+4. Desacoplar el estado global para soportar multiples instancias reales por pagina

@@ -1,4 +1,5 @@
 export const state = {
+    domRoot: null,
     indexData: {},
     nutritionData: {},
     geoData: null,

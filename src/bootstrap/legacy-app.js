@@ -1,4 +1,4 @@
-import { state, selectCompareNut } from '../../js/configuracion.js';
+import { state, selectCompareNut, refreshDomBindings } from '../../js/configuracion.js';
 import { loadCatalog, loadData } from '../../js/manejo_datos.js';
 import { initMaps, updateMap, toggleMapTheme } from '../../js/logica_mapa/mapa.js';
 import {
@@ -13,12 +13,28 @@ import {
 } from '../../js/interfaz.js';
 import { setCurrentYear } from '../core/actions.js';
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
+function query(selector) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(selector) : null;
+}
+
 export async function initializeLegacyApp() {
     if (state.appInitialized) return;
     try {
+        refreshDomBindings(state.domRoot || document);
+
         await loadCatalog();
 
-        const yearSelector = document.getElementById('year-selector');
+        const yearSelector = getById('year-selector');
         if (yearSelector && state.catalog) {
             yearSelector.innerHTML = state.catalog.availableYears.map(year =>
                 `<option value="${year}" ${year === state.currentYear ? 'selected' : ''}>${year}</option>`
@@ -28,7 +44,7 @@ export async function initializeLegacyApp() {
                 const newYear = parseInt(e.target.value, 10);
                 if (newYear !== state.currentYear) {
                     setCurrentYear(newYear);
-                    const mainMapEl = document.getElementById('map-main');
+                    const mainMapEl = getById('map-main');
                     if (mainMapEl) mainMapEl.style.opacity = '0.5';
 
                     await loadData();
@@ -39,7 +55,7 @@ export async function initializeLegacyApp() {
                     populateFooter();
                     populateModal();
 
-                    const initialIndicator = document.querySelector('input[name="indicator"]:checked');
+                    const initialIndicator = query('input[name="indicator"]:checked');
                     if (initialIndicator) {
                         updateMap('main', initialIndicator.value);
                         updateStoryBox(initialIndicator.value);
@@ -78,7 +94,7 @@ export async function initializeLegacyApp() {
             setupSidebarToggle();
             setupTooltips();
 
-            const initialIndicator = document.querySelector('input[name="indicator"]:checked');
+            const initialIndicator = query('input[name="indicator"]:checked');
             if (initialIndicator) {
                 updateMap('main', initialIndicator.value);
                 updateStoryBox(initialIndicator.value);

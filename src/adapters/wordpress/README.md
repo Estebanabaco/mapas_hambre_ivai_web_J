@@ -50,3 +50,11 @@ Ejemplo modo directo sin fallback:
 - `direct` monta la libreria JS en la pagina WordPress y carga el template desde `index.html`.
 - En modo `direct` actualmente se soporta una sola instancia por pagina.
 - Si `direct` falla, por defecto se hace fallback a `iframe` automaticamente.
+
+## Verificacion automatizada
+
+Puedes validar el adapter sin instalar WordPress ejecutando:
+
+```bash
+npm run test:wp-adapter
+```

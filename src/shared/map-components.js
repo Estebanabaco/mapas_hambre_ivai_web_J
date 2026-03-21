@@ -2,6 +2,15 @@ import { state, selectCompareNut } from '../../js/configuracion.js';
 import { getIndicatorDisplayName, getIndicatorValue } from '../../js/logica_mapa/ayudantes.js';
 import { dim_icons, sub_icons } from '../../js/icons.js';
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
 export function createContinuousLegendMarkup(values, title, isPercentage = false) {
     const domain = values.filter(v => v !== null && !isNaN(v)).sort((a, b) => a - b);
     if (domain.length === 0) {
@@ -189,16 +198,16 @@ export function createLegend(map, palette, values, title, isPercentage = false) 
                 if (mapId === 'map-main') {
                     indicatorId = state.currentIndicator;
                 } else if (mapId === 'map-compare-vul') {
-                    const select = document.getElementById('select-compare-vul');
+                    const select = getById('select-compare-vul');
                     indicatorId = select.value;
                 } else if (mapId === 'map-compare-nut') {
-                    const select = document.getElementById('select-compare-nut');
+                    const select = getById('select-compare-nut');
                     indicatorId = select.value;
                 }
 
-                const modal = document.getElementById('legend-info-modal');
-                const modalBody = document.getElementById('legend-info-body');
-                const modalTitle = document.getElementById('legend-info-title');
+                const modal = getById('legend-info-modal');
+                const modalBody = getById('legend-info-body');
+                const modalTitle = getById('legend-info-title');
 
                 const popupContent = createMoreInfoPopup(indicatorId);
                 const displayName = getIndicatorDisplayName(indicatorId);
@@ -268,9 +277,9 @@ export function createIndiceLegend(map, geoJsonLayer) {
                 e.stopPropagation();
                 const indicatorId = 'Indice';
 
-                const modal = document.getElementById('legend-info-modal');
-                const modalBody = document.getElementById('legend-info-body');
-                const modalTitle = document.getElementById('legend-info-title');
+                const modal = getById('legend-info-modal');
+                const modalBody = getById('legend-info-body');
+                const modalTitle = getById('legend-info-title');
 
                 const popupContent = createMoreInfoPopup(indicatorId);
                 const displayName = getIndicatorDisplayName(indicatorId);
@@ -498,7 +507,7 @@ export function createLegendToggleControl(map, mapKey) {
             L.DomEvent.stop(e);
 
             if (mapKey === 'evolutionBase' || mapKey === 'evolutionCompare') {
-                const sharedLegend = document.getElementById('evolution-shared-legend');
+                const sharedLegend = getById('evolution-shared-legend');
                 if (sharedLegend) {
                     if (sharedLegend.style.display === 'none') {
                         sharedLegend.style.display = '';

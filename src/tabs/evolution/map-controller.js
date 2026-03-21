@@ -10,6 +10,15 @@ import {
 
 let evolutionUpdateId = 0;
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
 export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
     const mapBase = state.maps.evolutionBase;
     const mapCompare = state.maps.evolutionCompare;
@@ -22,8 +31,8 @@ export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
     if (state.legends.evolutionBase) { mapBase.removeControl(state.legends.evolutionBase); state.legends.evolutionBase = null; }
     if (state.legends.evolutionCompare) { mapCompare.removeControl(state.legends.evolutionCompare); state.legends.evolutionCompare = null; }
 
-    const sharedLegendHost = document.getElementById('evolution-shared-legend');
-    const sharedLegendContent = document.getElementById('evolution-shared-legend-content');
+    const sharedLegendHost = getById('evolution-shared-legend');
+    const sharedLegendContent = getById('evolution-shared-legend-content');
     if (sharedLegendContent) {
         sharedLegendContent.innerHTML = '';
     }

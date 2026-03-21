@@ -11,6 +11,25 @@ import {
     handleEvolutionTabActivated
 } from '../src/tabs/evolution/ui-controller.js';
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
+function query(selector) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(selector) : null;
+}
+
+function queryAll(selector) {
+    const root = getRoot();
+    return root.querySelectorAll ? root.querySelectorAll(selector) : [];
+}
+
 // --- UI POPULATION ---
 export function populateControls() {
     const weightsMap = new Map(state.weights.Pesos_Dimensiones.map(d => [d.Dimension, d.Peso_Dimension]));
@@ -29,7 +48,7 @@ export function populateControls() {
         return (weightsMap.get(b) || 0) - (weightsMap.get(a) || 0);
     });
 
-    const indexSelector = document.getElementById('index-selector');
+    const indexSelector = getById('index-selector');
     let indexHtml = '';
     let dimensionsHtml = '';
 
@@ -201,11 +220,11 @@ export function populateFooter() {
 }
 
 export function populateModal() {
-    const modalYear = document.getElementById('modal-year');
+    const modalYear = getById('modal-year');
     if (modalYear) {
         modalYear.textContent = state.currentYear || state.catalog?.defaultYear;
     }
-    const modalSources = document.getElementById('modal-sources-content');
+    const modalSources = getById('modal-sources-content');
     if (modalSources) {
         let fuentes = state.catalog?.fuentes || '';
         if (state.currentYear) {
@@ -273,8 +292,8 @@ export function updateStoryBox(indicatorId) {
 }
 
 export function setupTooltips() {
-    const indicatorSelector = document.getElementById('indicator-selector');
-    const sidebarContent = document.querySelector('.sidebar-content');
+    const indicatorSelector = getById('indicator-selector');
+    const sidebarContent = query('.sidebar-content');
     let tooltip = null;
     let hideTimeout = null;
 
@@ -342,7 +361,7 @@ export function setupTooltips() {
         tooltip.classList.add('visible');
 
         const rect = targetEl.getBoundingClientRect();
-        const sidebarEl = document.querySelector('.sidebar');
+        const sidebarEl = query('.sidebar');
         const sidebarRect = sidebarEl.getBoundingClientRect();
 
         // Posicionar a la derecha del sidebar
@@ -382,8 +401,8 @@ export function setupTooltips() {
 }
 
 export function setupSidebarToggle() {
-    const toggleBtn = document.getElementById('toggle-sidebar-btn');
-    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = getById('toggle-sidebar-btn');
+    const sidebar = query('.sidebar');
     if (!toggleBtn || !sidebar) return;
 
     const icon = toggleBtn.querySelector('i');
@@ -409,7 +428,7 @@ export function setupSidebarToggle() {
 
 // --- EVENT LISTENERS ---
 export function setupEventListeners() {
-    const sidebarContent = document.querySelector('.sidebar-content');
+    const sidebarContent = query('.sidebar-content');
 
     // Rastrear si la opción ya estaba seleccionada ANTES del click
     sidebarContent.addEventListener('mousedown', (e) => {
@@ -433,7 +452,7 @@ export function setupEventListeners() {
             const parentGroup = e.target.closest('.accordion-group');
             if (parentGroup) {
                 // Cerrar todos los demás acordeones
-                document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                queryAll('.accordion-group.open').forEach(openGroup => {
                     if (openGroup !== parentGroup) {
                         openGroup.classList.remove('open');
                         const content = openGroup.querySelector('.accordion-content');
@@ -472,7 +491,7 @@ export function setupEventListeners() {
                     group.classList.remove('open');
                     if (content) content.style.maxHeight = null;
                 } else {
-                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                    queryAll('.accordion-group.open').forEach(openGroup => {
                         openGroup.classList.remove('open');
                         const c = openGroup.querySelector('.accordion-content');
                         if (c) c.style.maxHeight = null;
@@ -496,7 +515,7 @@ export function setupEventListeners() {
                     if (content) content.style.maxHeight = null;
                 } else {
                     // Si estaba cerrado, abrirlo y cerrar los demás
-                    document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
+                    queryAll('.accordion-group.open').forEach(openGroup => {
                         if (openGroup !== group) {
                             openGroup.classList.remove('open');
                             const c = openGroup.querySelector('.accordion-content');
@@ -513,9 +532,9 @@ export function setupEventListeners() {
         if (e.target.classList.contains('dimension-info-btn')) {
             const indicatorId = e.target.dataset.indicatorId;
             if (indicatorId) {
-                const modal = document.getElementById('legend-info-modal');
-                const modalBody = document.getElementById('legend-info-body');
-                const modalTitle = document.getElementById('legend-info-title');
+                const modal = getById('legend-info-modal');
+                const modalBody = getById('legend-info-body');
+                const modalTitle = getById('legend-info-title');
 
                 const popupContent = createMoreInfoPopup(indicatorId);
                 const displayName = getIndicatorDisplayName(indicatorId);
@@ -552,14 +571,14 @@ export function setupEventListeners() {
 }
 
 function closeLegendInfoModal() {
-    const modal = document.getElementById('legend-info-modal');
+    const modal = getById('legend-info-modal');
     if (modal) {
         modal.style.display = 'none';
     }
 }
 
 function makeModalDraggable() {
-    const modal = document.getElementById('about-modal');
+    const modal = getById('about-modal');
     const modalContent = modal.querySelector('.modal-content');
     const header = modal.querySelector('.modal-header');
     let isDragging = false;
@@ -610,10 +629,10 @@ function makeModalDraggable() {
 }
 
 export function makeLegendInfoModalDraggable() {
-    const modal = document.getElementById('legend-info-modal');
+    const modal = getById('legend-info-modal');
     const modalContent = modal.querySelector('.modal-content');
     const header = modal.querySelector('.modal-header');
-    const closeBtn = document.getElementById('close-legend-info-modal');
+    const closeBtn = getById('close-legend-info-modal');
     let isDragging = false;
     let offsetX, offsetY;
 
@@ -707,7 +726,7 @@ function switchTab(tabKey) {
 }
 
 export function setupDarkMode(toggleMapCallback) {
-    const btn = document.getElementById('dark-mode-btn');
+    const btn = getById('dark-mode-btn');
     if (!btn) return;
     const icon = btn.querySelector('i');
 

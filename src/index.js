@@ -11,9 +11,10 @@ function waitForDomReady() {
 }
 
 function getTabButton(tabKey) {
-    if (tabKey === 'vulnerability') return document.getElementById('btn-tab-main');
-    if (tabKey === 'compare') return document.getElementById('btn-tab-compare');
-    if (tabKey === 'evolution') return document.getElementById('btn-tab-evolution');
+    const root = state.domRoot || document;
+    if (tabKey === 'vulnerability') return root.querySelector('#btn-tab-main');
+    if (tabKey === 'compare') return root.querySelector('#btn-tab-compare');
+    if (tabKey === 'evolution') return root.querySelector('#btn-tab-evolution');
     return null;
 }
 
@@ -43,23 +44,26 @@ function mountLegacyContainer(targetContainer) {
 
     if (!targetContainer) {
         legacyRoot.classList.remove('ivai-external-mount');
-        return;
+        return legacyRoot;
     }
 
     if (targetContainer === legacyRoot || targetContainer.contains(legacyRoot)) {
         legacyRoot.classList.add('ivai-external-mount');
-        return;
+        return legacyRoot;
     }
 
     targetContainer.appendChild(legacyRoot);
     legacyRoot.classList.add('ivai-external-mount');
+
+    return legacyRoot;
 }
 
 export async function createIvaiApp(container, options = {}) {
     await waitForDomReady();
 
     const resolvedContainer = resolveContainer(container);
-    mountLegacyContainer(resolvedContainer);
+    const mountedRoot = mountLegacyContainer(resolvedContainer);
+    state.domRoot = mountedRoot || document.getElementById('ivai-legacy-root') || document;
 
     await initializeLegacyApp();
 
@@ -70,7 +74,8 @@ export async function createIvaiApp(container, options = {}) {
 
     return {
         async setYear(year) {
-            const yearSelector = document.getElementById('year-selector');
+            const root = state.domRoot || document;
+            const yearSelector = root.querySelector('#year-selector');
             if (!yearSelector) return;
             yearSelector.value = String(year);
             yearSelector.dispatchEvent(new Event('change', { bubbles: true }));
@@ -100,6 +105,7 @@ export async function createIvaiApp(container, options = {}) {
             });
 
             state.appInitialized = false;
+            state.domRoot = null;
         }
     };
 }

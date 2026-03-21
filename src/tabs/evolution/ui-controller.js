@@ -1,9 +1,18 @@
 import { state } from '../../core/store.js';
 import { setEvolutionPendingUpdate } from '../../core/actions.js';
 
+function getRoot() {
+    return state.domRoot || document;
+}
+
+function getById(id) {
+    const root = getRoot();
+    return root.querySelector ? root.querySelector(`#${id}`) : null;
+}
+
 export function setupEvolutionMetricControl(evolutionOptions, onTriggerUpdate) {
     if (state.slimSelects.evolutionMetric) state.slimSelects.evolutionMetric.destroy();
-    const selectEvolutionMetric = document.getElementById('select-evolution-metric');
+    const selectEvolutionMetric = getById('select-evolution-metric');
     if (!selectEvolutionMetric) return;
 
     selectEvolutionMetric.innerHTML = '';
@@ -19,7 +28,7 @@ export function setupEvolutionMetricControl(evolutionOptions, onTriggerUpdate) {
 
 export function setupEvolutionYearControl(onTriggerUpdate) {
     if (state.slimSelects.evolutionCompareYear) state.slimSelects.evolutionCompareYear.destroy();
-    const selectEvolutionCompareYear = document.getElementById('select-evolution-compare-year');
+    const selectEvolutionCompareYear = getById('select-evolution-compare-year');
     if (!selectEvolutionCompareYear || !state.catalog) return;
 
     selectEvolutionCompareYear.innerHTML = '';
@@ -38,11 +47,11 @@ export function updateEvolutionYearOptions(onTriggerUpdate) {
     const options = available.map(y => ({ value: String(y), text: String(y) }));
     state.slimSelects.evolutionCompareYear.setData(options);
 
-    const labelEvolutionBaseYear = document.getElementById('label-evolution-base-year');
+    const labelEvolutionBaseYear = getById('label-evolution-base-year');
     if (labelEvolutionBaseYear) labelEvolutionBaseYear.textContent = state.currentYear;
 
     setEvolutionPendingUpdate(true);
-    const evTab = document.getElementById('tab-evolution');
+    const evTab = getById('tab-evolution');
     if (evTab && evTab.classList.contains('active')) {
         onTriggerUpdate();
     }
@@ -51,7 +60,7 @@ export function updateEvolutionYearOptions(onTriggerUpdate) {
 export function triggerEvolutionUpdate(updateEvolutionMap) {
     if (!state.slimSelects.evolutionMetric || !state.slimSelects.evolutionCompareYear) return;
 
-    const evTab = document.getElementById('tab-evolution');
+    const evTab = getById('tab-evolution');
     if (!evTab || !evTab.classList.contains('active')) {
         setEvolutionPendingUpdate(true);
         return;
@@ -66,8 +75,8 @@ export function triggerEvolutionUpdate(updateEvolutionMap) {
         setEvolutionPendingUpdate(false);
         updateEvolutionMap(metric, state.currentYear, compareYear);
 
-        const lblBase = document.getElementById('label-ev-map-base');
-        const lblComp = document.getElementById('label-ev-map-compare');
+        const lblBase = getById('label-ev-map-base');
+        const lblComp = getById('label-ev-map-compare');
         if (lblBase) lblBase.textContent = state.currentYear;
         if (lblComp) lblComp.textContent = compareYear;
     }

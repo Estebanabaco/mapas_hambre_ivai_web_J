@@ -1,22 +1,43 @@
 import { state, COLOMBIA_CENTER, INITIAL_ZOOM } from '../src/core/store.js';
 import { getDomRegistry } from '../src/core/dom-registry.js';
 
-const dom = getDomRegistry();
+let dom = getDomRegistry();
+
+export let indicatorSelector;
+export let storyBox;
+export let selectCompareVul;
+export let selectCompareNut;
+export let aboutBtn;
+export let aboutModal;
+export let closeModalBtn;
+export let appFooter;
+export let tabs;
+export let tabButtons;
+export let selectEvolutionMetric;
+export let selectEvolutionCompareYear;
+export let labelEvolutionBaseYear;
+export let labelEvMapBase;
+export let labelEvMapCompare;
+
+export function refreshDomBindings(root = null) {
+    dom = getDomRegistry(root || state.domRoot || document);
+    indicatorSelector = dom.indicatorSelector;
+    storyBox = dom.storyBox;
+    selectCompareVul = dom.selectCompareVul;
+    selectCompareNut = dom.selectCompareNut;
+    aboutBtn = dom.aboutBtn;
+    aboutModal = dom.aboutModal;
+    closeModalBtn = dom.closeModalBtn;
+    appFooter = dom.appFooter;
+    tabs = dom.tabs;
+    tabButtons = dom.tabButtons;
+    selectEvolutionMetric = dom.selectEvolutionMetric;
+    selectEvolutionCompareYear = dom.selectEvolutionCompareYear;
+    labelEvolutionBaseYear = dom.labelEvolutionBaseYear;
+    labelEvMapBase = dom.labelEvMapBase;
+    labelEvMapCompare = dom.labelEvMapCompare;
+}
+
+refreshDomBindings();
 
 export { state, COLOMBIA_CENTER, INITIAL_ZOOM };
-
-export const indicatorSelector = dom.indicatorSelector;
-export const storyBox = dom.storyBox;
-export const selectCompareVul = dom.selectCompareVul;
-export const selectCompareNut = dom.selectCompareNut;
-export const aboutBtn = dom.aboutBtn;
-export const aboutModal = dom.aboutModal;
-export const closeModalBtn = dom.closeModalBtn;
-export const appFooter = dom.appFooter;
-export const tabs = dom.tabs;
-export const tabButtons = dom.tabButtons;
-export const selectEvolutionMetric = dom.selectEvolutionMetric;
-export const selectEvolutionCompareYear = dom.selectEvolutionCompareYear;
-export const labelEvolutionBaseYear = dom.labelEvolutionBaseYear;
-export const labelEvMapBase = dom.labelEvMapBase;
-export const labelEvMapCompare = dom.labelEvMapCompare;
