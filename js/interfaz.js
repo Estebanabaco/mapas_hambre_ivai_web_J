@@ -13,9 +13,9 @@ export function populateControls() {
         return;
     }
     const firstDeptData = state.indexData[firstDeptKey];
-    
+
     let indicators = Object.keys(firstDeptData).filter(key => key !== 'Ranking' && key !== 'Clasificacion_Indice');
-    
+
     indicators.sort((a, b) => {
         if (a === 'Indice') return -1;
         if (b === 'Indice') return 1;
@@ -58,13 +58,13 @@ export function populateControls() {
                 subIndicatorsHtml = config.variables.map(v => {
                     let valueForRadio = v.nombre;
                     const indicatorWeightLabel = v.peso ? `(${(v.peso * 100).toFixed(1)}%)` : '';
-                    
+
                     let parentColor = '';
                     const colorMatch = iconHTML.match(/style="color:\s*([^;]+);"/);
                     if (colorMatch && colorMatch[1]) {
                         parentColor = colorMatch[1];
                     }
-                    
+
                     const uniqueIconClass = sub_icons[v.nombre] || 'fa-solid fa-circle-dot';
                     const subIconHtml = `<i class="${uniqueIconClass}" style="color: ${parentColor};"></i>`;
 
@@ -111,7 +111,7 @@ export function populateControls() {
 
     // Populate SlimSelect (Comparisons) with all indicators + subindicators
     let allSelectData = [];
-    
+
     // Add Main Dimensions
     indicators.forEach(key => {
         allSelectData.push({
@@ -223,7 +223,7 @@ export function updateEvolutionYearOptions() {
 
 export function triggerEvolutionUpdate() {
     if (!state.slimSelects.evolutionMetric || !state.slimSelects.evolutionCompareYear) return;
-    
+
     // CRITICAL: Only render if the evolution tab is currently visible.
     // Leaflet cannot render GeoJSON into hidden containers.
     const evTab = document.getElementById('tab-evolution');
@@ -231,16 +231,16 @@ export function triggerEvolutionUpdate() {
         state.evolutionPendingUpdate = true;
         return;
     }
-    
+
     const metricSelected = state.slimSelects.evolutionMetric.getSelected();
     const yearSelected = state.slimSelects.evolutionCompareYear.getSelected();
-    
+
     if (metricSelected && metricSelected.length > 0 && yearSelected && yearSelected.length > 0) {
         const metric = metricSelected[0];
         const compareYear = parseInt(yearSelected[0]);
         state.evolutionPendingUpdate = false;
         updateEvolutionMap(metric, state.currentYear, compareYear);
-        
+
         const lblBase = document.getElementById('label-ev-map-base');
         const lblComp = document.getElementById('label-ev-map-compare');
         if (lblBase) lblBase.textContent = state.currentYear;
@@ -271,7 +271,7 @@ export function populateModal() {
 export function updateStoryBox(indicatorId) {
     const configKey = indicatorId === 'Indice' ? 'integrated' : indicatorId;
     const config = state.appConfig[configKey];
-    
+
     // Fallback info for raw CSV indicators
     const fallbackName = indicatorId.replace(/_/g, ' ');
     const iconHTML = dim_icons[indicatorId] || '';
@@ -414,7 +414,7 @@ export function setupTooltips() {
 
         // Buscar el radio button más cercano para obtener su value (indicatorId)
         const radio = e.target.closest('label')?.querySelector('input[type="radio"]')
-                   || e.target.closest('.accordion-header')?.querySelector('input[type="radio"]');
+            || e.target.closest('.accordion-header')?.querySelector('input[type="radio"]');
 
         const targetEl = e.target.closest('label') || e.target.closest('.accordion-header');
 
@@ -463,7 +463,7 @@ export function setupSidebarToggle() {
 // --- EVENT LISTENERS ---
 export function setupEventListeners() {
     const sidebarContent = document.querySelector('.sidebar-content');
-    
+
     // Rastrear si la opción ya estaba seleccionada ANTES del click
     sidebarContent.addEventListener('mousedown', (e) => {
         const headerLabel = e.target.closest('.accordion-header label');
@@ -480,7 +480,7 @@ export function setupEventListeners() {
     sidebarContent.addEventListener('change', (e) => {
         if (e.target.name === 'indicator') {
             state.currentIndicator = e.target.value;
-            
+
             // Si el radio seleccionado pertenece al header de un acordeón (dimensión),
             // abrir automáticamente ese acordeón y cerrar los demás. Hacerlo antes de las tareas pesadas.
             const parentGroup = e.target.closest('.accordion-group');
@@ -526,9 +526,9 @@ export function setupEventListeners() {
                     if (content) content.style.maxHeight = null;
                 } else {
                     document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
-                         openGroup.classList.remove('open');
-                         const c = openGroup.querySelector('.accordion-content');
-                         if (c) c.style.maxHeight = null;
+                        openGroup.classList.remove('open');
+                        const c = openGroup.querySelector('.accordion-content');
+                        if (c) c.style.maxHeight = null;
                     });
                     group.classList.add('open');
                     if (content) content.style.maxHeight = content.scrollHeight + "px";
@@ -550,11 +550,11 @@ export function setupEventListeners() {
                 } else {
                     // Si estaba cerrado, abrirlo y cerrar los demás
                     document.querySelectorAll('.accordion-group.open').forEach(openGroup => {
-                         if (openGroup !== group) {
-                             openGroup.classList.remove('open');
-                             const c = openGroup.querySelector('.accordion-content');
-                             if (c) c.style.maxHeight = null;
-                         }
+                        if (openGroup !== group) {
+                            openGroup.classList.remove('open');
+                            const c = openGroup.querySelector('.accordion-content');
+                            if (c) c.style.maxHeight = null;
+                        }
                     });
                     group.classList.add('open');
                     if (content) content.style.maxHeight = content.scrollHeight + "px";
@@ -731,10 +731,10 @@ function switchTab(tabKey) {
 
     Object.values(tabs).forEach(tab => tab && tab.classList.remove('active'));
     Object.values(tabButtons).forEach(btn => btn && btn.classList.remove('active'));
-    
+
     tabs[tabKey].classList.add('active');
     tabButtons[tabKey]?.classList.add('active');
-    
+
     setTimeout(() => {
         Object.values(state.maps).forEach(map => map && map.invalidateSize());
         if (tabKey === 'compare' && !state.compareMapsFitted) {
@@ -747,7 +747,7 @@ function switchTab(tabKey) {
 
             state.maps.compareVul.fitBounds(bounds, { padding: [10, 10] });
             state.maps.compareNut.fitBounds(bounds, { padding: [10, 10] });
-            
+
             state.maps.compareVul.sync(state.maps.compareNut);
             state.maps.compareNut.sync(state.maps.compareVul);
 
@@ -758,7 +758,7 @@ function switchTab(tabKey) {
             // Re-invalidate and fire the pending update now that containers are visible.
             state.maps.evolutionBase && state.maps.evolutionBase.invalidateSize();
             state.maps.evolutionCompare && state.maps.evolutionCompare.invalidateSize();
-            
+
             if (state.evolutionPendingUpdate || !state.evolutionMapFitted) {
                 // Reset fitted flag so fitBounds runs correctly now that maps are visible
                 state.evolutionMapFitted = false;

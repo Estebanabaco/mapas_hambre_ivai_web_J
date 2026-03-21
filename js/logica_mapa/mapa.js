@@ -204,17 +204,23 @@ export function updateMap(mapKey, indicatorId) {
     state.legends[mapKey] = legend;
 }
 
+let _evolutionUpdateId = 0;
+
 export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
     const mapBase = state.maps.evolutionBase;
     const mapCompare = state.maps.evolutionCompare;
     if (!mapBase || !mapCompare) return;
 
+    // Concurrency guard: increment ID so stale calls can detect they're outdated
+    const thisCallId = ++_evolutionUpdateId;
+
+    // Cleanup old layers and legends
     if (state.layers.evolutionBase) { mapBase.removeLayer(state.layers.evolutionBase); state.layers.evolutionBase = null; }
     if (state.layers.evolutionCompare) { mapCompare.removeLayer(state.layers.evolutionCompare); state.layers.evolutionCompare = null; }
     if (state.legends.evolutionBase) { mapBase.removeControl(state.legends.evolutionBase); state.legends.evolutionBase = null; }
     if (state.legends.evolutionCompare) { mapCompare.removeControl(state.legends.evolutionCompare); state.legends.evolutionCompare = null; }
 
-    // Brute-force cleanup: remove any leftover legend DOM from both containers
+    // Brute-force cleanup: remove any leftover legend DOM
     [mapBase, mapCompare].forEach(m => {
         const container = m.getContainer();
         if (container) {
@@ -225,6 +231,9 @@ export async function updateEvolutionMap(indicatorId, baseYear, compareYear) {
     const baseData = await loadYearData(baseYear);
     const compareData = await loadYearData(compareYear);
     if (!baseData || !compareData) return;
+
+    // If a newer call has started while we were loading data, abort this stale one
+    if (thisCallId !== _evolutionUpdateId) return;
 
     const isNutritionMap = (indicatorId === 'ENSIN' || indicatorId === 'Cronica' || indicatorId === 'R_Cronica' || indicatorId === 'Aguda' || indicatorId === 'R_Aguda');
     const isIndice = indicatorId === 'Indice';
