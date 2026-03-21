@@ -1,7 +1,7 @@
 import { state, indicatorSelector, selectCompareVul, selectCompareNut } from './configuracion.js';
 import { loadCatalog, loadData } from './manejo_datos.js';
-import { initMaps, updateMap } from './logica_mapa/mapa.js';
-import { populateControls, populateFooter, setupEventListeners, setupSidebarToggle, setupTooltips, updateStoryBox, populateModal } from './interfaz.js';
+import { initMaps, updateMap, toggleMapTheme } from './logica_mapa/mapa.js';
+import { populateControls, populateFooter, setupEventListeners, setupSidebarToggle, setupTooltips, updateStoryBox, populateModal, setupDarkMode } from './interfaz.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- MAIN EXECUTION ---
@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadData();
             if (state.geoData && state.indexData) {
                 initMaps();
+                setupDarkMode(toggleMapTheme);
 
                 const mainlandGeoData = {
                     ...state.geoData,

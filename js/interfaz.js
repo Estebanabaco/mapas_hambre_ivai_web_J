@@ -680,3 +680,30 @@ function switchTab(tabKey) {
         }
     }, 100);
 }
+
+export function setupDarkMode(toggleMapCallback) {
+    const btn = document.getElementById('dark-mode-btn');
+    if (!btn) return;
+    const icon = btn.querySelector('i');
+
+    const isDark = localStorage.getItem('theme') === 'dark';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    }
+
+    btn.addEventListener('click', () => {
+        const currentlyDark = document.body.classList.toggle('dark-mode');
+        if (currentlyDark) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+            localStorage.setItem('theme', 'light');
+        }
+        if (toggleMapCallback) toggleMapCallback(currentlyDark);
+    });
+}

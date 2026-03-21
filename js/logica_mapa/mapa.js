@@ -3,47 +3,40 @@ import { getIndicatorDisplayName, getIndicatorValue } from './ayudantes.js';
 import { createColorPalette } from './utilidades_color.js';
 import { createLegend, createIndiceLegend, createPopupContent, createLegendToggleControl } from './componentes.js';
 
+export let currentTileLayers = { main: null, compareVul: null, compareNut: null };
+
+export function toggleMapTheme(isDark) {
+    const tileUrl = isDark 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png' 
+        : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
+    const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+    
+    ['main', 'compareVul', 'compareNut'].forEach(key => {
+        if (state.maps[key]) {
+            if (currentTileLayers[key]) {
+                state.maps[key].removeLayer(currentTileLayers[key]);
+            }
+            currentTileLayers[key] = L.tileLayer(tileUrl, { attribution }).addTo(state.maps[key]);
+            currentTileLayers[key].bringToBack();
+        }
+    });
+}
+
 export function initMaps() {
-    const cartoLightUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
-    const cartoAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-
-    const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-        attribution: cartoAttribution
-    });
-
-    const baseLayers = {
-        "Claro": L.tileLayer(cartoLightUrl, { attribution: cartoAttribution }),
-        "Estándar": osm,
-        "Oscuro": cartoDark
-    };
-
-    // Initialize maps
-    // Main map gets the layer control and its own instance of the light layer
+    // Initialize maps without initial tile layers (will be added by toggleMapTheme)
     state.maps.main = L.map('map-main', {
         fullscreenControl: true,
-        fullscreenControlOptions: {
-            position: 'topright'
-        },
-        layers: [baseLayers.Claro], // Default layer
+        fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
         doubleClickZoom: false,
         zoomControl: false
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.main);
-    L.control.layers(baseLayers, null, { position: 'topright' }).addTo(state.maps.main);
     createLegendToggleControl(state.maps.main, 'main').addTo(state.maps.main);
 
-    // Comparison maps get their own instances of the light basemap and no layer control
     state.maps.compareVul = L.map('map-compare-vul', {
         fullscreenControl: true,
-        fullscreenControlOptions: {
-            position: 'topright'
-        },
-        layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
+        fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
         doubleClickZoom: false,
         zoomControl: false
@@ -53,16 +46,17 @@ export function initMaps() {
 
     state.maps.compareNut = L.map('map-compare-nut', {
         fullscreenControl: true,
-        fullscreenControlOptions: {
-            position: 'topright'
-        },
-        layers: [L.tileLayer(cartoLightUrl, { attribution: cartoAttribution })],
+        fullscreenControlOptions: { position: 'topright' },
         scrollWheelZoom: false,
         doubleClickZoom: false,
         zoomControl: false
     });
     L.control.zoom({ position: 'topright' }).addTo(state.maps.compareNut);
     createLegendToggleControl(state.maps.compareNut, 'compareNut').addTo(state.maps.compareNut);
+
+    // Load saved or default theme
+    const isDark = localStorage.getItem('theme') === 'dark';
+    toggleMapTheme(isDark);
 }
 
 export function updateMap(mapKey, indicatorId) {
