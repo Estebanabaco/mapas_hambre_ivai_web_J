@@ -35,6 +35,8 @@ function ivai_map_embed_shortcode($atts) {
         'src' => home_url('/ivai2024/index.html'),
         'base_url' => '',
         'mode' => 'iframe',
+        'fallback' => 'iframe',
+        'timeout_ms' => '15000',
         'height' => '900',
         'title' => 'Visor IVAI',
     );
@@ -47,6 +49,11 @@ function ivai_map_embed_shortcode($atts) {
         $mode = 'iframe';
     }
 
+    $fallback = sanitize_key($args['fallback']);
+    if ($fallback !== 'none') {
+        $fallback = 'iframe';
+    }
+
     $base_url_raw = trim((string) $args['base_url']);
     if ($base_url_raw === '') {
         $base_url_raw = untrailingslashit(dirname($src));
@@ -56,6 +63,14 @@ function ivai_map_embed_shortcode($atts) {
     $height = absint($args['height']);
     if ($height <= 0) {
         $height = 900;
+    }
+
+    $timeout_ms = absint($args['timeout_ms']);
+    if ($timeout_ms < 1000) {
+        $timeout_ms = 15000;
+    }
+    if ($timeout_ms > 60000) {
+        $timeout_ms = 60000;
     }
 
     $title = sanitize_text_field($args['title']);
@@ -70,6 +85,8 @@ function ivai_map_embed_shortcode($atts) {
             'containerId' => $container_id,
             'baseUrl' => $base_url,
             'indexUrl' => $src,
+            'fallback' => $fallback,
+            'timeoutMs' => $timeout_ms,
             'height' => $height,
             'title' => $title,
         );
@@ -80,6 +97,34 @@ function ivai_map_embed_shortcode($atts) {
     const cfg = %s;
     const mount = document.getElementById(cfg.containerId);
     if (!mount) return;
+
+    const fallbackToIframe = () => {
+        if (cfg.fallback !== 'iframe') return false;
+        mount.innerHTML = `<iframe class="ivai-map-embed__frame" src="${cfg.indexUrl}" height="${cfg.height}" loading="lazy" title="${cfg.title || 'Visor IVAI'}"></iframe>`;
+        return true;
+    };
+
+    const withTimeout = (promise, message) => {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error(message)), cfg.timeoutMs || 15000);
+            promise
+                .then((result) => {
+                    clearTimeout(timer);
+                    resolve(result);
+                })
+                .catch((error) => {
+                    clearTimeout(timer);
+                    reject(error);
+                });
+        });
+    };
+
+    if (!cfg.baseUrl || !cfg.indexUrl) {
+        if (!fallbackToIframe()) {
+            mount.innerHTML = '<div style="padding:12px;border:1px solid #d33;background:#fff5f5;color:#8b0000;border-radius:8px;">Configuracion invalida para modo directo.</div>';
+        }
+        return;
+    }
 
     const cssAssets = [
         'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -146,20 +191,22 @@ function ivai_map_embed_shortcode($atts) {
 
             cssAssets.forEach(ensureCss);
             for (const src of jsAssets) {
-                await ensureScript(src);
+                await withTimeout(ensureScript(src), `Tiempo de espera agotado cargando ${src}`);
             }
 
             let legacyRoot = document.getElementById('ivai-legacy-root');
             if (legacyRoot && !mount.contains(legacyRoot)) {
-                showError('Ya existe una instancia IVAI montada en esta pagina. Actualmente el modo directo soporta una instancia por pagina.');
+                if (!fallbackToIframe()) {
+                    showError('Ya existe una instancia IVAI montada en esta pagina. Actualmente el modo directo soporta una instancia por pagina.');
+                }
                 return;
             }
 
             if (!legacyRoot) {
-                const htmlText = await fetch(cfg.indexUrl).then(r => {
+                const htmlText = await withTimeout(fetch(cfg.indexUrl, { cache: 'no-store' }).then(r => {
                     if (!r.ok) throw new Error('No se pudo descargar el template del visor.');
                     return r.text();
-                });
+                }), 'Tiempo de espera agotado al descargar el template del visor.');
                 const doc = new DOMParser().parseFromString(htmlText, 'text/html');
                 legacyRoot = doc.getElementById('ivai-legacy-root');
                 if (!legacyRoot) {
@@ -170,10 +217,12 @@ function ivai_map_embed_shortcode($atts) {
             }
 
             const moduleUrl = `${cfg.baseUrl}/src/index.js`;
-            const api = await import(moduleUrl);
-            await api.createIvaiApp(`#${cfg.containerId}`);
+            const api = await withTimeout(import(moduleUrl), 'Tiempo de espera agotado al cargar la libreria IVAI.');
+            await withTimeout(api.createIvaiApp(`#${cfg.containerId}`), 'Tiempo de espera agotado al iniciar IVAI.');
         } catch (error) {
-            showError(error.message || 'No fue posible iniciar el visor IVAI.');
+            if (!fallbackToIframe()) {
+                showError(error.message || 'No fue posible iniciar el visor IVAI.');
+            }
         }
     };
 

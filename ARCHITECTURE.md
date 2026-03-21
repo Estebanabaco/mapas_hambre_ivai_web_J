@@ -29,6 +29,7 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 - `createIvaiApp` ahora admite montaje por contenedor reubicando `#ivai-legacy-root`
 - Se agrupo la UI legacy en `#ivai-legacy-root` para facilitar el montaje en contenedores externos
 - Adapter WordPress MVP agregado en `src/adapters/wordpress/ivai-wordpress.php` (shortcode en modo `iframe` y `direct` experimental)
+- Pipeline base de verificaciones agregado con `package.json` (`npm run check`)
 - Compatibilidad legacy mantenida mediante wrappers:
   - `js/configuracion.js`
   - `js/manejo_datos.js`
@@ -37,5 +38,5 @@ Este proyecto esta migrando de una aplicacion acoplada a una pagina hacia una ar
 
 1. Reducir dependencia de IDs globales para soportar multiples instancias reales por contenedor
 2. Endurecer adapter WordPress directo (carga de assets, errores y soporte futuro para multiples instancias)
-3. Agregar pipeline de build/tests para distribuir la libreria
+3. Extender pipeline con build empaquetado y pruebas de integracion
 4. Definir versionado y empaquetado para consumo externo

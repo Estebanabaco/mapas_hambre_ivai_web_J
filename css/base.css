@@ -24,6 +24,17 @@ body {
   height: 100vh;
 }
 
+#ivai-legacy-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#ivai-legacy-root.ivai-external-mount {
+  height: auto;
+  min-height: inherit;
+}
+
 /* --- Pie de Página --- */
 .app-footer {
     text-align: center;

@@ -1,0 +1,12 @@
+{
+  "name": "ivai2024",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Visor IVAI con arquitectura modular",
+  "type": "module",
+  "scripts": {
+    "check:js": "node scripts/check-syntax.mjs",
+    "check:php": "php -l \"src/adapters/wordpress/ivai-wordpress.php\"",
+    "check": "npm run check:js && npm run check:php"
+  }
+}

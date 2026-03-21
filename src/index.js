@@ -41,13 +41,18 @@ function mountLegacyContainer(targetContainer) {
         throw new Error('Legacy root #ivai-legacy-root was not found.');
     }
 
-    if (!targetContainer) return;
+    if (!targetContainer) {
+        legacyRoot.classList.remove('ivai-external-mount');
+        return;
+    }
 
     if (targetContainer === legacyRoot || targetContainer.contains(legacyRoot)) {
+        legacyRoot.classList.add('ivai-external-mount');
         return;
     }
 
     targetContainer.appendChild(legacyRoot);
+    legacyRoot.classList.add('ivai-external-mount');
 }
 
 export async function createIvaiApp(container, options = {}) {
