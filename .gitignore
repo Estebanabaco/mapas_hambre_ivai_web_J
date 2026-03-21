@@ -4,3 +4,4 @@ data/datos_indice.json
 data/datos_nutricionales.json
 data/
 datos/temp/
+api/config.local.php

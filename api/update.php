@@ -1,8 +1,38 @@
 <?php
 header('Content-Type: application/json');
 
-// --- Configuración ---
-define('SECRET_TOKEN', 'AbacoIvai2030');
+// --- Configuración de seguridad ---
+// Prioridad del token:
+// 1) api/config.local.php -> ['secret_token' => '...']
+// 2) variable de entorno IVAI_SECRET_TOKEN
+$secretToken = null;
+$localConfigPath = __DIR__ . '/config.local.php';
+
+if (file_exists($localConfigPath)) {
+    $localConfig = require $localConfigPath;
+    if (is_array($localConfig) && isset($localConfig['secret_token'])) {
+        $candidate = trim((string) $localConfig['secret_token']);
+        if ($candidate !== '') {
+            $secretToken = $candidate;
+        }
+    }
+}
+
+if ($secretToken === null) {
+    $envToken = getenv('IVAI_SECRET_TOKEN');
+    if (is_string($envToken)) {
+        $envToken = trim($envToken);
+        if ($envToken !== '') {
+            $secretToken = $envToken;
+        }
+    }
+}
+
+if ($secretToken === null) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Server secret token is not configured.']);
+    exit;
+}
 
 // Mapeo de tipos de datos permitidos a sus nombres de archivo
 $allowedTypes = [
@@ -53,7 +83,7 @@ if (strpos($authHeader, 'Bearer ') !== 0) {
     exit;
 }
 $token = substr($authHeader, 7);
-if (!hash_equals(SECRET_TOKEN, $token)) {
+if (!hash_equals($secretToken, $token)) {
     http_response_code(401);
     echo json_encode(['error' => 'Invalid token.']);
     exit;

@@ -1,106 +1,115 @@
-# Manual de Uso: API de Actualización de Archivos JSON
+# Manual de Uso: API de Actualizacion de Archivos JSON
 
-## 1. Propósito
+## 1. Proposito
 
-Este documento describe cómo utilizar el endpoint de PHP para actualizar de forma remota los archivos de configuración JSON del proyecto Mapas de Hambre IVAI.
+Este documento describe como utilizar el endpoint PHP para actualizar de forma remota los archivos JSON de datos del proyecto IVAI.
 
-La API permite reemplazar el contenido de archivos específicos a través de una petición HTTP segura y validada.
+La API permite reemplazar el contenido de archivos especificos por ano mediante una peticion HTTP autenticada.
 
 ## 2. Endpoint
 
-- **URL:** `http://<servidor>/<ruta_proyecto>/api/update.php?file=<clave_del_archivo>`
-- **Método HTTP:** `POST`
+- URL: `http://<servidor>/<ruta_proyecto>/api/update.php?year=<anio>&type=<tipo>`
+- Metodo HTTP: `POST`
 
-**Ejemplo de URL local:**
-`http://localhost/mapas_hambre_ivai_web/api/update.php?file=datos_indice`
+Ejemplo local:
 
-## 3. Autenticación
+`http://localhost/ivai2024/api/update.php?year=2024&type=indice`
 
-La API utiliza un **Token Bearer** para la autenticación. Debes incluir una cabecera `Authorization` en tu petición.
+## 3. Autenticacion
 
-- **Cabecera:** `Authorization`
-- **Formato:** `Bearer <TU_TOKEN_SECRETO>`
+La API usa token Bearer en la cabecera `Authorization`.
 
-El token secreto se configura en la constante `SECRET_TOKEN` dentro del propio archivo `api/update.php`.
+- Cabecera: `Authorization`
+- Formato: `Bearer <TU_TOKEN_SECRETO>`
+
+### Configuracion del token (prioridad)
+
+1. Archivo local no versionado: `api/config.local.php`
+2. Variable de entorno: `IVAI_SECRET_TOKEN`
+
+Si ninguna opcion esta configurada, el endpoint responde `500`.
+
+### Estructura de `api/config.local.php`
 
 ```php
-// api/update.php
-define('SECRET_TOKEN', 'token_de_ejemplo_cambiar_por_uno_seguro');
+<?php
+
+return [
+    'secret_token' => 'tu_token_super_seguro'
+];
 ```
 
-## 4. Parámetros y Cuerpo de la Petición
+> Usa `api/config.example.php` como plantilla.
 
-### Parámetro de URL (Query Param)
+## 4. Parametros y Cuerpo de la Peticion
 
-- **`file`** (string, obligatorio): Es la clave que identifica el archivo JSON que se desea actualizar.
+### Query Params
 
-### Cuerpo de la Petición (Request Body)
+- `year` (obligatorio): ano destino de 4 digitos. Ejemplo: `2024`.
+- `type` (obligatorio): tipo de archivo a actualizar.
 
-- El cuerpo de la petición debe contener el **nuevo contenido para el archivo en formato JSON válido**.
-- Debes incluir la cabecera `Content-Type: application/json`.
+### Tipos de archivo validos (`type`)
 
-## 5. Claves de Archivo Válidas (`file`)
+| type | Archivo destino |
+| --- | --- |
+| `indice` | `data/<year>/datos_indice.json` |
+| `indicadores` | `data/<year>/datos_indicadores.json` |
+| `nutricionales` | `data/<year>/datos_nutricionales.json` |
+| `ahp` | `data/<year>/002_Pesos_AHP_Hambre.json` |
 
-La siguiente tabla muestra las claves permitidas para el parámetro `file` y el archivo de destino que se modificará.
+### Request Body
 
-| Clave (`file`)             | Archivo de Destino                                       | Plantilla de Validación                                       |
-| -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
-| `site_config`              | `config/site_config.json`                                | `config/site_config.example.json`                             |
-| `configuracion_app`        | `data_example/configuracion_app.json`                    | `data_example/configuracion_app.json`                         |
-| `pesos_ahp`                | `data_example/002_Pesos_AHP_Hambre.json`                 | `data_example/002_Pesos_AHP_Hambre.json`                      |
-| `datos_indice`             | `data_example/datos_indice.json`                         | `data_example/datos_indice.json`                              |
-| `datos_nutricionales`      | `data_example/datos_nutricionales.json`                  | `data_example/datos_nutricionales.json`                       |
-| `pesos_ahp_2023`           | `data/2023/002_Pesos_AHP_Hambre.json`                    | `data_example/2023/002_Pesos_AHP_Hambre.json`                 |
-| `datos_indice_2023`        | `data/2023/datos_indice.json`                            | `data_example/2023/datos_indice.json`                         |
-| `datos_nutricionales_2023` | `data/2023/datos_nutricionales.json`                     | `data_example/2023/datos_nutricionales.json`                  |
+- Debe contener JSON valido con el nuevo contenido del archivo.
+- Incluye cabecera `Content-Type: application/json`.
 
-## 6. Validación de Estructura
+## 5. Validacion de Estructura
 
-La API valida que la estructura de claves del JSON enviado en el cuerpo de la petición sea **idéntica** a la estructura del archivo de plantilla correspondiente. Si hay claves de más o de menos (incluso en objetos anidados), la API rechazará la petición con un error `400 Bad Request`.
+La API valida que la estructura de claves del JSON enviado coincida con una plantilla base (`data/2024/...`) para el tipo de archivo seleccionado.
+
+Si la estructura no coincide, la API responde `400`.
+
+## 6. Comportamiento de Escritura
+
+- El archivo se escribe en `data/<year>/...` segun el `type` recibido.
+- Si la carpeta `data/<year>` no existe, la API intenta crearla automaticamente.
 
 ## 7. Respuestas del Endpoint
 
-- **`200 OK` (Éxito)**
-  - **Condición:** El archivo fue validado y actualizado correctamente.
-  - **Cuerpo:** `{"success":"File \'<clave>\' updated successfully."}`
+- `200 OK`
+  - Condicion: archivo validado y actualizado correctamente.
+  - Ejemplo:
+    - `{"success":true,"message":"Archivo 'datos_indice.json' para el ano 2024 actualizado con exito.","path":"../data/2024/datos_indice.json"}`
 
-- **`400 Bad Request` (Petición Incorrecta)**
-  - **Condiciones:** Falta el parámetro `file`, la clave no es válida, el JSON del cuerpo es inválido o la estructura del JSON no coincide con la plantilla.
-  - **Cuerpo:** `{"error":"<mensaje descriptivo del error>"}`
+- `400 Bad Request`
+  - Condiciones: `type` invalido, `year` invalido, JSON invalido o estructura no valida.
 
-- **`401 Unauthorized` (No Autorizado)**
-  - **Condiciones:** Falta la cabecera `Authorization` o el token es incorrecto.
-  - **Cuerpo:** `{"error":"Invalid token."}`
+- `401 Unauthorized`
+  - Condiciones: falta `Authorization`, formato incorrecto, o token invalido.
 
-- **`405 Method Not Allowed` (Método no Permitido)**
-  - **Condición:** Se utiliza un método HTTP diferente de `POST`.
-  - **Cuerpo:** `{"error":"Method Not Allowed. Only POST is accepted."}`
+- `405 Method Not Allowed`
+  - Condicion: metodo distinto de `POST`.
 
-- **`500 Internal Server Error` (Error del Servidor)**
-  - **Condiciones:** El script no pudo escribir en el archivo de destino (problemas de permisos) o no encontró el archivo de plantilla para la validación.
-  - **Cuerpo:** `{"error":"<mensaje descriptivo del error>"}`
+- `500 Internal Server Error`
+  - Condiciones: token del servidor no configurado, fallo creando carpeta, o fallo escribiendo archivo.
 
-## 8. Ejemplo de Uso con `curl`
-
-Este ejemplo actualiza el archivo `datos_indice` (`data_example/datos_indice.json`).
+## 8. Ejemplo con curl
 
 ```bash
-curl -X POST "http://localhost/mapas_hambre_ivai_web/api/update.php?file=datos_indice" \
--H "Content-Type: application/json" \
--H "Authorization: Bearer tu_token_secreto_real" \
--d \
-'{ 
-    "actualizacion": "2025-10-15",
-    "fuente": "Datos actualizados desde cURL",
-    "datos": [
-        {
-            "municipio": "Xalapa",
-            "valor": 0.9999
-        },
-        {
-            "municipio": "Veracruz",
-            "valor": 0.8888
-        }
-    ]
-}'
+curl -X POST "http://localhost/ivai2024/api/update.php?year=2024&type=indice" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer tu_token_secreto_real" \
+  -d '{
+    "5": {
+      "Indice": 30.7,
+      "Ranking": 17,
+      "Clasificacion_Indice": "Media",
+      "Pobreza": 10.9,
+      "Desempleo_Ingresos": 64.9,
+      "Salud_Nutricion": 15.7,
+      "Inseguridad_Alimentaria": 30,
+      "Factores_Demograficos": 12.8,
+      "Acceso_Servicios": 10.7,
+      "Acceso_Grupos_Alimentos": 20.4
+    }
+  }'
 ```
