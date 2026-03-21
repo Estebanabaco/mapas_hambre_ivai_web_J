@@ -1,0 +1,20 @@
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('IVAI')
+    .addItem('1) Preparar hojas base', 'setupIvaiSheets')
+    .addSeparator()
+    .addItem('Precargar año (datos base)', 'preloadBaseYear')
+    .addItem('Precargar AHP del año', 'preloadAhpYear')
+    .addSeparator()
+    .addItem('Publicar índice', 'publishIndice')
+    .addItem('Publicar indicadores', 'publishIndicadores')
+    .addItem('Publicar nutricionales', 'publishNutricionales')
+    .addItem('Publicar datos base', 'publishBaseOnly')
+    .addItem('Publicar AHP', 'publishAhp')
+    .addItem('Publicar TODO (incluye AHP)', 'publishAll')
+    .addSeparator()
+    .addItem('Configurar URL API', 'setApiBaseUrl')
+    .addItem('Configurar token API', 'setApiToken')
+    .addItem('Usar localhost por defecto', 'setLocalhostApi')
+    .addToUi();
+}

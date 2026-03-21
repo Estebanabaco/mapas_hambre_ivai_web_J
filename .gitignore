@@ -6,3 +6,4 @@ datos/temp/
 api/config.local.php
 node_modules/
 dist/
+gas/ivai_sheet_sync/.clasp.json

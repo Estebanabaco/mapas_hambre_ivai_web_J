@@ -1,46 +1,69 @@
 # IVAI Google Apps Script Sync
 
-Script de Google Sheets para publicar datasets IVAI hacia la API local:
+Sincronizador bidireccional (precarga + publicación) entre Google Sheets y JSON IVAI.
 
-- Endpoint base por defecto: `http://localhost/ivai2024/api/update.php`
-- Spreadsheet ID objetivo: `1kTcXMXd7OnhDTAxs1mZwdywCWyHtv_TLp20OeRZ8JjY`
+## Objetivo
+
+- **Precargar** un año existente desde JSON remoto hacia hojas de edición.
+- **Publicar** cambios de hojas hacia `api/update.php` por tipo y año.
+- Separar AHP del flujo base para evitar publicaciones accidentales.
+
+## Configuración
+
+Hoja `Config`:
+
+- `B2`: `year` (ej. `2024`)
+- `B3`: `api_base_url` (default: `http://localhost/ivai2024/api/update.php`)
+- `B4`: referencia visual (token se guarda en Script Properties)
+
+Token:
+
+- Menú `IVAI > Configurar token API`
+- Se guarda como `IVAI_API_TOKEN` en `PropertiesService`.
 
 ## Estructura de hojas
 
-- `Config`
-  - `B2`: `year` (ej. `2024`)
-  - `B3`: `api_base_url` (por defecto localhost)
-  - `B4`: referencia (token va en Script Properties)
-- `indice` (primera columna: `dept_code`)
-- `indicadores` (primera columna: `dept_code`)
-- `nutricionales` (primera columna: `dept_code`)
+- `indice` (columna clave: `dept_code`)
+- `indicadores` (columna clave: `dept_code`)
+- `nutricionales` (columna clave: `dept_code`)
 - `ahp_dimensiones`
 - `ahp_variables_intra`
 
-## Menú en Sheets
+## Menú IVAI
 
-Al abrir la hoja aparece menú `IVAI` con acciones de:
+- `1) Preparar hojas base`
+- `Precargar año (datos base)`
+- `Precargar AHP del año`
+- `Publicar índice`
+- `Publicar indicadores`
+- `Publicar nutricionales`
+- `Publicar datos base` (sin AHP)
+- `Publicar AHP`
+- `Publicar TODO (incluye AHP)`
+- `Configurar URL API`
+- `Configurar token API`
+- `Usar localhost por defecto`
 
-- preparar hojas base,
-- publicar por tipo,
-- publicar todo,
-- configurar token,
-- setear localhost.
+## Flujo recomendado
 
-## Despliegue con clasp
+1. Configurar `year` y `api_base_url` en `Config`.
+2. Ejecutar `Precargar año (datos base)`.
+3. Revisar/editar datos.
+4. Publicar con `Publicar datos base`.
+5. Publicar `AHP` solo cuando aplique.
 
-Desde esta carpeta (`gas/ivai_sheet_sync`):
+## Notas
 
-```bash
-clasp login
-clasp create --type sheets --title "IVAI Sheet Sync" --parentId 1kTcXMXd7OnhDTAxs1mZwdywCWyHtv_TLp20OeRZ8JjY --rootDir .
-clasp push
-```
+- La precarga crea copia de respaldo de cada hoja (`*_backup_YYYYMMDD_HHMMSS`) antes de sobrescribir.
+- Para precarga se deriva automáticamente la ruta de datos (`.../data/<year>/archivo.json`) desde `api_base_url`.
+- Si usas localhost, recuerda que Apps Script necesita una URL accesible desde internet (localhost puro suele no ser accesible desde servidores de Google).
 
-Si ya tienes proyecto creado y `scriptId`, configura `.clasp.json` y ejecuta solo `clasp push`.
+## Estructura de archivos GAS
 
-## Configuración de token
-
-Usa el menú: `IVAI > Configurar token API`.
-
-El token se guarda en `PropertiesService` como `IVAI_API_TOKEN`.
+- `00_constants.gs`: constantes y encabezados de hojas.
+- `10_menu.gs`: menú de entrada (`onOpen`).
+- `20_setup.gs`: creación/actualización de hojas base.
+- `30_publish.gs`: publicación a API por tipo.
+- `40_preload.gs`: precarga de JSON por año.
+- `50_settings.gs`: configuración de URL/token y lectura de settings.
+- `60_sheet_utils.gs`: utilidades de lectura/escritura en Sheets.
