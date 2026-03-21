@@ -6,7 +6,7 @@ import {
     createEvolutionPopupContent,
     createContinuousLegendMarkup,
     createIndiceLegendMarkup
-} from '../../../js/logica_mapa/componentes.js';
+} from '../../shared/map-components.js';
 
 let evolutionUpdateId = 0;
 

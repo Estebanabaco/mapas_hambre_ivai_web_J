@@ -1,7 +1,7 @@
 import { state } from '../../core/store.js';
 import { getIndicatorDisplayName, getIndicatorValue } from '../../../js/logica_mapa/ayudantes.js';
 import { createColorPalette } from '../../../js/logica_mapa/utilidades_color.js';
-import { createLegend, createPopupContent } from '../../../js/logica_mapa/componentes.js';
+import { createLegend, createPopupContent } from '../../shared/map-components.js';
 
 export function updateCompareMap(mapKey, indicatorId, compareNutSelectEl) {
     const map = state.maps[mapKey];
