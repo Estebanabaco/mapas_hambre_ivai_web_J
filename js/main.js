@@ -2,6 +2,7 @@ import { state, indicatorSelector, selectCompareVul, selectCompareNut } from './
 import { loadCatalog, loadData } from './manejo_datos.js';
 import { initMaps, updateMap, toggleMapTheme } from './logica_mapa/mapa.js';
 import { populateControls, populateFooter, setupEventListeners, setupSidebarToggle, setupTooltips, updateStoryBox, populateModal, setupDarkMode } from './interfaz.js';
+import { setCurrentYear } from '../src/core/actions.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- MAIN EXECUTION ---
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 yearSelector.addEventListener('change', async (e) => {
                     const newYear = parseInt(e.target.value);
                     if (newYear !== state.currentYear) {
-                        state.currentYear = newYear;
+                        setCurrentYear(newYear);
                         const mainMapEl = document.getElementById('map-main');
                         if (mainMapEl) mainMapEl.style.opacity = '0.5';
                         

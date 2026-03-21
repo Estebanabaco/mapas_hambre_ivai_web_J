@@ -32,6 +32,7 @@ export const state = {
     },
     compareMapsFitted: false,
     evolutionMapFitted: false,
+    evolutionPendingUpdate: false,
     slimSelects: {
         compareVul: null,
         compareNut: null,

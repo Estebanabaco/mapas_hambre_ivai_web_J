@@ -1,10 +1,12 @@
-import { state, storyBox } from '../../js/configuracion.js';
+import { state } from './store.js';
+import { setCurrentYear } from './actions.js';
+import { getDomRegistry } from './dom-registry.js';
 
 export async function loadCatalog() {
     try {
         const catalogData = await fetch('config/metadatos.json').then(res => res.json());
         state.catalog = catalogData;
-        state.currentYear = catalogData.defaultYear;
+        setCurrentYear(catalogData.defaultYear);
     } catch (error) {
         console.error('Failed to load catalog:', error);
     }
@@ -49,7 +51,10 @@ export async function loadData() {
         }
     } catch (error) {
         console.error('Failed to load data:', error);
-        storyBox.innerHTML = '<p style="color: red;">Error: No se pudieron cargar los archivos de datos. Verifique la consola para mas detalles.</p>';
+        const { storyBox } = getDomRegistry();
+        if (storyBox) {
+            storyBox.innerHTML = '<p style="color: red;">Error: No se pudieron cargar los archivos de datos. Verifique la consola para mas detalles.</p>';
+        }
     }
 }
 

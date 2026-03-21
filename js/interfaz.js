@@ -3,6 +3,13 @@ import { getIndicatorDisplayName } from './logica_mapa/ayudantes.js';
 import { createMoreInfoPopup } from './logica_mapa/componentes.js';
 import { updateMap, updateEvolutionMap } from './logica_mapa/mapa.js';
 import { dim_icons, sub_icons } from './icons.js';
+import {
+    setupEvolutionMetricControl,
+    setupEvolutionYearControl,
+    updateEvolutionYearOptions as updateEvolutionYearOptionsModule,
+    triggerEvolutionUpdate as triggerEvolutionUpdateModule,
+    handleEvolutionTabActivated
+} from '../src/tabs/evolution/ui-controller.js';
 
 // --- UI POPULATION ---
 export function populateControls() {
@@ -175,78 +182,17 @@ export function populateControls() {
 
     // Evolucion temporal: solo indice y dimensiones (sin indicadores nutricionales)
     const evolutionAllData = [...allSelectData];
-    if (state.slimSelects.evolutionMetric) state.slimSelects.evolutionMetric.destroy();
-    const selectEvolutionMetric = document.getElementById('select-evolution-metric');
-    if (selectEvolutionMetric) {
-        selectEvolutionMetric.innerHTML = '';
-        state.slimSelects.evolutionMetric = new SlimSelect({
-            select: '#select-evolution-metric',
-            settings: { showSearch: false },
-            events: {
-                afterChange: () => triggerEvolutionUpdate()
-            }
-        });
-        state.slimSelects.evolutionMetric.setData(evolutionAllData);
-    }
-
-    if (state.slimSelects.evolutionCompareYear) state.slimSelects.evolutionCompareYear.destroy();
-    const selectEvolutionCompareYear = document.getElementById('select-evolution-compare-year');
-    if (selectEvolutionCompareYear && state.catalog) {
-        selectEvolutionCompareYear.innerHTML = '';
-        state.slimSelects.evolutionCompareYear = new SlimSelect({
-            select: '#select-evolution-compare-year',
-            settings: { showSearch: false },
-            events: {
-                afterChange: () => triggerEvolutionUpdate()
-            }
-        });
-        updateEvolutionYearOptions();
-    }
+    setupEvolutionMetricControl(evolutionAllData, triggerEvolutionUpdate);
+    setupEvolutionYearControl(triggerEvolutionUpdate);
+    updateEvolutionYearOptions();
 }
 
 export function updateEvolutionYearOptions() {
-    if (!state.slimSelects.evolutionCompareYear || !state.catalog) return;
-    const available = state.catalog.availableYears.filter(y => y !== state.currentYear);
-    const options = available.map(y => ({ value: String(y), text: String(y) }));
-    state.slimSelects.evolutionCompareYear.setData(options);
-
-    const labelEvolutionBaseYear = document.getElementById('label-evolution-base-year');
-    if (labelEvolutionBaseYear) labelEvolutionBaseYear.textContent = state.currentYear;
-
-    // Mark pending — the actual render will happen when the evolution tab becomes visible
-    state.evolutionPendingUpdate = true;
-    // If the tab is already visible, fire immediately
-    const evTab = document.getElementById('tab-evolution');
-    if (evTab && evTab.classList.contains('active')) {
-        triggerEvolutionUpdate();
-    }
+    updateEvolutionYearOptionsModule(triggerEvolutionUpdate);
 }
 
 export function triggerEvolutionUpdate() {
-    if (!state.slimSelects.evolutionMetric || !state.slimSelects.evolutionCompareYear) return;
-
-    // CRITICAL: Only render if the evolution tab is currently visible.
-    // Leaflet cannot render GeoJSON into hidden containers.
-    const evTab = document.getElementById('tab-evolution');
-    if (!evTab || !evTab.classList.contains('active')) {
-        state.evolutionPendingUpdate = true;
-        return;
-    }
-
-    const metricSelected = state.slimSelects.evolutionMetric.getSelected();
-    const yearSelected = state.slimSelects.evolutionCompareYear.getSelected();
-
-    if (metricSelected && metricSelected.length > 0 && yearSelected && yearSelected.length > 0) {
-        const metric = metricSelected[0];
-        const compareYear = parseInt(yearSelected[0]);
-        state.evolutionPendingUpdate = false;
-        updateEvolutionMap(metric, state.currentYear, compareYear);
-
-        const lblBase = document.getElementById('label-ev-map-base');
-        const lblComp = document.getElementById('label-ev-map-compare');
-        if (lblBase) lblBase.textContent = state.currentYear;
-        if (lblComp) lblComp.textContent = compareYear;
-    }
+    triggerEvolutionUpdateModule(updateEvolutionMap);
 }
 
 export function populateFooter() {
@@ -755,16 +701,7 @@ function switchTab(tabKey) {
             state.compareMapsFitted = true;
         }
         if (tabKey === 'evolution') {
-            // The maps were hidden, so Leaflet couldn't calculate container sizes.
-            // Re-invalidate and fire the pending update now that containers are visible.
-            state.maps.evolutionBase && state.maps.evolutionBase.invalidateSize();
-            state.maps.evolutionCompare && state.maps.evolutionCompare.invalidateSize();
-
-            if (state.evolutionPendingUpdate || !state.evolutionMapFitted) {
-                // Reset fitted flag so fitBounds runs correctly now that maps are visible
-                state.evolutionMapFitted = false;
-                triggerEvolutionUpdate();
-            }
+            handleEvolutionTabActivated(triggerEvolutionUpdate);
         }
     }, 150);
 }
