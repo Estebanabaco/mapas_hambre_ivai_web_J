@@ -187,6 +187,9 @@ function sync_catalog_when_base_ready(string $catalogPath, string $year, bool $b
     }
     rsort($available, SORT_NUMERIC);
     $catalog['availableYears'] = array_values($available);
+    if (!empty($catalog['availableYears'])) {
+        $catalog['defaultYear'] = (int) $catalog['availableYears'][0];
+    }
 
     if (!isset($catalog['rutas']) || !is_array($catalog['rutas'])) {
         $catalog['rutas'] = [];

@@ -6,7 +6,17 @@ export async function loadCatalog() {
     try {
         const catalogData = await fetch('config/metadatos.json').then(res => res.json());
         state.catalog = catalogData;
-        setCurrentYear(catalogData.defaultYear);
+
+        const years = Array.isArray(catalogData.availableYears)
+            ? catalogData.availableYears.map((year) => parseInt(year, 10)).filter((year) => Number.isFinite(year))
+            : [];
+
+        const latestYear = years.length ? Math.max(...years) : null;
+        const selectedYear = latestYear ?? parseInt(catalogData.defaultYear, 10);
+
+        if (Number.isFinite(selectedYear)) {
+            setCurrentYear(selectedYear);
+        }
     } catch (error) {
         console.error('Failed to load catalog:', error);
     }
