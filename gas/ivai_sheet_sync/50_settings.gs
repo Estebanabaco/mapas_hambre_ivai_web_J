@@ -29,6 +29,7 @@ function showActiveSettings() {
         `Origen Base URL: ${settings.baseUrlSource || 'desconocido'}`,
         `API Update: ${settings.apiBaseUrl}`,
         `API Year Status: ${settings.yearStatusUrl}`,
+        `API Delete Year: ${settings.deleteYearUrl}`,
         `Data URL: ${settings.dataBaseUrl}`,
         `Token: ${token ? tokenMask : 'NO CONFIGURADO'}`
       ].join('\n'),
@@ -98,6 +99,7 @@ function getSettings_() {
     baseUrlSource: baseData.baseUrlSource,
     apiBaseUrl: deriveApiUpdateUrl_(baseUrl),
     yearStatusUrl: deriveYearStatusUrl_(baseUrl),
+    deleteYearUrl: deriveDeleteYearUrl_(baseUrl),
     token,
     dataBaseUrl: deriveDataBaseUrl_(baseUrl)
   };
@@ -167,4 +169,9 @@ function deriveDataBaseUrl_(baseUrl) {
 function deriveYearStatusUrl_(baseUrl) {
   const base = normalizeBaseUrl_(baseUrl);
   return `${base}/api/year-status.php`;
+}
+
+function deriveDeleteYearUrl_(baseUrl) {
+  const base = normalizeBaseUrl_(baseUrl);
+  return `${base}/api/delete-year.php`;
 }

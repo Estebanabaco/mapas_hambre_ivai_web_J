@@ -13,6 +13,8 @@ function onOpen() {
     .addItem('Publicar AHP', 'publishAhp')
     .addItem('Publicar TODO (incluye AHP)', 'publishAll')
     .addSeparator()
+    .addItem('Borrar año publicado', 'deleteYearPublished')
+    .addSeparator()
     .addItem('Configurar URL base', 'setBaseUrl')
     .addItem('Configurar token API', 'setApiToken')
     .addItem('Ver configuración activa', 'showActiveSettings')

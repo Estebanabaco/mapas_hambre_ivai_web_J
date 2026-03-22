@@ -41,6 +41,7 @@ Token:
 - `Publicar datos base` (sin AHP)
 - `Publicar AHP`
 - `Publicar TODO (incluye AHP)`
+- `Borrar año publicado` (elimina data/<year>, metadatos y year_status para ese año)
 - `Configurar URL base`
 - `Configurar token API`
 - `Ver configuración activa`
@@ -52,6 +53,7 @@ Token:
 3. Revisar/editar datos.
 4. Publicar con `Publicar datos base`.
 5. Publicar `AHP` solo cuando aplique.
+6. Si necesitas revertir un año completo en servidor, usa `Borrar año publicado`.
 
 ## Notas
 
@@ -59,6 +61,7 @@ Token:
 - Desde `base_url`, el script deriva automáticamente:
   - API update: `.../api/update.php`
   - API year status: `.../api/year-status.php`
+  - API delete year: `.../api/delete-year.php`
   - Data JSON: `.../data/<year>/archivo.json`
 - Para `indicadores`, el script convierte automáticamente nombres JSON legibles a columnas cortas de la hoja (y viceversa al publicar).
 - La columna legacy `prnbi` se elimina automáticamente de `indicadores` durante el setup para evitar confusión.
@@ -75,6 +78,7 @@ Token:
 - `10_menu.gs`: menú de entrada (`onOpen`).
 - `20_setup.gs`: creación/actualización de hojas base.
 - `30_publish.gs`: publicación a API por tipo.
+- `35_delete_year.gs`: borrado remoto de un año y ajuste de configuración local.
 - `40_preload.gs`: precarga de JSON por año.
 - `50_settings.gs`: configuración de URL/token y lectura de settings.
 - `60_sheet_utils.gs`: utilidades de lectura/escritura en Sheets.
