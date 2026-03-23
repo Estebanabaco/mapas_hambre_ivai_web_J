@@ -2,6 +2,63 @@ import { state } from './store.js';
 import { setCurrentYear } from './actions.js';
 import { getDomRegistry } from './dom-registry.js';
 
+async function fetchJsonRequired(url, label) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`No se pudo cargar ${label || url} (HTTP ${response.status}).`);
+    }
+    return response.json();
+}
+
+async function fetchJsonOptional(url, label) {
+    if (!url) return null;
+
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.warn(`No se pudo cargar ${label || url}. Se continúa sin este recurso.`, error);
+        return null;
+    }
+}
+
+function normalizeWeights(weights) {
+    if (!weights || typeof weights !== 'object') {
+        return {
+            Pesos_Dimensiones: [],
+            Pesos_Variables_Intra: []
+        };
+    }
+
+    return {
+        Pesos_Dimensiones: Array.isArray(weights.Pesos_Dimensiones) ? weights.Pesos_Dimensiones : [],
+        Pesos_Variables_Intra: Array.isArray(weights.Pesos_Variables_Intra) ? weights.Pesos_Variables_Intra : []
+    };
+}
+
+function applyIndexClassification(indexData) {
+    for (const deptoCode in indexData) {
+        const deptoData = indexData[deptoCode];
+        const indice = deptoData.Indice;
+        if (indice !== null && indice !== undefined) {
+            let classification = 'Mínima';
+            if (indice >= 65) {
+                classification = 'Crítica';
+            } else if (indice >= 50) {
+                classification = 'Alta';
+            } else if (indice >= 30) {
+                classification = 'Media';
+            } else if (indice >= 15) {
+                classification = 'Baja';
+            }
+            deptoData.Clasificacion_Indice = classification;
+        }
+    }
+}
+
 export async function loadCatalog() {
     try {
         const catalogData = await fetch('config/metadatos.json').then(res => res.json());
@@ -25,40 +82,32 @@ export async function loadCatalog() {
 export async function loadData() {
     try {
         const rutas = state.catalog.rutas[state.currentYear];
-        const [geoData, indexData, nutritionData, indicatorData, appConfig, weights, indicatorConfig] = await Promise.all([
-            fetch('mapa/ColDepSNVlite.geojson').then(res => res.json()),
-            fetch(rutas.indexData).then(res => res.json()),
-            fetch(rutas.nutritionData).then(res => res.json()),
-            fetch(rutas.indicatorData).then(res => res.json()),
-            fetch('config/configuracion_app.json').then(res => res.json()),
-            fetch(rutas.weights).then(res => res.json()),
-            fetch('config/config_indicadores.json').then(res => res.json())
+        const [geoData, indexData, nutritionData, indicatorData, appConfig, indicatorConfig] = await Promise.all([
+            fetchJsonRequired('mapa/ColDepSNVlite.geojson', 'geojson de Colombia'),
+            fetchJsonRequired(rutas.indexData, `datos de indice ${state.currentYear}`),
+            fetchJsonRequired(rutas.nutritionData, `datos nutricionales ${state.currentYear}`),
+            fetchJsonRequired(rutas.indicatorData, `datos de indicadores ${state.currentYear}`),
+            fetchJsonRequired('config/configuracion_app.json', 'configuracion de la aplicacion'),
+            fetchJsonRequired('config/config_indicadores.json', 'configuracion de indicadores')
         ]);
+
+        const rawWeights = await fetchJsonOptional(rutas.weights, `pesos AHP ${state.currentYear}`);
+        const weights = normalizeWeights(rawWeights);
+
         state.geoData = geoData;
         state.indexData = indexData;
         state.nutritionData = nutritionData;
         state.indicatorData = indicatorData || {};
         state.appConfig = appConfig;
         state.weights = weights;
+        state.weightsAvailable = weights.Pesos_Dimensiones.length > 0;
         state.indicatorConfig = indicatorConfig || {};
 
-        for (const deptoCode in state.indexData) {
-            const deptoData = state.indexData[deptoCode];
-            const indice = deptoData.Indice;
-            if (indice !== null && indice !== undefined) {
-                let classification = 'Mínima';
-                if (indice >= 65) {
-                    classification = 'Crítica';
-                } else if (indice >= 50) {
-                    classification = 'Alta';
-                } else if (indice >= 30) {
-                    classification = 'Media';
-                } else if (indice >= 15) {
-                    classification = 'Baja';
-                }
-                deptoData.Clasificacion_Indice = classification;
-            }
+        if (!state.weightsAvailable) {
+            console.warn(`El año ${state.currentYear} no tiene pesos AHP disponibles. Se mostrará el visor sin ponderaciones AHP.`);
         }
+
+        applyIndexClassification(state.indexData);
     } catch (error) {
         console.error('Failed to load data:', error);
         const { storyBox } = getDomRegistry();
@@ -73,31 +122,23 @@ export async function loadYearData(year) {
         const rutas = state.catalog.rutas[year];
         if (!rutas) throw new Error('Rutas no encontradas para el año ' + year);
 
-        const [indexData, nutritionData, indicatorData, weights] = await Promise.all([
-            fetch(rutas.indexData).then(res => res.json()),
-            fetch(rutas.nutritionData).then(res => res.json()),
-            fetch(rutas.indicatorData).then(res => res.json()),
-            fetch(rutas.weights).then(res => res.json())
+        const [indexData, nutritionData, indicatorData] = await Promise.all([
+            fetchJsonRequired(rutas.indexData, `datos de indice ${year}`),
+            fetchJsonRequired(rutas.nutritionData, `datos nutricionales ${year}`),
+            fetchJsonRequired(rutas.indicatorData, `datos de indicadores ${year}`)
         ]);
 
-        for (const deptoCode in indexData) {
-            const deptoData = indexData[deptoCode];
-            const indice = deptoData.Indice;
-            if (indice !== null && indice !== undefined) {
-                let classification = 'Mínima';
-                if (indice >= 65) classification = 'Crítica';
-                else if (indice >= 50) classification = 'Alta';
-                else if (indice >= 30) classification = 'Media';
-                else if (indice >= 15) classification = 'Baja';
-                deptoData.Clasificacion_Indice = classification;
-            }
-        }
+        const rawWeights = await fetchJsonOptional(rutas.weights, `pesos AHP ${year}`);
+        const weights = normalizeWeights(rawWeights);
+
+        applyIndexClassification(indexData);
 
         return {
             indexData,
             nutritionData,
             indicatorData: indicatorData || {},
-            weights
+            weights,
+            weightsAvailable: weights.Pesos_Dimensiones.length > 0
         };
     } catch (error) {
         console.error(`Failed to load data for year ${year}:`, error);

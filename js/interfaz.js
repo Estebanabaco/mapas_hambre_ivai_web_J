@@ -75,7 +75,10 @@ function queryAll(selector) {
 
 // --- UI POPULATION ---
 export function populateControls() {
-    const weightsMap = new Map(state.weights.Pesos_Dimensiones.map(d => [d.Dimension, d.Peso_Dimension]));
+    const dimensionWeights = Array.isArray(state.weights?.Pesos_Dimensiones)
+        ? state.weights.Pesos_Dimensiones
+        : [];
+    const weightsMap = new Map(dimensionWeights.map(d => [d.Dimension, d.Peso_Dimension]));
     const firstDeptKey = Object.keys(state.indexData)[0];
     if (!firstDeptKey) {
         console.error("No se encontró ningún departamento en indexData");
@@ -259,7 +262,10 @@ export function triggerEvolutionUpdate() {
 
 export function populateFooter() {
     const year = state.currentYear || state.catalog?.defaultYear;
-    appFooter.innerHTML = `Última actualización: Octubre ${year}`;
+    const ahpNote = state.weightsAvailable
+        ? ''
+        : '<br><small>Nota: este año no tiene pesos AHP cargados; se muestran valores sin ponderación AHP.</small>';
+    appFooter.innerHTML = `Última actualización: Octubre ${year}${ahpNote}`;
 }
 
 export function populateModal() {

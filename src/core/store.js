@@ -15,6 +15,7 @@ export const state = {
     currentYear: null,
     appConfig: null,
     weights: null,
+    weightsAvailable: false,
     maps: {
         main: null,
         compareVul: null,

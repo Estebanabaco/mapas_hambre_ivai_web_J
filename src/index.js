@@ -152,6 +152,7 @@ function resetAppState() {
     state.currentYear = null;
     state.appConfig = null;
     state.weights = null;
+    state.weightsAvailable = false;
 
     resetMapRuntime();
 
