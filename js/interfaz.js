@@ -73,6 +73,170 @@ function queryAll(selector) {
     return root.querySelectorAll ? root.querySelectorAll(selector) : [];
 }
 
+let refreshMobileMapLayouts = null;
+let closeMobileSidebar = null;
+
+function setupMobileMapLayouts() {
+    const compareSwitch = getById('compare-mobile-switch');
+    const evolutionSwitch = getById('evolution-mobile-switch');
+    const compareVulWrapper = getById('compare-map-wrapper-vul');
+    const compareNutWrapper = getById('compare-map-wrapper-nut');
+    const evolutionBaseWrapper = getById('evolution-map-wrapper-base');
+    const evolutionCompareWrapper = getById('evolution-map-wrapper-compare');
+
+    if (!compareVulWrapper || !compareNutWrapper || !evolutionBaseWrapper || !evolutionCompareWrapper) {
+        refreshMobileMapLayouts = null;
+        return;
+    }
+
+    const isMobileView = () => getWin().matchMedia('(max-width: 900px)').matches;
+
+    const setActiveSwitchButton = (switchEl, target) => {
+        if (!switchEl) return;
+        const buttons = switchEl.querySelectorAll('.mobile-map-switch-btn');
+        buttons.forEach((btn) => {
+            const isActive = btn.dataset.mobileTarget === target;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    };
+
+    const getActiveTarget = (switchEl, fallbackTarget) => {
+        const activeBtn = switchEl?.querySelector('.mobile-map-switch-btn.active');
+        return activeBtn?.dataset.mobileTarget || fallbackTarget;
+    };
+
+    const setWrapperVisibility = (primary, secondary, showPrimary, isMobile) => {
+        if (!isMobile) {
+            primary.classList.remove('mobile-hidden');
+            secondary.classList.remove('mobile-hidden');
+            return;
+        }
+
+        primary.classList.toggle('mobile-hidden', !showPrimary);
+        secondary.classList.toggle('mobile-hidden', showPrimary);
+    };
+
+    const invalidateVisibleMaps = () => {
+        if (state.maps.compareVul && !compareVulWrapper.classList.contains('mobile-hidden')) {
+            setTimeout(() => state.maps.compareVul && state.maps.compareVul.invalidateSize(), 80);
+        }
+        if (state.maps.compareNut && !compareNutWrapper.classList.contains('mobile-hidden')) {
+            setTimeout(() => state.maps.compareNut && state.maps.compareNut.invalidateSize(), 80);
+        }
+        if (state.maps.evolutionBase && !evolutionBaseWrapper.classList.contains('mobile-hidden')) {
+            setTimeout(() => state.maps.evolutionBase && state.maps.evolutionBase.invalidateSize(), 80);
+        }
+        if (state.maps.evolutionCompare && !evolutionCompareWrapper.classList.contains('mobile-hidden')) {
+            setTimeout(() => state.maps.evolutionCompare && state.maps.evolutionCompare.invalidateSize(), 80);
+        }
+    };
+
+    const applyLayout = () => {
+        const mobile = isMobileView();
+
+        const compareTarget = getActiveTarget(compareSwitch, 'vul');
+        setWrapperVisibility(compareVulWrapper, compareNutWrapper, compareTarget !== 'nut', mobile);
+        setActiveSwitchButton(compareSwitch, compareTarget !== 'nut' ? 'vul' : 'nut');
+
+        const evolutionTarget = getActiveTarget(evolutionSwitch, 'base');
+        setWrapperVisibility(evolutionBaseWrapper, evolutionCompareWrapper, evolutionTarget !== 'compare', mobile);
+        setActiveSwitchButton(evolutionSwitch, evolutionTarget !== 'compare' ? 'base' : 'compare');
+
+        invalidateVisibleMaps();
+    };
+
+    const onCompareSwitchClick = (event) => {
+        const btn = event.target.closest('.mobile-map-switch-btn');
+        if (!btn || !compareSwitch || !compareSwitch.contains(btn)) return;
+        setActiveSwitchButton(compareSwitch, btn.dataset.mobileTarget || 'vul');
+        applyLayout();
+    };
+
+    const onEvolutionSwitchClick = (event) => {
+        const btn = event.target.closest('.mobile-map-switch-btn');
+        if (!btn || !evolutionSwitch || !evolutionSwitch.contains(btn)) return;
+        setActiveSwitchButton(evolutionSwitch, btn.dataset.mobileTarget || 'base');
+        applyLayout();
+    };
+
+    const onWindowResize = () => applyLayout();
+
+    registerGlobalListener(compareSwitch, 'click', onCompareSwitchClick);
+    registerGlobalListener(evolutionSwitch, 'click', onEvolutionSwitchClick);
+    registerGlobalListener(getWin(), 'resize', onWindowResize);
+    registerGlobalListener(getWin(), 'orientationchange', onWindowResize);
+
+    refreshMobileMapLayouts = applyLayout;
+    applyLayout();
+}
+
+function setupMobileSidebar() {
+    const openBtn = getById('mobile-filters-btn');
+    const closeBtn = getById('mobile-close-sidebar-btn');
+    const backdrop = getById('mobile-sidebar-backdrop');
+
+    if (!openBtn || !closeBtn || !backdrop) {
+        closeMobileSidebar = null;
+        return;
+    }
+
+    const isMobileView = () => getWin().matchMedia('(max-width: 900px)').matches;
+
+    const open = () => {
+        if (!isMobileView()) return;
+        getDoc().body.classList.add('mobile-sidebar-open');
+    };
+
+    const close = () => {
+        getDoc().body.classList.remove('mobile-sidebar-open');
+        if (state.maps.main) {
+            setTimeout(() => state.maps.main && state.maps.main.invalidateSize(), 120);
+        }
+    };
+
+    const onResize = () => {
+        if (!isMobileView()) {
+            close();
+        }
+    };
+
+    registerGlobalListener(openBtn, 'click', open);
+    registerGlobalListener(closeBtn, 'click', close);
+    registerGlobalListener(backdrop, 'click', close);
+    registerGlobalListener(getWin(), 'resize', onResize);
+    registerGlobalListener(getWin(), 'orientationchange', onResize);
+
+    closeMobileSidebar = close;
+}
+
+function setupMobileIndicatorInfo() {
+    const infoBtn = getById('mobile-indicator-info-btn');
+    if (!infoBtn) return;
+
+    const onInfoClick = () => {
+        const modal = getById('legend-info-modal');
+        const modalBody = getById('legend-info-body');
+        const modalTitle = getById('legend-info-title');
+        if (!modal || !modalBody || !modalTitle) return;
+
+        const indicatorId = state.currentIndicator || 'Indice';
+        const displayName = getIndicatorDisplayName(indicatorId);
+        const iconHTML = dim_icons[indicatorId] || '<i class="fa-solid fa-circle-info"></i>';
+
+        let content = createMoreInfoPopup(indicatorId);
+        if (!content || !String(content).trim()) {
+            content = storyBox?.innerHTML || '<p>Sin información disponible para este indicador.</p>';
+        }
+
+        modalTitle.innerHTML = `${iconHTML} ${displayName}`;
+        modalBody.innerHTML = content;
+        modal.style.display = 'block';
+    };
+
+    registerGlobalListener(infoBtn, 'click', onInfoClick);
+}
+
 // --- UI POPULATION ---
 export function populateControls() {
     const dimensionWeights = Array.isArray(state.weights?.Pesos_Dimensiones)
@@ -633,6 +797,9 @@ export function setupEventListeners() {
 
     makeModalDraggable();
     makeLegendInfoModalDraggable();
+    setupMobileMapLayouts();
+    setupMobileSidebar();
+    setupMobileIndicatorInfo();
 }
 
 function closeLegendInfoModal() {
@@ -767,6 +934,10 @@ export function makeLegendInfoModalDraggable() {
 }
 
 function switchTab(tabKey) {
+    if (typeof closeMobileSidebar === 'function') {
+        closeMobileSidebar();
+    }
+
     closeLegendInfoModal();
 
     Object.values(tabs).forEach(tab => tab && tab.classList.remove('active'));
@@ -776,6 +947,10 @@ function switchTab(tabKey) {
     tabButtons[tabKey]?.classList.add('active');
 
     setTimeout(() => {
+        if (typeof refreshMobileMapLayouts === 'function') {
+            refreshMobileMapLayouts();
+        }
+
         Object.values(state.maps).forEach(map => map && map.invalidateSize());
         if (tabKey === 'compare' && !state.compareMapsFitted) {
             const mainlandGeoData = {

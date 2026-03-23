@@ -61,6 +61,16 @@
     background-color: var(--light-gray);
 }
 
+.mobile-close-sidebar-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 4px 8px;
+    margin-right: 8px;
+}
+
 .sidebar.collapsed .radio-label,
 .sidebar.collapsed .story-box,
 .sidebar.collapsed .about-button .about-text {
@@ -212,4 +222,69 @@
     padding: 0.5rem;
     border-radius: 5px;
     border: 1px solid var(--border-color);
-}
+}
+
+@media (max-width: 900px) {
+    #tab-vulnerability .row-container {
+        position: relative;
+    }
+
+    #tab-vulnerability .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(340px, 84vw);
+        height: 100vh;
+        z-index: 1200;
+        border-radius: 0;
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+        padding: 12px;
+    }
+
+    body.mobile-sidebar-open #tab-vulnerability .sidebar {
+        transform: translateX(0);
+    }
+
+    #tab-vulnerability .sidebar.collapsed {
+        width: min(340px, 84vw);
+        padding: 12px;
+    }
+
+    #tab-vulnerability .story-box {
+        display: none;
+    }
+
+    #tab-vulnerability .sidebar.collapsed .radio-label,
+    #tab-vulnerability .sidebar.collapsed .story-box,
+    #tab-vulnerability .sidebar.collapsed .about-button .about-text {
+        display: block;
+    }
+
+    #tab-vulnerability .sidebar.collapsed .dimension-section-title,
+    #tab-vulnerability .sidebar.collapsed .sidebar-header h4 {
+        opacity: 1;
+        width: auto;
+        margin: 0;
+        padding: 0;
+    }
+
+    #tab-vulnerability .sidebar.collapsed .radio-span {
+        justify-content: flex-start;
+        padding: 6px 10px;
+    }
+
+    #tab-vulnerability .sidebar.collapsed .radio-icon {
+        margin-right: 10px;
+    }
+
+    .mobile-close-sidebar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #toggle-sidebar-btn {
+        display: none;
+    }
+}

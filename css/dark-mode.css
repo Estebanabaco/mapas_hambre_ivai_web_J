@@ -13,6 +13,35 @@ body.dark-mode .evolution-controls {
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+body.dark-mode .mobile-map-switch-btn {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .mobile-map-switch-btn.active {
+    background: #009640;
+    border-color: #009640;
+    color: #fff;
+}
+
+body.dark-mode .mobile-filters-btn {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .mobile-info-btn {
+    background: #2c2c2c;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+body.dark-mode .mobile-close-sidebar-btn {
+    border-color: #444;
+    color: #e0e0e0;
+}
+
 body.dark-mode .global-super-header {
     background-color: #1e1e1e;
     border-bottom-color: #F58634;

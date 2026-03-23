@@ -60,6 +60,9 @@
                     <div class="sidebar-content">
                         <div class="sidebar-header">
                             <h4>Desempeño Global</h4>
+                            <button id="mobile-close-sidebar-btn" class="mobile-close-sidebar-btn" title="Cerrar filtros">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                             <button id="toggle-sidebar-btn" class="toggle-btn" title="Colapsar menú">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
@@ -74,7 +77,18 @@
                         </div>
                     </div>
                 </aside>
+                <div id="mobile-sidebar-backdrop" class="mobile-sidebar-backdrop" aria-hidden="true"></div>
                 <main class="main-panel col-sm-8">
+                    <div class="mobile-action-bar" aria-label="Acciones móviles">
+                        <button id="mobile-filters-btn" class="mobile-filters-btn" title="Abrir filtros">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>Filtros</span>
+                        </button>
+                        <button id="mobile-indicator-info-btn" class="mobile-info-btn" title="Ver información del indicador">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Info</span>
+                        </button>
+                    </div>
                     <div id="map-main" class="map-container"></div>
                 </main>
             </div>
@@ -83,8 +97,12 @@
         <!-- Tab 2: Mapas Comparativos -->
         <div id="tab-compare" class="tab-content">
             <div class="row-container">
+                <div id="compare-mobile-switch" class="mobile-map-switch" role="group" aria-label="Vista de mapas comparativos">
+                    <button type="button" class="mobile-map-switch-btn active" data-mobile-target="vul">Vulnerabilidad</button>
+                    <button type="button" class="mobile-map-switch-btn" data-mobile-target="nut">Nutricional</button>
+                </div>
                 <div class="compare-container">
-                    <div class="compare-map-wrapper">
+                    <div id="compare-map-wrapper-vul" class="compare-map-wrapper">
                         <div class="compare-controls">
                             <label for="select-compare-vul">Seleccione indicador de vulnerabilidad:</label>
                             <select id="select-compare-vul">
@@ -93,7 +111,7 @@
                         </div>
                         <div id="map-compare-vul" class="map-container"></div>
                     </div>
-                    <div class="compare-map-wrapper">
+                    <div id="compare-map-wrapper-nut" class="compare-map-wrapper">
                         <div class="compare-controls">
                             <label for="select-compare-nut">Seleccione indicador nutricional:</label>
                             <select id="select-compare-nut">
@@ -112,6 +130,10 @@
                 <div class="evolution-container">
                     <div class="evolution-controls">
                         <div class="evolution-controls-inner">
+                            <div id="evolution-mobile-switch" class="mobile-map-switch" role="group" aria-label="Vista de mapas evolución temporal">
+                                <button type="button" class="mobile-map-switch-btn active" data-mobile-target="base">Año actual</button>
+                                <button type="button" class="mobile-map-switch-btn" data-mobile-target="compare">Año contraste</button>
+                            </div>
                             <!-- Row 1: Metric Selector -->
                             <div class="evolution-controls-row evolution-controls-row-metric">
                                 <select id="select-evolution-metric" style="width: 300px;"></select>
@@ -129,13 +151,13 @@
                     </div>
                     
                     <div class="compare-container evolution-maps-container">
-                        <div class="compare-map-wrapper">
+                        <div id="evolution-map-wrapper-base" class="compare-map-wrapper">
                             <div style="text-align: center; padding: 6px 0; background: #009640; color: #fff; font-weight: bold; font-size: 0.85rem; letter-spacing: 0.3px;">
                                 <i class="fas fa-calendar-check" style="margin-right: 5px;"></i> <span id="label-ev-map-base">2024</span> — Año Actual
                             </div>
                             <div id="map-evolution-base" class="map-container"></div>
                         </div>
-                        <div class="compare-map-wrapper">
+                        <div id="evolution-map-wrapper-compare" class="compare-map-wrapper">
                             <div style="text-align: center; padding: 6px 0; background: #6c757d; color: #fff; font-weight: bold; font-size: 0.85rem; letter-spacing: 0.3px;">
                                 <i class="fas fa-history" style="margin-right: 5px;"></i> <span id="label-ev-map-compare">-</span> — Año de Contraste
                             </div>

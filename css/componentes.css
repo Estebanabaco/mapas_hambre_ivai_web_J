@@ -307,6 +307,18 @@
     font-size: 0.9em;
     padding: 0.2rem 0;
 }
+
+@media (max-width: 900px) {
+    #legend-info-modal .modal-content {
+        width: 92vw;
+        max-width: 92vw;
+        max-height: 78vh;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        resize: none;
+    }
+}
 .acciones-container {
     display: flex;
     flex-wrap: wrap;
