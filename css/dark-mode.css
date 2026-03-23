@@ -4,6 +4,13 @@ body.dark-mode {
     --light-gray: #1e1e1e;
     --border-color: #333333;
     --white: #1e1e1e;
+    --card-bg: #1e1e1e;
+}
+
+body.dark-mode .evolution-controls {
+    background: var(--card-bg, #1e1e1e);
+    border-bottom-color: #333;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 body.dark-mode .global-super-header {
