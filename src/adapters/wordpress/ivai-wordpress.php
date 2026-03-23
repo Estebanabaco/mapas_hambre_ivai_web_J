@@ -37,6 +37,10 @@ function ivai_map_embed_shortcode($atts) {
         'mode' => 'iframe',
         'fallback' => 'iframe',
         'timeout_ms' => '15000',
+        'auto_height' => 'none',
+        'offset_px' => '0',
+        'min_height' => '680',
+        'max_height' => '0',
         'height' => '900',
         'title' => 'Visor IVAI',
     );
@@ -73,6 +77,30 @@ function ivai_map_embed_shortcode($atts) {
         $timeout_ms = 60000;
     }
 
+    $auto_height = sanitize_key($args['auto_height']);
+    if ($auto_height !== 'viewport') {
+        $auto_height = 'none';
+    }
+
+    $offset_px = absint($args['offset_px']);
+    if ($offset_px > 500) {
+        $offset_px = 500;
+    }
+
+    $min_height = absint($args['min_height']);
+    if ($min_height < 320) {
+        $min_height = 320;
+    }
+
+    $max_height = absint($args['max_height']);
+    if ($max_height > 0 && $max_height < $min_height) {
+        $max_height = $min_height;
+    }
+
+    if ($mode === 'direct' && $auto_height === 'none') {
+        $auto_height = 'viewport';
+    }
+
     $title = sanitize_text_field($args['title']);
     if ($title === '') {
         $title = 'Visor IVAI';
@@ -87,6 +115,10 @@ function ivai_map_embed_shortcode($atts) {
             'indexUrl' => $src,
             'fallback' => $fallback,
             'timeoutMs' => $timeout_ms,
+            'autoHeight' => $auto_height,
+            'offsetPx' => $offset_px,
+            'minHeight' => $min_height,
+            'maxHeight' => $max_height,
             'height' => $height,
             'title' => $title,
         );
@@ -97,6 +129,66 @@ function ivai_map_embed_shortcode($atts) {
     const cfg = %s;
     const mount = document.getElementById(cfg.containerId);
     if (!mount) return;
+
+    let ivaiAppInstance = null;
+    let resizeRaf = null;
+
+    const getAdminBarOffset = () => {
+        const adminBar = document.getElementById('wpadminbar');
+        if (!adminBar) return 0;
+
+        const body = document.body;
+        const isAdminBarEnabled = body && body.classList && body.classList.contains('admin-bar');
+        if (!isAdminBarEnabled) return 0;
+
+        const adminBarStyle = window.getComputedStyle(adminBar);
+        if (adminBarStyle.position !== 'fixed') return 0;
+
+        return adminBar.offsetHeight || 0;
+    };
+
+    const applyDynamicHeight = () => {
+        if (cfg.autoHeight !== 'viewport') return;
+
+        const rect = mount.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || cfg.height;
+        const available = viewportHeight - rect.top - (cfg.offsetPx || 0) - getAdminBarOffset();
+
+        let nextHeight = Math.max(available, cfg.minHeight || 320);
+        if ((cfg.maxHeight || 0) > 0) {
+            nextHeight = Math.min(nextHeight, cfg.maxHeight);
+        }
+
+        const rounded = Math.max(Math.round(nextHeight), cfg.minHeight || 320);
+        mount.style.height = `${rounded}px`;
+        mount.style.minHeight = `${rounded}px`;
+
+        if (ivaiAppInstance && typeof ivaiAppInstance.getState === 'function') {
+            const appState = ivaiAppInstance.getState();
+            if (appState && appState.maps) {
+                setTimeout(() => {
+                    Object.keys(appState.maps).forEach((key) => {
+                        const map = appState.maps[key];
+                        if (map && typeof map.invalidateSize === 'function') {
+                            map.invalidateSize();
+                        }
+                    });
+                }, 80);
+            }
+        }
+    };
+
+    const scheduleDynamicHeight = () => {
+        if (cfg.autoHeight !== 'viewport') return;
+
+        if (resizeRaf) {
+            cancelAnimationFrame(resizeRaf);
+        }
+        resizeRaf = requestAnimationFrame(() => {
+            resizeRaf = null;
+            applyDynamicHeight();
+        });
+    };
 
     const fallbackToIframe = () => {
         if (cfg.fallback !== 'iframe') return false;
@@ -218,7 +310,16 @@ function ivai_map_embed_shortcode($atts) {
 
             const moduleUrl = `${cfg.baseUrl}/src/index.js`;
             const api = await withTimeout(import(moduleUrl), 'Tiempo de espera agotado al cargar la libreria IVAI.');
-            await withTimeout(api.createIvaiApp(`#${cfg.containerId}`), 'Tiempo de espera agotado al iniciar IVAI.');
+            ivaiAppInstance = await withTimeout(api.createIvaiApp(`#${cfg.containerId}`), 'Tiempo de espera agotado al iniciar IVAI.');
+
+            if (cfg.autoHeight === 'viewport') {
+                applyDynamicHeight();
+                window.addEventListener('resize', scheduleDynamicHeight, { passive: true });
+                window.addEventListener('orientationchange', scheduleDynamicHeight, { passive: true });
+                window.addEventListener('load', scheduleDynamicHeight, { once: true });
+                setTimeout(scheduleDynamicHeight, 200);
+                setTimeout(scheduleDynamicHeight, 800);
+            }
         } catch (error) {
             if (!fallbackToIframe()) {
                 showError(error.message || 'No fue posible iniciar el visor IVAI.');

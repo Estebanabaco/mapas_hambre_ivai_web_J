@@ -23,6 +23,10 @@ Este directorio contiene un adapter inicial para integrar el visor IVAI en WordP
 - `mode`: `iframe` (por defecto) o `direct`.
 - `fallback`: `iframe` (por defecto) o `none` para desactivar fallback automatico en modo directo.
 - `timeout_ms`: tiempo maximo de espera por fase en modo directo (1000-60000, por defecto 15000).
+- `auto_height`: `viewport` o `none` (en `direct`, por defecto se aplica `viewport`).
+- `offset_px`: margen inferior adicional al calcular alto dinamico (0-500).
+- `min_height`: alto minimo del contenedor (por defecto 680).
+- `max_height`: alto maximo del contenedor (0 = sin limite).
 - `height`: alto del iframe en pixeles.
 - `title`: titulo accesible del iframe.
 
@@ -38,6 +42,12 @@ Ejemplo modo directo (experimental):
 [ivai_map mode="direct" src="https://tu-dominio.com/ivai2024/index.html" base_url="https://tu-dominio.com/ivai2024" height="980"]
 ```
 
+Ejemplo modo directo con alto dinamico al viewport:
+
+```text
+[ivai_map mode="direct" src="https://tu-dominio.com/ivai2024/index.html" base_url="https://tu-dominio.com/ivai2024" auto_height="viewport" offset_px="16" min_height="720" max_height="1200"]
+```
+
 Ejemplo modo directo sin fallback:
 
 ```text
@@ -48,6 +58,7 @@ Ejemplo modo directo sin fallback:
 
 - `iframe` es la opcion mas estable para produccion en este momento.
 - `direct` monta la libreria JS en la pagina WordPress y carga el template desde `index.html`.
+- En `direct`, el alto dinamico al viewport recalcula en `resize/orientationchange` y descuenta admin bar fija de WordPress.
 - En modo `direct` actualmente se soporta una sola instancia por pagina.
 - Si `direct` falla, por defecto se hace fallback a `iframe` automaticamente.
 
