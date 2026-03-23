@@ -107,6 +107,19 @@
 
 .evolution-maps-container {
     position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.evolution-maps-container .compare-map-wrapper {
+    min-height: 0;
+}
+
+#map-evolution-base,
+#map-evolution-compare {
+    flex: 1 1 auto;
+    min-height: 240px;
+    height: auto;
 }
 
 .evolution-shared-legend {
@@ -355,6 +368,23 @@
 }
 
 @media (max-width: 900px) {
+    .evolution-controls {
+        padding: 8px 10px;
+    }
+
+    .evolution-controls-row-years {
+        gap: 8px;
+    }
+
+    .evolution-maps-container {
+        min-height: 0;
+    }
+
+    #map-evolution-base,
+    #map-evolution-compare {
+        min-height: 220px;
+    }
+
     .evolution-shared-legend {
         bottom: 10px;
         max-width: calc(100% - 20px);
@@ -363,5 +393,56 @@
     .evolution-shared-legend .evolution-shared-legend-box {
         max-width: 100%;
         overflow-x: auto;
+    }
+}
+
+@media (max-height: 760px) {
+    .evolution-controls {
+        padding: 4px 8px;
+    }
+
+    .evolution-maps-container {
+        min-height: 0;
+    }
+
+    .evolution-controls-inner {
+        gap: 4px;
+    }
+
+    #select-evolution-metric {
+        width: 260px !important;
+    }
+
+    #map-evolution-base,
+    #map-evolution-compare {
+        min-height: 190px;
+    }
+
+    .evolution-shared-legend {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        transform: translateX(-50%);
+        z-index: 900;
+        margin: 0;
+        max-width: calc(100% - 24px);
+        pointer-events: none;
+    }
+
+    .evolution-shared-legend #evolution-shared-legend-content {
+        max-width: 100%;
+    }
+
+    .evolution-shared-legend .evolution-shared-legend-box {
+        padding: 4px 6px;
+    }
+
+    .evolution-shared-legend h4 {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .evolution-shared-legend .legend-item {
+        font-size: 0.82rem;
     }
 }

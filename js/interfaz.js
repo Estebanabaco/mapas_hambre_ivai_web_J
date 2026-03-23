@@ -795,6 +795,10 @@ function switchTab(tabKey) {
         }
         if (tabKey === 'evolution') {
             handleEvolutionTabActivated(triggerEvolutionUpdate);
+            setTimeout(() => {
+                if (state.maps.evolutionBase) state.maps.evolutionBase.invalidateSize();
+                if (state.maps.evolutionCompare) state.maps.evolutionCompare.invalidateSize();
+            }, 220);
         }
     }, 150);
 }
